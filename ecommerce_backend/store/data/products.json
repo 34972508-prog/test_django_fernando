@@ -1,0 +1,29 @@
+[
+    {
+        "id": 1,
+        "name": "Teclado Mecánico RGB",
+        "price": 85000.5,
+        "stock": 15,
+        "category_id": 1,
+        "type": "physical",
+        "weight": 1.2
+    },
+    {
+        "id": 2,
+        "name": "Licencia de Antivirus",
+        "price": 15000.0,
+        "stock": 100,
+        "category_id": 2,
+        "type": "digital",
+        "download_url": "http://example.com/download/av"
+    },
+    {
+        "id": 3,
+        "name": "Mouse Inalámbrico",
+        "price": 45000.0,
+        "stock": 30,
+        "category_id": 1,
+        "type": "physical",
+        "weight": 0.3
+    }
+]

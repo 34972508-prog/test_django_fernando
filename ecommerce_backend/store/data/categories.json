@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1,
+        "name": "Hardware"
+    },
+    {
+        "id": 2,
+        "name": "Software"
+    },
+    {
+        "id": 3,
+        "name": "Libros"
+    }
+]
