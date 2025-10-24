@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-g">
+    <meta charset="UTF-8">
     <title>Vista de Productos</title>
     <style>
         body { font-family: sans-serif; margin: 2em; }
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
+        /* Estilo para hacer que las descripciones largas se vean mejor */
+        .description-cell { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
-    <h1>Catálogo de Productos</h1>
+    <h1>Catálogo de Productos (Tortas) 🎂</h1>
+    <p>Esta tabla muestra los datos del catálogo cargado desde el servicio.</p>
     <table>
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Nombre</th>
-                <th>Categoría</th>
+                <th>Producto (Título)</th>
+                <th>Descripción</th>
+                <th>ID Categoría</th>
                 <th>Precio</th>
                 <th>Stock</th>
             </tr>
@@ -26,9 +30,7 @@
             {% for product in products %}
             <tr>
                 <td>{{ product.id }}</td>
-                <td>{{ product.name }}</td>
-                <td>{{ product.category }}</td>
-                <td>${{ product.price }}</td>
+                <td>{{ product.title }}</td>         <td class="description-cell">{{ product.description }}</td> <td>{{ product.category_id }}</td>   <td>${{ product.price }}</td>
                 <td>{{ product.stock }}</td>
             </tr>
             {% endfor %}

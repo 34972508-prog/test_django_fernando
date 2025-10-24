@@ -1,29 +1,112 @@
 [
     {
-        "id": 1,
-        "name": "Teclado Mecánico RGB",
-        "price": 85000.5,
+        "id": 101,
+        "title": "Torta Clásica de Chocolate",
+        "description": "Exquisita torta de tres capas de bizcocho húmedo de chocolate con relleno de ganache intenso.",
+        "price": 35000,
         "stock": 15,
         "category_id": 1,
+        "image_url": "/media/productos/torta_chocolate.jpg",
+        "type": "physical",
+        "weight": 1.5
+    },
+    {
+        "id": 102,
+        "title": "Cheesecake de Frutos Rojos",
+        "description": "Base de galleta, cremosa capa de queso y topping de coulis natural de frutos rojos.",
+        "price": 28500,
+        "stock": 8,
+        "category_id": 2,
+        "image_url": "/media/productos/cheesecake_frutos_rojos.jpg",
         "type": "physical",
         "weight": 1.2
     },
     {
-        "id": 2,
-        "name": "Licencia de Antivirus",
-        "price": 15000.0,
-        "stock": 100,
-        "category_id": 2,
-        "type": "digital",
-        "download_url": "http://example.com/download/av"
+        "id": 103,
+        "title": "Torta Red Velvet",
+        "description": "Bizcocho de terciopelo rojo vibrante con una suave y ácida crema de queso (cream cheese frosting).",
+        "price": 32000,
+        "stock": 12,
+        "category_id": 1,
+        "image_url": "/media/productos/torta_red_velvet.jpg",
+        "type": "physical",
+        "weight": 1.4
     },
     {
-        "id": 3,
-        "name": "Mouse Inalámbrico",
-        "price": 45000.0,
-        "stock": 30,
-        "category_id": 1,
+        "id": 104,
+        "title": "Lemon Pie Desestructurado",
+        "description": "Tarta de limón con base crujiente y un merengue suizo flameado en picos.",
+        "price": 25000,
+        "stock": 10,
+        "category_id": 3,
+        "image_url": "/media/productos/lemon_pie.jpg",
         "type": "physical",
-        "weight": 0.3
+        "weight": 0.9
+    },
+    {
+        "id": 105,
+        "title": "Torta Hojaldre Milhojas",
+        "description": "Capas finas de hojaldre crocante intercaladas con dulce de leche y crema pastelera.",
+        "price": 38000,
+        "stock": 7,
+        "category_id": 1,
+        "image_url": "/media/productos/torta_milhojas.jpg",
+        "type": "physical",
+        "weight": 1.6
+    },
+    {
+        "id": 106,
+        "title": "Torta de Zanahoria y Nuez",
+        "description": "Bizcocho especiado con zanahoria rallada, nueces y glaseado de queso crema.",
+        "price": 30000,
+        "stock": 14,
+        "category_id": 1,
+        "image_url": "/media/productos/torta_zanahoria.jpg",
+        "type": "physical",
+        "weight": 1.3
+    },
+    {
+        "id": 107,
+        "title": "Mousse de Maracuyá",
+        "description": "Postre frío y ligero con una intensa capa de pulpa de maracuyá y base de vainilla.",
+        "price": 29500,
+        "stock": 9,
+        "category_id": 2,
+        "image_url": "/media/productos/mousse_maracuya.jpg",
+        "type": "physical",
+        "weight": 1.1
+    },
+    {
+        "id": 108,
+        "title": "Torta Tres Leches Gourmet",
+        "description": "Esponjoso bizcocho bañado en una mezcla de tres leches y cubierto con merengue italiano.",
+        "price": 34000,
+        "stock": 6,
+        "category_id": 1,
+        "image_url": "/media/productos/torta_tres_leches.jpg",
+        "type": "physical",
+        "weight": 1.7
+    },
+    {
+        "id": 109,
+        "title": "Tarta de Manzana y Canela",
+        "description": "Relleno clásico de manzana caramelizada y canela bajo una rejilla de masa quebrada.",
+        "price": 27000,
+        "stock": 11,
+        "category_id": 3,
+        "image_url": "/media/productos/tarta_manzana.jpg",
+        "type": "physical",
+        "weight": 1.0
+    },
+    {
+        "id": 110,
+        "title": "Torta Arcoíris Infantil",
+        "description": "Seis capas de colores vibrantes con crema de mantequilla de vainilla. Perfecta para cumpleaños.",
+        "price": 40000,
+        "stock": 5,
+        "category_id": 4,
+        "image_url": "/media/productos/torta_arcoiris.jpg",
+        "type": "physical",
+        "weight": 2.0
     }
 ]

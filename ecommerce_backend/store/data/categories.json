@@ -1,14 +1,18 @@
 [
     {
         "id": 1,
-        "name": "Hardware"
+        "name": "Tortas Clásicas"
     },
     {
         "id": 2,
-        "name": "Software"
+        "name": "Postres Fríos/Cheesecakes"
     },
     {
         "id": 3,
-        "name": "Libros"
+        "name": "Tartas y Paes"
+    },
+    {
+        "id": 4,
+        "name": "Tortas de Celebración"
     }
 ]
