@@ -23,11 +23,11 @@ local_settings.py
 
 # Ignorar archivos temporales de requests, como peticiones.http
 # Si este archivo no contiene información sensible y quieres versionarlo, bórralo de esta lista.
-peticiones.http
+!peticiones.http
 
 # Archivos generados de requerimientos
 # Si quieres que 'requirements.txt' sea versionado, asegúrate de que no esté en la lista.
 # Si tienes archivos generados automáticamente como 'requirements.txt', puedes ignorarlos.
 # Si no, es una buena práctica incluir 'requirements.txt' en el repositorio.
 # Para tu caso, si 'requirements.txt' es el que se genera automáticamente, se ignoraría.
-requirements.txt
+!requirements.txt
