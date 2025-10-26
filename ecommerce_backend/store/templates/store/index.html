@@ -1,0 +1,90 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Inicio{% endblock title %}
+
+{% block content %}
+
+<main role="main" class="container mt-3">
+    
+    <!-- Sección de Bienvenida e Información del Curso -->
+    <div class="starter-template text-center py-5">
+        <h2 class="mt-5 display-4 text-warning">¡Bienvenidos a Quiero Algo Dulce!</h2>
+        <p class="lead text-light">Tu tienda online de repostería artesanal.</p>
+        <hr class="w-50 mx-auto border-warning">
+        
+        <div class="text-secondary small mt-4 p-3 border rounded">
+            <h3 class="mb-2">Detalles del Proyecto</h3>
+            <p class="mb-1"><em>Este es un sitio e-commerce construido con Django / Python.</em></p>
+            <hr class="my-2">
+            <p class="mb-0">Grupo: N° <strong class="text-light"> </strong></p>
+            <p class="mb-0">Universidad Nacional de Jujuy Facultad de Ingenieria</p>
+        </div>
+    </div>
+    
+    <!-- Sección de Categorías -->
+    <h3 class="text-center mt-5 mb-4 text-warning">Explora Nuestras Categorías</h3>
+    
+    <div class="row g-4 justify-content-center pb-5">
+        
+        {% comment %} Tarjeta 1: Tortas {% endcomment %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <a href="{% url 'product-list' %}" class="text-decoration-none">
+                <div class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300">
+                    <div class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center" style="height: 150px;">
+                        <img class="img-fluid" src="{% static 'myapp/LogoQAD1.png' %} " alt="Tortas" style="object-fit: cover; width: 100%; height: 100%;">
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="card-text fw-bold">Tortas</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+
+        {% comment %} Tarjeta 2: Desayunos {% endcomment %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <a href="{% url 'product-list' %}" class="text-decoration-none">
+                <div class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300">
+                    <div class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center" style="height: 150px;">
+                        <img class="img-fluid" src="{% static 'myapp/LogoQAD1.png' %} " alt="Desayunos" style="object-fit: cover; width: 100%; height: 100%;">
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="card-text fw-bold">Desayunos</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        {% comment %} Tarjeta 3: Catering {% endcomment %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <a href="{% url 'product-list' %}" class="text-decoration-none">
+                <div class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300">
+                    <div class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center" style="height: 150px;">
+                        <img class="img-fluid" src="{% static 'myapp/LogoQAD1.png' %} " alt="Catering" style="object-fit: cover; width: 100%; height: 100%;">
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="card-text fw-bold">Catering</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        {% comment %} Tarjeta 4: Tartas {% endcomment %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <a href="{% url 'product-list' %}" class="text-decoration-none">
+                <div class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300">
+                    <div class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center" style="height: 150px;">
+                        <img class="img-fluid" src="{% static 'myapp/LogoQAD1.png' %} " alt="Tartas" style="object-fit: cover; width: 100%; height: 100%;">
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="card-text fw-bold">Tartas</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+    </div>
+</main>
+
+{% endblock content %}
