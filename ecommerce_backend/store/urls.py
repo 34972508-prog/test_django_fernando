@@ -1,6 +1,7 @@
 from django.urls import path
 from django.views.generic import TemplateView
-from .views import ProductListCreateAPIView, ProductDetailAPIView, AdminProductView 
+from .views import ProductListCreateAPIView, ProductDetailAPIView, AdminProductView, ProductFormView, DeleteProductHTMLView # Importa la nueva vista
+
 
 
 urlpatterns = [
@@ -15,4 +16,8 @@ urlpatterns = [
     path('products/', ProductListCreateAPIView.as_view(), name='product-list'),
     path('products/<int:pk>/', ProductDetailAPIView.as_view(), name='product-detail'),
     path('admin-view/', AdminProductView.as_view(), name='admin-product-view'),
+
+    path('product/new/', ProductFormView.as_view(), name='product-create'),
+    path('product/edit/<int:pk>/', ProductFormView.as_view(), name='product-edit'),
+    path('product/delete/<int:pk>/', DeleteProductHTMLView.as_view(), name='product-delete-html'),
 ]

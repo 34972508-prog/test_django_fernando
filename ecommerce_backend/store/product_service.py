@@ -102,23 +102,80 @@ class ProductService:
             # Captura si falta 'weight' o si falla la validación (price/stock)
             return None
 
+
     def update_product(self, product_id, data):
+        #print(f"🔧 DEBUG update_product: ID={product_id}, data={data}")
+        
         product_obj = next((p for p in self._products if p.product_id == product_id), None)
-        if not product_obj: return None
+        if not product_obj: 
+            #print(f"❌ Producto con ID {product_id} no encontrado")
+            return None
         
         try:
-            for key, value in data.items():
-                if hasattr(product_obj, key):
-                    setattr(product_obj, key, value)
-                elif key == 'category_id' and self.get_category_by_id(value):
-                    setattr(product_obj, '_category_id', value)
-        
+            # Campos permitidos y cómo actualizarlos
+            updates_applied = {}
+            
+            # 1. Actualizar título
+            if 'title' in data and data['title']:
+                product_obj.title = data['title']
+                updates_applied['title'] = data['title']
+            
+            # 2. Actualizar descripción
+            if 'description' in data:
+                product_obj.description = data['description']
+                updates_applied['description'] = data['description']
+            
+            # 3. Actualizar precio
+            if 'price' in data and data['price'] is not None:
+                product_obj.price = float(data['price'])
+                updates_applied['price'] = data['price']
+            
+            # 4. Actualizar stock
+            if 'stock' in data and data['stock'] is not None:
+                product_obj.stock = int(data['stock'])
+                updates_applied['stock'] = data['stock']
+            
+            # 5. Actualizar categoría (atributo interno)
+            if 'category_id' in data and data['category_id'] is not None:
+                category_id = int(data['category_id'])
+                if self.get_category_by_id(category_id):
+                    product_obj._category_id = category_id
+                    updates_applied['category_id'] = category_id
+                #else:
+                    #print(f"⚠️  Categoría ID {category_id} no existe, se mantiene la actual")
+            
+            # 6. Actualizar imagen
+            if 'image_url' in data:
+                product_obj.image_url = data['image_url']
+                updates_applied['image_url'] = data['image_url']
+            
+            # 7. Actualizar peso (solo para CakeProduct)
+            if 'weight' in data and data['weight'] is not None and hasattr(product_obj, 'weight'):
+                product_obj.weight = float(data['weight'])
+                updates_applied['weight'] = data['weight']
+            
+            #print(f"✅ Updates aplicados: {updates_applied}")
+            
+            # Guardar cambios
             self._save_products_to_file()
-            return product_obj.to_dict()
-        except ValueError:
+            
+            # Devolver el producto actualizado
+            updated_product = product_obj.to_dict()
+            #print(f"✅ Producto actualizado: {updated_product}")
+            
+            return updated_product
+            
+        except ValueError as e:
+            #print(f"❌ Error de validación en update_product: {e}")
+            return None
+        except Exception as e:
+            #print(f"❌ Error inesperado en update_product: {e}")
+            import traceback
+            traceback.print_exc()
             return None
 
     def delete_product(self, product_id):
+        #print(f"🔍 DELETE SERVICE llamado para producto {product_id}")
         product_obj = next((p for p in self._products if p.product_id == product_id), None)
         if product_obj:
             self._products.remove(product_obj)

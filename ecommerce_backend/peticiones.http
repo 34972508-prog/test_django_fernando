@@ -4,4 +4,6 @@
 GET {{base}}/api/products
 
 ### 
-GET {{base}}/api/products/2
+GET {{base}}/api/products/103
+###
+DELETE {{base}}/api/product/delete/110
