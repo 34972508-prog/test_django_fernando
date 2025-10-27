@@ -108,7 +108,7 @@ class ProductFormView(View):
             if not product_data:
                 messages.error(request, "Producto no encontrado")
                 return redirect('admin-product-view') # Producto no encontrado
-            form_title = f"Editar Producto (ID: {pk})"
+            form_title = f"Editar Producto "
         #else:
             #print("🔍 DEBUG: Modo CREACIÓN de nuevo producto")
         

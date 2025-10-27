@@ -17,6 +17,7 @@
     <link href="{% static 'myapp/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'myapp/_bootswatch.scss' %}" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'myapp/index.css' %}">
+    {% block extra_styles %}{% endblock extra_styles %}  <!-- para que se vean los botones de admin-view.html-->
 </head>
 
 <body class="d-flex flex-column min-vh-100">
