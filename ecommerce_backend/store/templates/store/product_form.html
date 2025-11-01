@@ -87,14 +87,29 @@
                                 step="0.1"
                             >
                         </div>
-                        
                         <div class="mb-4">
-                            <label for="image_url" class="form-label">URL Imagen:</label>
-                            <input type="text" id="image_url" name="image_url" 
-                                class="form-control" 
-                                value="{{ product.image_url|default:'' }}"
-                            >
+                            <label for="image_url" class="form-label">URL de la imagen:</label>
+                                {% if product.image_url %}
+                                    <div class="mb-2">
+                                        <img src="{{ product.image_url }}" alt="imagen" style="max-width:200px; max-height:200px; object-fit:cover;">
+                                    </div>
+                                {% endif %}
+                                <input type="url" id="image_url" name="image_url" placeholder="https://ejemplo.com/imagen.jpg"
+                                value="{{ product.image_url|default:'' }}" class="form-control">
+                            <small class="form-text text-muted">Pega aquí la URL de la imagen (http/https).</small>
                         </div>
+                        
+                        <!--guardar una imagen
+                        <div class="mb-4">
+                           <label for="image" class="form-label">Imagen:</label>
+                            {% if product.image_url %}
+                                <div class="mb-2">
+                                    <img src="{{ product.image_url }}" alt="imagen" style="max-width:200px; max-height:200px; object-fit:cover;">
+                                </div>
+                            {% endif %}
+                            <input type="file" id="image" name="image" accept="image/*" class="form-control">
+                            <small class="form-text text-muted">Sube una imagen para el producto.</small>
+                        </div>-->
                         
                         <div class="d-flex justify-content-between align-items-center mt-3">
                             <button type="submit" class="btn btn-primary btn-lg">

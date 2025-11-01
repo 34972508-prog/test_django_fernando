@@ -3,10 +3,10 @@
         "id": 101,
         "title": "Torta Clásica de Chocolate",
         "description": "Exquisita torta de tres capas de bizcocho húmedo de chocolate con relleno de ganache intenso.",
-        "price": 35000,
-        "stock": 15,
+        "price": 35000.0,
+        "stock": 0,
         "category_id": 1,
-        "image_url": "/media/productos/torta_chocolate.jpg",
+        "image_url": "https://3.bp.blogspot.com/-tcb1UL2M3So/U3zj4eaKYjI/AAAAAAACND0/lazS68SNa5A/s1600/las-fotos-mas-lindas-y-hermosas-de-internet-fondos-y-wallpapers-gratis-para-compartir-imagenes-gratis+(7).jpg",
         "type": "cake",
         "weight": 1.5
     },
@@ -14,10 +14,10 @@
         "id": 102,
         "title": "Cheesecake de Frutos Rojos",
         "description": "Base de galleta, cremosa capa de queso y topping de coulis natural de frutos rojos.",
-        "price": 28500,
+        "price": 28500.0,
         "stock": 8,
         "category_id": 2,
-        "image_url": "/media/productos/cheesecake_frutos_rojos.jpg",
+        "image_url": "https://2.bp.blogspot.com/-_VS7i7Jnp-s/UcBdeNBKCqI/AAAAAAAB0W0/n6AlrQeZdwg/s1600/Amanecer-en-Alaska.jpg",
         "type": "cake",
         "weight": 1.2
     },
@@ -25,10 +25,10 @@
         "id": 103,
         "title": "Torta Red Velvet",
         "description": "Bizcocho de terciopelo rojo vibrante con una suave y ácida crema de queso (cream cheese frosting).",
-        "price": 32000,
+        "price": 32000.0,
         "stock": 12,
         "category_id": 1,
-        "image_url": "/media/productos/torta_red_velvet.jpg",
+        "image_url": "https://3.bp.blogspot.com/-DX9-ZpjN904/U_emMocc4uI/AAAAAAACR70/ll9TwkTijL4/s1600/saint-michael-church-brixen-1920x1200-wallpaper.jpg",
         "type": "cake",
         "weight": 1.4
     },
@@ -39,7 +39,7 @@
         "price": 25000,
         "stock": 10,
         "category_id": 3,
-        "image_url": "/media/productos/lemon_pie.jpg",
+        "image_url": "/media/lemon_pie.jpg",
         "type": "cake",
         "weight": 0.9
     },
@@ -50,7 +50,7 @@
         "price": 38000,
         "stock": 7,
         "category_id": 1,
-        "image_url": "/media/productos/torta_milhojas.jpg",
+        "image_url": "/media/cheesecake_frutos_rojos.jpg",
         "type": "cake",
         "weight": 1.6
     },
@@ -61,7 +61,7 @@
         "price": 29500,
         "stock": 9,
         "category_id": 2,
-        "image_url": "/media/productos/mousse_maracuya.jpg",
+        "image_url": "/media/mousse_maracuya.jpg",
         "type": "cake",
         "weight": 1.1
     },
@@ -72,7 +72,7 @@
         "price": 34000,
         "stock": 6,
         "category_id": 1,
-        "image_url": "/media/productos/torta_tres_leches.jpg",
+        "image_url": "/media/torta_tres_leches.jpg",
         "type": "cake",
         "weight": 1.7
     },
@@ -83,19 +83,19 @@
         "price": 27000,
         "stock": 11,
         "category_id": 3,
-        "image_url": "/media/productos/tarta_manzana.jpg",
+        "image_url": "/media/tarta_manzana.jpg",
         "type": "cake",
         "weight": 1.0
     },
     {
         "id": 110,
-        "title": "Torta Arcoíris Infantil",
-        "description": "Seis capas de colores vibrantes con crema de mantequilla de vainilla. Perfecta para cumpleaños.",
-        "price": 50003.0,
-        "stock": 5,
-        "category_id": 4,
-        "image_url": "/media/productos/torta_arcoiris.jpg",
+        "title": "prueba",
+        "description": "hola",
+        "price": 35555.0,
+        "stock": 20,
+        "category_id": 1,
+        "image_url": "https://tse2.mm.bing.net/th/id/OIP.9nF0JvIjsHkIb_wdENR3QAHaE8?rs=1&pid=ImgDetMain&o=7&rm=3",
         "type": "cake",
-        "weight": 2.0
+        "weight": 15.0
     }
 ]

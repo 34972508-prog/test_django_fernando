@@ -1,6 +1,10 @@
 from django.urls import path
 from django.views.generic import TemplateView
-from .views import ProductListCreateAPIView, ProductDetailAPIView, AdminProductView, ProductFormView, DeleteProductHTMLView # Importa la nueva vista
+from .views import ProductListCreateAPIView, ProductDetailAPIView, AdminProductView,\
+    ProductFormView, DeleteProductHTMLView, List_productView,\
+    ProductDetailHTMLView 
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 
@@ -20,4 +24,12 @@ urlpatterns = [
     path('product/new/', ProductFormView.as_view(), name='product-create'),
     path('product/edit/<int:pk>/', ProductFormView.as_view(), name='product-edit'),
     path('product/delete/<int:pk>/', DeleteProductHTMLView.as_view(), name='product-delete-html'),
+
+    # Nuevas rutas para el usuario final en HTML
+    path('products/list', List_productView.as_view(), name='product-list-html'),  # Nueva ruta para listar productos en HTML
+    path('products/<int:pk>/view/', ProductDetailHTMLView.as_view(), name='product-detail-html'),  # ruta detalle HTML
+    
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

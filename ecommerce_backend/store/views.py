@@ -1,4 +1,5 @@
 # store/views.py
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,6 +12,13 @@ from .decorators import admin_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
+
+from django.core.files.storage import FileSystemStorage
+from uuid import uuid4
+import os
+
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 
 
@@ -89,6 +97,7 @@ class ProductFormView(View):
     Vista dedicada para mostrar el formulario de creación o edición, 
     y manejar el envío (POST) de esos formularios.
     """
+    
     #@method_decorator(admin_required)
     def get(self, request, pk=None):  # CAMBIA *args, **kwargs por parámetros explícitos def get(self, request, *args, **kwargs):
         #print("🔍 DEBUG: ProductFormView.get() llamado")
@@ -138,7 +147,7 @@ class ProductFormView(View):
         category_id = request.POST.get('category_id')
         price = request.POST.get('price')
         stock = request.POST.get('stock')
-        image_url = request.POST.get('image_url')
+        #image_url = request.POST.get('image_url')
         weight = request.POST.get('weight')
 
         #print(f"🔍 DEBUG: Datos del formulario:")
@@ -149,7 +158,28 @@ class ProductFormView(View):
         #print(f"  stock: {stock}")
         #print(f"  image_url: {image_url}")
         #print(f"  weight: {weight}")
-
+        # Manejo de la imagen subida
+        image_file = request.FILES.get('image')
+        image_url = request.POST.get('image_url', '')  # fallback si lo tienes
+        if image_file:
+            try:
+                # Genera un nombre único usando UUID
+                file_name = f"productos/{uuid4().hex}{os.path.splitext(image_file.name)[1]}"
+                # Guarda el archivo
+                path = default_storage.save(file_name, ContentFile(image_file.read()))
+                # Obtiene la URL
+                image_url = default_storage.url(path)
+            except Exception as e:
+                messages.error(request, f"Error al subir la imagen: {str(e)}")
+            return redirect('product-create' if not pk else 'product-edit', pk=pk)
+        """ productos_dir = os.path.join(settings.MEDIA_ROOT, 'productos')
+            os.makedirs(productos_dir, exist_ok=True)
+            fs = FileSystemStorage(location=productos_dir, base_url=settings.MEDIA_URL + 'productos/')
+            ext = os.path.splitext(image_file.name)[1]
+            filename = f"{uuid4().hex}{ext}"
+            saved_name = fs.save(filename, image_file)
+            image_url = fs.base_url + saved_name  # e.g. /media/productos/<file>
+"""
         # Validaciones básicas
         if not title or not price or not stock:
             error_msg = "Título, precio y stock son campos obligatorios"
@@ -219,3 +249,50 @@ class DeleteProductHTMLView(View):
             messages.error(request, f"Error al eliminar el producto")
         
         return redirect('admin-product-view')
+class List_productView(View):
+    """
+    Vista para listar productos en HTML
+    Responde a la URL: /products/list
+    """
+    def get(self, request):
+        service = ProductService()
+        productos = service.get_all_products()
+        
+        #NORMALISA LAS RUTAS DE LAS IMAGENES
+        for p in productos:
+            img = p.get('image_url') or ''
+            if img.startswith('/media/productos/'):
+                p['image_url'] = settings.MEDIA_URL + img.split('/media/productos/')[-1]
+            elif img and not (img.startswith('http://') or img.startswith('https://') or img.startswith(settings.MEDIA_URL)):
+                # opción: si la ruta es relativa, la preparamos con MEDIA_URL
+                p['image_url'] = settings.MEDIA_URL + img.lstrip('/')
+        
+        context = {
+            'productos': productos,
+            'titulo': 'Catálogo de Productos'
+        }
+        return render(request, 'store/list_procuct.html', context)
+class ProductDetailHTMLView(View):
+    """
+    Muestra la página detalle de un producto (HTML).
+    URL: /products/<pk>/view/  (nombre: product-detail-html)
+    """
+    def get(self, request, pk):
+        service = ProductService()
+        product = service.get_product_by_id(pk)
+        if not product:
+            messages.error(request, "Producto no encontrado")
+            return redirect('product-list-html')
+
+        # Normalizar ruta de imagen igual que en el listado
+        img = product.get('image_url') or ''
+        if img.startswith('/media/productos/'):
+            product['image_url'] = settings.MEDIA_URL + img.split('/media/productos/')[-1]
+        elif img and not (img.startswith('http://') or img.startswith('https://') or img.startswith(settings.MEDIA_URL)):
+            product['image_url'] = settings.MEDIA_URL + img.lstrip('/')
+
+        context = {
+            'producto': product,
+            'titulo': product.get('title', 'Detalle del producto')
+        }
+        return render(request, 'store/product_detail.html', context)
