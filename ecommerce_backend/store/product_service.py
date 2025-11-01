@@ -52,6 +52,7 @@ class ProductService:
             os.makedirs(os.path.dirname(PRODUCTS_FILE), exist_ok=True)
             return []
 
+    #servicio actualiza json
     def _save_products_to_file(self):
         products_as_dicts = [p.to_dict() for p in self._products]
         

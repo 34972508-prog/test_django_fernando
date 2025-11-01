@@ -39,7 +39,7 @@
         "price": 25000,
         "stock": 10,
         "category_id": 3,
-        "image_url": "/media/lemon_pie.jpg",
+        "image_url": "/api/media/productos/lemon_pie.jpg",
         "type": "cake",
         "weight": 0.9
     },
@@ -50,7 +50,7 @@
         "price": 38000,
         "stock": 7,
         "category_id": 1,
-        "image_url": "/media/cheesecake_frutos_rojos.jpg",
+        "image_url": "/api/media/productos/torta.jpeg",
         "type": "cake",
         "weight": 1.6
     },
@@ -61,7 +61,7 @@
         "price": 29500,
         "stock": 9,
         "category_id": 2,
-        "image_url": "/media/mousse_maracuya.jpg",
+        "image_url": "/api/media/productos/mousse_maracuya.jpg",
         "type": "cake",
         "weight": 1.1
     },
@@ -72,7 +72,7 @@
         "price": 34000,
         "stock": 6,
         "category_id": 1,
-        "image_url": "/media/torta_tres_leches.jpg",
+        "image_url": "/api/media/productos/torta.jpeg",
         "type": "cake",
         "weight": 1.7
     },
@@ -83,7 +83,7 @@
         "price": 27000,
         "stock": 11,
         "category_id": 3,
-        "image_url": "/media/tarta_manzana.jpg",
+        "image_url": "/api/media/productos/tarta_manzana.jpg",
         "type": "cake",
         "weight": 1.0
     },
