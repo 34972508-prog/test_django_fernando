@@ -23,7 +23,7 @@
                         {% endfor %}
                     {% endif %}
 
-                    <form method="post" class="needs-validation" novalidate>
+                    <form method="post" class="needs-validation" novalidate enctype="multipart/form-data">
                         {% csrf_token %}
                         
                         <div class="mb-3">
@@ -87,17 +87,27 @@
                                 step="0.1"
                             >
                         </div>
+
                         <div class="mb-4">
-                            <label for="image_url" class="form-label">URL de la imagen:</label>
-                                {% if product.image_url %}
-                                    <div class="mb-2">
-                                        <img src="{{ product.image_url }}" alt="imagen" style="max-width:200px; max-height:200px; object-fit:cover;">
-                                    </div>
-                                {% endif %}
-                                <input type="url" id="image_url" name="image_url" placeholder="https://ejemplo.com/imagen.jpg"
+                            <label for="image_url" class="form-label">URL de la imagen (Externa):</label>
+                            {% if product.image_url %}
+                                <div class="mb-2">
+                                    <img src="{{ product.image_url }}" alt="imagen actual" style="max-width:200px; max-height:200px; object-fit:cover;">
+                                    <small class="d-block text-muted">Imagen actual. Sube un nuevo archivo o pega una URL para cambiarla.</small>
+                                </div>
+                            {% endif %}
+                            <input type="url" id="image_url" name="image_url" placeholder="https://ejemplo.com/imagen.jpg"
                                 value="{{ product.image_url|default:'' }}" class="form-control">
                             <small class="form-text text-muted">Pega aquí la URL de la imagen (http/https).</small>
                         </div>
+
+                        <div class="mb-4">
+                            <label for="image_file" class="form-label">Subir Archivo de Imagen:</label>
+                            <input type="file" id="image_file" name="image_file" accept="image/jpeg, image/jpg" class="form-control">
+                            <small class="form-text text-muted">Sube un archivo JPG o JPEG. Esto sobrescribirá la URL si está presente.</small>
+                        </div>
+                        
+
                         
                         <!--guardar una imagen
                         <div class="mb-4">

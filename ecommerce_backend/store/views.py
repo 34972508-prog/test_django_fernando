@@ -130,7 +130,7 @@ class ProductFormView(View):
         weight = request.POST.get('weight')
 
         # Manejo de la imagen subida
-        image_file = request.FILES.get('image')
+        image_file = request.FILES.get('image_file')
         # Mantiene la URL existente si no se sube una nueva
         image_url = request.POST.get('image_url', '') 
         
