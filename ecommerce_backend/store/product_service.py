@@ -29,8 +29,11 @@ class ProductService:
                 data = json.load(f)
                 products_list = []
                 for item in data:
+                    # Corrección: Usar self.get_category_by_id (el método de instancia)
                     category_id = item['category_id']
-                    if not self.get_category_by_id(category_id): continue
+                    # Asegurarse de que la categoría exista antes de cargar el producto
+                    if not next((c for c in self._categories if c.category_id == category_id), None):
+                        continue # Omite este producto si su categoría no está en self._categories
 
                     # Argumentos comunes (basados en el constructor de Product)
                     common_args = (
@@ -59,8 +62,67 @@ class ProductService:
         with open(PRODUCTS_FILE, 'w', encoding='utf-8') as f:
             json.dump(products_as_dicts, f, indent=4, ensure_ascii=False)
 
+    # --- Métodos de Categorías ---
+
+    def _save_categories_to_file(self):
+        """Guarda la lista actual de categorías en el archivo JSON."""
+        categories_as_dicts = [c.to_dict() for c in self._categories]
+        
+        with open(CATEGORIES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(categories_as_dicts, f, indent=4, ensure_ascii=False)
+
     def get_category_by_id(self, category_id):
-        return next((c for c in self._categories if c.category_id == category_id), None)
+        """Busca una categoría por ID y devuelve su diccionario."""
+        category = next((c for c in self._categories if c.category_id == category_id), None)
+        return category.to_dict() if category else None # Devuelve dict
+
+    def get_all_categories(self):
+        """Devuelve la lista de diccionarios de categorías."""
+        return [c.to_dict() for c in self._categories]
+  
+    def create_category(self, data):
+        """Crea un nuevo objeto Categoría y lo guarda en el JSON."""
+        try:
+            name = data.get('name')
+            if not name:
+                return None # Requiere un nombre
+
+            # Calcula el nuevo ID
+            new_id = max([c.category_id for c in self._categories], default=0) + 1
+            
+            new_category = Category(category_id=new_id, name=name)
+            
+            self._categories.append(new_category)
+            self._save_categories_to_file()
+            
+            return new_category.to_dict()
+        except Exception as e:
+            print(f"Error al crear categoría: {e}")
+            return None
+        
+    def update_category(self, category_id, data):
+        """Actualiza el nombre de una categoría existente."""
+        try:
+            # Busca el objeto real en la lista self._categories
+            category_in_list = next((c for c in self._categories if c.category_id == category_id), None)
+            
+            if not category_in_list:
+                print(f"Error: Categoría {category_id} no encontrada")
+                return None
+
+            new_name = data.get('name')
+            if new_name:
+                # Actualiza el atributo privado del objeto
+                category_in_list._name = new_name 
+                self._save_categories_to_file()
+                return category_in_list.to_dict()
+            
+            return None
+        except Exception as e:
+            print(f"Error al actualizar categoría: {e}")
+            return None
+
+    # --- Métodos de Productos ---
 
     def get_all_products(self, title_filter=None, category_id_filter=None):
         products_to_return = self._products
@@ -80,7 +142,10 @@ class ProductService:
     def create_product(self, data):
         new_id = max([p.product_id for p in self._products], default=0) + 1
         category_id = data.get('category_id')
-        if not self.get_category_by_id(category_id): return None
+        
+        # Verifica que la categoría exista usando la lista de objetos
+        if not next((c for c in self._categories if c.category_id == category_id), None):
+            return None
         
         common_args = (
             new_id,
@@ -94,13 +159,14 @@ class ProductService:
 
         try:
             # Instanciación directa de CakeProduct (asume que 'weight' está en 'data')
-            product = CakeProduct(*common_args, weight=data['weight'])
+            product = CakeProduct(*common_args, weight=data.get('weight')) # Usar .get para evitar KeyError
             
             self._products.append(product)
             self._save_products_to_file()
             return product.to_dict()
-        except (KeyError, ValueError):
+        except (KeyError, ValueError, TypeError) as e:
             # Captura si falta 'weight' o si falla la validación (price/stock)
+            print(f"Error en create_product: {e}")
             return None
 
 
@@ -139,7 +205,8 @@ class ProductService:
             # 5. Actualizar categoría (atributo interno)
             if 'category_id' in data and data['category_id'] is not None:
                 category_id = int(data['category_id'])
-                if self.get_category_by_id(category_id):
+                # Verifica que la categoría exista usando la lista de objetos
+                if next((c for c in self._categories if c.category_id == category_id), None):
                     product_obj._category_id = category_id
                     updates_applied['category_id'] = category_id
                 #else:
@@ -183,3 +250,26 @@ class ProductService:
             self._save_products_to_file()
             return True
         return False
+    
+
+    # --- MÉTODO NUEVO ---
+    def delete_category(self, category_id):
+        """Elimina una categoría si no está en uso por ningún producto."""
+        
+        # 1. Verificar si la categoría está en uso
+        # Usamos self._products (la lista de objetos)
+        is_in_use = any(p.category_id == category_id for p in self._products)
+        if is_in_use:
+            print(f"Error: Categoría {category_id} está en uso y no puede ser eliminada.")
+            return False # Indicar fallo (en uso)
+
+        # 2. Si no está en uso, proceder a eliminar
+        # Usamos self._categories (la lista de objetos)
+        category_obj = next((c for c in self._categories if c.category_id == category_id), None)
+        
+        if category_obj:
+            self._categories.remove(category_obj)
+            self._save_categories_to_file()
+            return True # Éxito
+        
+        return False # No encontrada

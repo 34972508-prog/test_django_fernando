@@ -10,8 +10,7 @@
                 
                 <div class="card shadow-lg p-4">
                     <h1 class="card-title text-center mb-4">{{ form_title }} 🍰</h1>
-                     <!-- Mostrar mensajes de Django -->
-                    {% if messages %}
+                     {% if messages %}
                         {% for message in messages %}
                             <div class="alert 
                                 {% if message.tags == 'error' %}alert-danger
@@ -52,14 +51,30 @@
 
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label for="category_id" class="form-label">ID Categoría:</label>
-                                <input type="number" id="category_id" name="category_id" 
-                                    class="form-control" 
-                                    value="{{ product.category_id|default:'' }}" 
-                                    required min="1"
-                                >
+                                <label for="category_id" class="form-label d-flex justify-content-between">
+                                    <span>Categoría: <span class="text-danger">*</span></span>
+                                    <a href="{% url 'category-create' %}" class="btn btn-outline-success btn-sm" style="--bs-btn-padding-y: .1rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">
+                                        (+) Nueva
+                                    </a>
+                                </label>
+                                
+                                <select id="category_id" name="category_id" class="form-select" required>
+                                    <option value="" disabled {% if not product.category_id %}selected{% endif %}>
+                                        Selecciona...
+                                    </option>
+                            
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}" 
+                                                {% if category.id == product.category_id %}selected{% endif %}>
+                                            {{ category.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                
+                                <div class="invalid-feedback">
+                                    Por favor, selecciona una categoría.
+                                </div>
                             </div>
-
                             <div class="col-md-4 mb-3">
                                 <label for="price" class="form-label">Precio ($):</label>
                                 <input type="number" id="price" name="price" 
@@ -90,10 +105,10 @@
 
                         <div class="mb-4">
                             <label for="image_url" class="form-label">URL de la imagen (Externa):</label>
-                            {% if product.image_url %}
+                            {% if product.image_url and not product.image_url|slice:":/media/" %}
                                 <div class="mb-2">
                                     <img src="{{ product.image_url }}" alt="imagen actual" style="max-width:200px; max-height:200px; object-fit:cover;">
-                                    <small class="d-block text-muted">Imagen actual. Sube un nuevo archivo o pega una URL para cambiarla.</small>
+                                    <small class="d-block text-muted">Imagen actual (URL Externa). Sube un archivo para cambiarla.</small>
                                 </div>
                             {% endif %}
                             <input type="url" id="image_url" name="image_url" placeholder="https://ejemplo.com/imagen.jpg"
@@ -103,23 +118,15 @@
 
                         <div class="mb-4">
                             <label for="image_file" class="form-label">Subir Archivo de Imagen:</label>
+                            {% if product.image_url and product.image_url|slice:":/media/" %}
+                                <div class="mb-2">
+                                    <img src="{{ product.image_url }}" alt="imagen actual" style="max-width:200px; max-height:200px; object-fit:cover;">
+                                    <small class="d-block text-muted">Imagen actual (Subida). Sube un nuevo archivo para reemplazarla.</small>
+                                </div>
+                            {% endif %}
                             <input type="file" id="image_file" name="image_file" accept="image/jpeg, image/jpg" class="form-control">
                             <small class="form-text text-muted">Sube un archivo JPG o JPEG. Esto sobrescribirá la URL si está presente.</small>
                         </div>
-                        
-
-                        
-                        <!--guardar una imagen
-                        <div class="mb-4">
-                           <label for="image" class="form-label">Imagen:</label>
-                            {% if product.image_url %}
-                                <div class="mb-2">
-                                    <img src="{{ product.image_url }}" alt="imagen" style="max-width:200px; max-height:200px; object-fit:cover;">
-                                </div>
-                            {% endif %}
-                            <input type="file" id="image" name="image" accept="image/*" class="form-control">
-                            <small class="form-text text-muted">Sube una imagen para el producto.</small>
-                        </div>-->
                         
                         <div class="d-flex justify-content-between align-items-center mt-3">
                             <button type="submit" class="btn btn-primary btn-lg">
@@ -136,6 +143,7 @@
         </div>
     </div>
 {% endblock content %}
+
 {% block extra_scripts %}
 <script>
     // Ejemplo de cómo desactivar el envío si hay campos inválidos

@@ -77,16 +77,31 @@ class ProductDetailAPIView(APIView):
         if service.delete_product(pk):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_404_NOT_FOUND)
-    
+
+# --- VISTAS HTML PARA PRODUCTOS ---
+
+# 🛑 INICIO DE LA CORRECCIÓN EN views.py 🛑
 class AdminProductView(View):
     def get(self, request):
         service = ProductService()
         all_products = service.get_all_products()
+        
+        # --- MEJORA: Obtener nombres de categorías ---
+        all_categories = service.get_all_categories()
+        # Convertir a un mapa para búsqueda rápida: {1: 'Tortas', 2: 'Postres'}
+        category_map = {cat['id']: cat['name'] for cat in all_categories}
+        
+        # Añadir el nombre de la categoría a cada producto
+        for product in all_products:
+            product['category_name'] = category_map.get(product['category_id'], 'Sin Categoría')
+        # --- FIN DE LA MEJORA ---
 
         context = {
             'products': all_products,
         }
         return render(request, 'store/admin_products.html', context)
+# 🛑 FIN DE LA CORRECCIÓN EN views.py 🛑
+
 
 class ProductFormView(View):
     """
@@ -98,6 +113,9 @@ class ProductFormView(View):
     def get(self, request, pk=None):
         service = ProductService()
 
+        # Pide las categorías para el combo
+        all_categories = service.get_all_categories() 
+       
         product_data = None
         form_title = "Crear Nuevo Producto"
 
@@ -113,7 +131,8 @@ class ProductFormView(View):
             'form_title': form_title,
             'product': product_data,
             'is_edit': pk is not None,
-            'pk': pk
+            'pk': pk,
+            'categories': all_categories  # Pásalas al template
         }
         return render(request, 'store/product_form.html', context)
 
@@ -150,11 +169,9 @@ class ProductFormView(View):
                 # Si falla la subida, se devuelve el control al formulario
                 return redirect('product-create' if not pk else 'product-edit', pk=pk)
             
-            # 🛑 CORRECCIÓN: Se elimina el 'return redirect' de éxito que interrumpía la creación/actualización.
-            
         # Validaciones básicas
-        if not title or not price or not stock:
-            error_msg = "Título, precio y stock son campos obligatorios"
+        if not title or not price or not stock or not category_id:
+            error_msg = "Título, categoría, precio y stock son campos obligatorios"
             messages.error(request, error_msg)
             if pk:
                 return redirect('product-edit', pk=pk)
@@ -166,7 +183,7 @@ class ProductFormView(View):
             product_data = {
                 'title': title,
                 'description': description or '',
-                'category_id': int(category_id) if category_id else 1,
+                'category_id': int(category_id),
                 'price': float(price),
                 'stock': int(stock),
                 'image_url': image_url or '', # Usa la URL/Path generada o la existente
@@ -216,21 +233,18 @@ class DeleteProductHTMLView(View):
 
 class List_productView(View):
     """
-    Vista para listar productos en HTML
+    Vista para listar productos en HTML (catálogo público)
     Responde a la URL: /products/list
     """
     def get(self, request):
         service = ProductService()
         productos = service.get_all_products()
         
-        # 🛑 CORRECCIÓN: Se elimina el bloque de normalización.
-        # Ahora se confía en que 'image_url' devuelto por el service es la ruta/URL correcta.
-        
         context = {
             'productos': productos,
             'titulo': 'Catálogo de Productos'
         }
-        return render(request, 'store/list_procuct.html', context)
+        return render(request, 'store/list_product.html', context)
 
 class ProductDetailHTMLView(View):
     """
@@ -243,12 +257,95 @@ class ProductDetailHTMLView(View):
         if not product:
             messages.error(request, "Producto no encontrado")
             return redirect('product-list-html')
-
-        # 🛑 CORRECCIÓN: Se elimina el bloque de normalización.
-        # Ahora se confía en que 'image_url' devuelto por el service es la ruta/URL correcta.
         
         context = {
             'producto': product,
             'titulo': product.get('title', 'Detalle del producto')
         }
         return render(request, 'store/product_detail.html', context)
+    
+
+# --- VISTAS HTML PARA CATEGORÍAS ---
+# (Estas vistas están correctas y no requieren cambios)
+
+class AdminCategoryView(View):
+    """
+    Vista para listar todas las categorías en una tabla HTML.
+    """
+    def get(self, request):
+        service = ProductService()
+        all_categories = service.get_all_categories()
+        context = {
+            'categories': all_categories,
+        }
+        return render(request, 'store/admin_categories.html', context)
+
+
+class CategoryFormView(View):
+    """
+    Vista para mostrar y procesar el formulario de
+    CREACIÓN o EDICIÓN de categorías.
+    """
+    
+    def get(self, request, pk=None):
+        service = ProductService()
+        category_data = None
+        form_title = "Crear Nueva Categoría"
+
+        if pk:
+            # Modo Edición: Obtenemos los datos de la categoría
+            category_data = service.get_category_by_id(pk)
+            if not category_data:
+                messages.error(request, "Categoría no encontrada")
+                return redirect('admin-category-view') # Redirige a la lista de categorías
+            form_title = f"Editar Categoría: {category_data.get('name')}"
+
+        context = {
+            'form_title': form_title,
+            'category': category_data,
+            'is_edit': pk is not None,
+            'pk': pk
+        }
+        return render(request, 'store/category_form.html', context)
+
+    def post(self, request, pk=None):
+        service = ProductService()
+        category_name = request.POST.get('name')
+
+        if not category_name:
+            messages.error(request, "El nombre de la categoría no puede estar vacío.")
+            return render(request, 'store/category_form.html', {'name': category_name})
+
+        if pk:
+            # Modo Edición (Actualizar)
+            updated_category = service.update_category(pk, {'name': category_name})
+            if updated_category:
+                messages.success(request, f"Categoría '{category_name}' actualizada exitosamente.")
+                return redirect('admin-category-view') # Redirige a la lista
+            else:
+                messages.error(request, "Error al actualizar la categoría.")
+                return redirect('category-edit', pk=pk)
+        else:
+            # Modo Creación
+            new_category = service.create_category({'name': category_name})
+            if new_category:
+                messages.success(request, f"Categoría '{category_name}' creada exitosamente.")
+                return redirect('admin-category-view') # Redirige a la lista
+            else:
+                messages.error(request, "Error al guardar la categoría.")
+                return render(request, 'store/category_form.html', {'name': category_name})
+
+class DeleteCategoryView(View):
+    """
+    Vista específica para eliminar categorías desde el HTML (POST).
+    """
+    def post(self, request, pk):
+        service = ProductService()
+        
+        if service.delete_category(pk):
+            messages.success(request, f"Categoría eliminada exitosamente.")
+        else:
+            # El servicio devuelve False si no se encuentra o si está en uso
+            messages.error(request, f"Error al eliminar la categoría. Asegúrate de que no esté en uso por ningún producto.")
+        
+        return redirect('admin-category-view') # Redirige a la lista de categorías
