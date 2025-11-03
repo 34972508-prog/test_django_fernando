@@ -2,7 +2,7 @@ from django.urls import path
 from django.views.generic import TemplateView
 from .views import ProductListCreateAPIView, ProductDetailAPIView, AdminProductView,\
     ProductFormView, DeleteProductHTMLView, List_productView,\
-    ProductDetailHTMLView 
+    ProductDetailHTMLView, CartView
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -29,6 +29,8 @@ urlpatterns = [
     path('products/list', List_productView.as_view(), name='product-list-html'),  # Nueva ruta para listar productos en HTML
     path('products/<int:pk>/view/', ProductDetailHTMLView.as_view(), name='product-detail-html'),  # ruta detalle HTML
     
+    # carrito 
+path('cart/', CartView.as_view(), name='cart'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

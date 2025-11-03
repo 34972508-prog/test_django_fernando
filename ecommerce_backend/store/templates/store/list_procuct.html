@@ -24,11 +24,26 @@
                         <p class="card-text text-danger">Agotado</p>
                     {% endif %}
                 </div>
-                <div class="card-footer">
-                    <a href="#" class="btn btn-primary btn-block">comprar</a>
-                    <a href="#" class="btn btn-primary btn-block">agregar carrito</a>
-                    <a href="{% url 'product-detail-html' producto.id %}" class="btn btn-primary btn-block">ver mas</a>
-                </div>
+                <!-- ...existing code... -->
+<div class="mt-3">
+    {% if producto.stock > 0 %}
+        <form method="post" action="{% url 'cart' %}" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add">
+            <input type="hidden" name="product_id" value="{{ producto.id }}">
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="btn btn-primary">Comprar</button>
+        </form>
+    {% endif %}
+    <form method="post" action="{% url 'cart' %}" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add">
+        <input type="hidden" name="product_id" value="{{ producto.id }}">
+        <input type="hidden" name="quantity" value="1">
+        <button type="submit" class="btn btn-outline-secondary">Agregar al carrito</button>
+    </form>
+</div>
+<!-- ...existing code... -->
             </div>
         </div>
         {% endfor %}

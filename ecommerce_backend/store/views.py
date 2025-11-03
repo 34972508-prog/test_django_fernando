@@ -296,3 +296,58 @@ class ProductDetailHTMLView(View):
             'titulo': product.get('title', 'Detalle del producto')
         }
         return render(request, 'store/product_detail.html', context)
+
+# ...existing code...
+
+class CartView(View):
+    def get(self, request):
+        # Obtener o crear carrito en sesión
+        cart = request.session.get('cart', {})
+        
+        # Obtener productos del carrito
+        service = ProductService()
+        cart_items = []
+        total = 0
+        
+        for product_id, quantity in cart.items():
+            product = service.get_product_by_id(int(product_id))
+            if product:
+                item_total = product['price'] * quantity
+                cart_items.append({
+                    'product': product,
+                    'quantity': quantity,
+                    'total': item_total
+                })
+                total += item_total
+        
+        context = {
+            'cart_items': cart_items,
+            'total': total
+        }
+        return render(request, 'store/cart.html', context)
+
+    def post(self, request):
+        action = request.POST.get('action')
+        product_id = request.POST.get('product_id')
+        
+        if not product_id:
+            messages.error(request, "Producto no válido")
+            return redirect('cart')
+            
+        cart = request.session.get('cart', {})
+        
+        if action == 'add':
+            quantity = int(request.POST.get('quantity', 1))
+            if product_id in cart:
+                cart[product_id] += quantity
+            else:
+                cart[product_id] = quantity
+            messages.success(request, "Producto agregado al carrito")
+            
+        elif action == 'remove':
+            if product_id in cart:
+                del cart[product_id]
+                messages.success(request, "Producto eliminado del carrito")
+                
+        request.session['cart'] = cart
+        return redirect('cart')
