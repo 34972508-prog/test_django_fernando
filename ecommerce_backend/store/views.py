@@ -268,7 +268,15 @@ class ProductDetailHTMLView(View):
             'producto': product,
             'titulo': product.get('title', 'Detalle del producto')
         }
-        return render(request, 'store/product_detail.html', context)
+        # 🔑 CLAVE: Determinar qué template renderizar
+        # Verificamos si la solicitud incluye el query param 'modal=true'
+        if request.GET.get('modal') == 'true':
+            # Si es una solicitud AJAX para el modal, devolvemos el fragmento
+            return render(request, 'store/product_detail_modal_fragment.html', context)
+        else:
+            # Si es navegación normal (vista de cliente), devolvemos la página completa
+            return render(request, 'store/product_detail.html', context)
+
     
    
 # (Estas vistas están correctas y no requieren cambios)
