@@ -26,7 +26,7 @@
     <!-- Se usó el color de fondo especificado en el código que enviaste -->
     <nav class="navbar navbar-expand-lg w-100" style="background-color: #f8f4f5;"> 
         <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'myapp/LogoQAD1.png' %}" alt="Logo"
+            <a class="navbar-brand" href="{% url 'home' %}"><img src="/api/media/productos/LogoQAD.png" alt="Logo"
                     style="width: 100px;"></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -39,10 +39,13 @@
                         <a class="nav-link active" href="{% url 'home' %}">Home</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'admin-product-view' %}">Admin</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'product-list-html' %}">Productos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="">Categorías</a>
+                        <a class="nav-link" href="{% url 'admin-category-view' %}">Categorías</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="">Eventos</a>

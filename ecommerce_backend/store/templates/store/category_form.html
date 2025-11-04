@@ -1,0 +1,52 @@
+{% extends 'store/base.html' %} 
+{% load static %}
+
+{% block title %}{{ form_title }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            
+            <div class="card shadow-lg p-4">
+                <h1 class="card-title text-center mb-4">{{ form_title }} 📋</h1>
+                
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert 
+                            {% if message.tags == 'error' %}alert-danger
+                            {% elif message.tags == 'success' %}alert-success
+                            {% else %}alert-info{% endif %}" role="alert"
+                        >
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nombre de la Categoría: <span class="text-danger">*</span></label>
+                        <input type="text" id="name" name="name" 
+                            class="form-control" 
+                            value="{{ category.name|default:'' }}"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            {% if is_edit %}Guardar Cambios{% else %}Guardar Categoría{% endif %}
+                        </button>
+                        
+                        <a href="{% url 'admin-category-view' %}" class="btn btn-secondary">
+                            Cancelar y Volver
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

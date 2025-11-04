@@ -1,0 +1,15 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4 text-center">
+    <div class="card p-5">
+        <h1 class="text-success mb-4">¡Gracias por tu compra!</h1>
+        <p class="lead">Tu pedido ha sido procesado con éxito.</p>
+        <p>Te hemos enviado un correo con los detalles de tu compra.</p>
+        <div class="mt-4">
+            <a href="{% url 'product-list-html' %}" class="btn btn-primary">Seguir Comprando</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

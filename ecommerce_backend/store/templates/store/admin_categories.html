@@ -1,17 +1,13 @@
 {% extends 'store/base.html' %} 
 {% load static %}
 
-{% block title %}Vista de Productos{% endblock %}
+{% block title %}Administrar Categorías{% endblock %}
 
 {% block content %}
     <div class="container my-4">
-        <h1 class="mb-4">Catálogo de Productos (Tortas) 🎂</h1>
+        <h1 class="mb-4">Gestión de Categorías 📋</h1>
         
-        {% if error_message %}
-            <div class="alert alert-danger" role="alert">
-                {{ error_message }}
-            </div>
-        {% elif messages %} 
+        {% if messages %} 
             {% for message in messages %}
                 <div
                     class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}"
@@ -23,7 +19,7 @@
         {% endif %}
 
         <div class="mb-3">
-            <a href="{% url 'product-create' %}" class="btn btn-primary d-inline-flex align-items-center">
+            <a href="{% url 'category-create' %}" class="btn btn-primary d-inline-flex align-items.center">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -40,39 +36,27 @@
                     <path d="M12 5l0 14" />
                     <path d="M5 12l14 0" />
                 </svg>
-                Crear Producto
+                Crear Categoría
             </a>
         </div>
-        
-        <p class="text-muted">
-            Esta tabla muestra los datos del catálogo cargado desde el servicio.
-        </p>
         
         <div class="table-responsive">
             <table class="table table-hover table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th class="text-center">ID</th>
-                        <th>Producto (Título)</th>
-                        <th>Descripción</th>
-                        <th>Categoría</th>
-                        <th class="text-center">Precio</th>
-                        <th class="text-center">Stock</th>
-                        <th class="text-center">Acciones</th> 
+                        <th class="text-center" style="width: 10%;">ID</th>
+                        <th>Nombre de la Categoría</th>
+                        <th class="text-center" style="width: 20%;">Acciones</th> 
                     </tr>
                 </thead>
                 <tbody>
-                    {% for product in products %}
+                    {% for category in categories %}
                     <tr class="align-middle">
-                        <td class="text-center">{{ product.id }}</td>
-                        <td>{{ product.title }}</td>
-                        <td>{{ product.description }}</td> 
-                        <td>{{ product.category_name }}</td>
-                        <td class="text-center">${{ product.price }}</td>
-                        <td class="text-center">{{ product.stock }}</td>
+                        <td class="text-center">{{ category.id }}</td>
+                        <td>{{ category.name }}</td>
 
                         <td class="d-flex justify-content-center gap-2">
-                            <a href="{% url 'product-edit' pk=product.id %}" title="Editar" class="btn btn-sm btn-info text-white">
+                            <a href="{% url 'category-edit' pk=category.id %}" title="Editar" class="btn btn-sm btn-info text-white">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                     <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
@@ -83,11 +67,11 @@
 
                             <form
                                 method="POST"
-                                action="{% url 'product-delete-html' pk=product.id %}"
+                                action="{% url 'category-delete-html' pk=category.id %}"
                                 style="display: inline"
-                                onsubmit="return confirm('¿Estás seguro de eliminar {{ product.title }}?')"
+                                onsubmit="return confirm('¿Estás seguro de eliminar la categoría \'{{ category.name|addslashes }}\'? Esta acción no se puede deshacer.')"
                             >
-                                {% csrf_token %}
+                            {% csrf_token %}
                                 <button
                                     type="submit"
                                     title="Eliminar"
@@ -103,20 +87,12 @@
                                     </svg>
                                 </button>
                             </form>
-                            
-                            <a href="{% url 'product-detail-html' pk=product.id %}" title="Ver" class="btn btn-sm btn-primary">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                  <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                                  <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
-                                </svg>
-                            </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center text-muted">
-                            No hay productos registrados.
+                        <td colspan="3" class="text-center text-muted">
+                            No hay categorías registradas.
                         </td>
                     </tr>
                     {% endfor %}
@@ -126,17 +102,3 @@
     </div>
 
 {% endblock content %}
-
-{% block extra_styles %}
-    <style>
-        .table td {
-            vertical-align: middle; /* Centra verticalmente el contenido de la celda */
-        }
-        td:nth-child(3) { /* Selecciona la columna de Descripción */
-            max-width: 250px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    </style>
-{% endblock extra_styles %}
