@@ -1,13 +1,8 @@
-[{"name": "tipo1",
-"user":"tipo1",
-"pasword":"123456"},
-{"name": "tipo1",
-"user":"tipo1",
-"pasword":"123456"},
-
+[
     {
-    "name": "tipo1",
-    "user":"tipo1",
-    "pasword":"123456"
+        "id": 1,
+        "username": "admin",
+        "password": "adminpassword123",
+        "role": "admin"
     }
 ]

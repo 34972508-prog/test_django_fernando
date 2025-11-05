@@ -13,12 +13,18 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib import messages
 
+# ... (imports existentes)
+from .user_service import UserService # <-- AÑADIR
+from django.contrib import messages # <-- AÑADIR
+
 # Se usan default_storage para el manejo de archivos local o en la nube (S3)
 from uuid import uuid4
 import os
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
+# ... (imports existentes)
+from .mixins import AdminRequiredMixin # <-- AÑADIR
 
 class ProductListCreateAPIView(APIView):
     """
@@ -81,7 +87,7 @@ class ProductDetailAPIView(APIView):
 # --- VISTAS HTML PARA PRODUCTOS ---
 
 # 🛑 INICIO DE LA CORRECCIÓN EN views.py 🛑
-class AdminProductView(View):
+class AdminProductView(AdminRequiredMixin,View):
     def get(self, request):
         service = ProductService()
         all_products = service.get_all_products()
@@ -103,7 +109,7 @@ class AdminProductView(View):
 # 🛑 FIN DE LA CORRECCIÓN EN views.py 🛑
 
 
-class ProductFormView(View):
+class ProductFormView(AdminRequiredMixin,View):
     """
     Vista dedicada para mostrar el formulario de creación o edición, 
     y manejar el envío (POST) de esos formularios.
@@ -216,7 +222,7 @@ class ProductFormView(View):
                 messages.error(request, "Error al actualizar el producto")
                 return redirect('product-edit', pk=pk)
 
-class DeleteProductHTMLView(View):
+class DeleteProductHTMLView(AdminRequiredMixin,View):
     """
     Vista específica para eliminar productos desde el HTML
     """
@@ -268,7 +274,7 @@ class ProductDetailHTMLView(View):
 # --- VISTAS HTML PARA CATEGORÍAS ---
 # (Estas vistas están correctas y no requieren cambios)
 
-class AdminCategoryView(View):
+class AdminCategoryView(AdminRequiredMixin,View):
     """
     Vista para listar todas las categorías en una tabla HTML.
     """
@@ -281,7 +287,7 @@ class AdminCategoryView(View):
         return render(request, 'store/admin_categories.html', context)
 
 
-class CategoryFormView(View):
+class CategoryFormView(AdminRequiredMixin,View):
     """
     Vista para mostrar y procesar el formulario de
     CREACIÓN o EDICIÓN de categorías.
@@ -335,7 +341,7 @@ class CategoryFormView(View):
                 messages.error(request, "Error al guardar la categoría.")
                 return render(request, 'store/category_form.html', {'name': category_name})
 
-class DeleteCategoryView(View):
+class DeleteCategoryView(AdminRequiredMixin,View):
     """
     Vista específica para eliminar categorías desde el HTML (POST).
     """
@@ -349,3 +355,102 @@ class DeleteCategoryView(View):
             messages.error(request, f"Error al eliminar la categoría. Asegúrate de que no esté en uso por ningún producto.")
         
         return redirect('admin-category-view') # Redirige a la lista de categorías
+    
+
+
+    # --- VISTAS DE AUTENTICACIÓN (Simuladas con JSON) ---
+
+# --- DENTRO DE store/views.py ---
+
+    # ... (deja todas las otras vistas como están) ...
+
+    # =======================================
+    # VISTAS DE AUTENTICACIÓN (Simuladas con JSON)
+    # =======================================
+
+class LoginView(View):
+    
+    def get(self, request):
+        if request.session.get('user_id'):
+            return redirect('home')
+        return render(request, 'store/login.html')
+
+    def post(self, request):
+        service = UserService()
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        # 'user' es ahora un OBJETO (AdminUser o ClientUser) o None
+        user = service.get_user_by_username(username)
+        
+        # --- 🛑 ESTA ES LA CORRECCIÓN ---
+        # Cambiamos user['password'] por user.password
+        if user and user.password == password:
+            
+            # ¡ÉXITO! Guardamos las propiedades del OBJETO en la sesión
+            # Cambiamos ['id'] por .user_id
+            # Cambiamos ['username'] por .username
+            # Cambiamos ['role'] por .role
+            request.session['user_id'] = user.user_id
+            request.session['username'] = user.username
+            request.session['user_role'] = user.role
+            
+            messages.success(request, f"¡Bienvenido, {user.username}!")
+            
+            # Usamos la propiedad .role
+            if user.role == 'admin':
+                return redirect('admin-product-view')
+            else:
+                return redirect('product-list-html')
+        else:
+            # Fallo
+            messages.error(request, "Usuario o contraseña incorrectos.")
+            return render(request, 'store/login.html')
+
+# ... (El resto de las vistas RegisterView y LogoutView quedan igual) ...
+class RegisterView(View):
+    
+    def get(self, request):
+        if request.session.get('user_id'):
+            return redirect('home')
+        return render(request, 'store/register.html')
+
+    def post(self, request):
+        service = UserService()
+        username = request.POST.get('username')
+        pass1 = request.POST.get('password')
+        pass2 = request.POST.get('password2')
+        
+        if not username or not pass1 or not pass2:
+            messages.error(request, "Todos los campos son obligatorios.")
+            return render(request, 'store/register.html')
+            
+        if pass1 != pass2:
+            messages.error(request, "Las contraseñas no coinciden.")
+            return render(request, 'store/register.html')
+
+        # Intentar crear el usuario
+        new_user = service.create_user(username, pass1)
+        
+        if new_user:
+            # Loguear al usuario automáticamente
+            request.session['user_id'] = new_user['id']
+            request.session['username'] = new_user['username']
+            request.session['user_role'] = new_user['role']
+            
+            messages.success(request, "¡Registro exitoso! Has iniciado sesión.")
+            return redirect('product-list-html') # Redirigir a la lista de productos
+        else:
+            messages.error(request, "El nombre de usuario ya existe.")
+            return render(request, 'store/register.html')
+
+class LogoutView(View):
+    def get(self, request):
+        try:
+            # Limpiar la sesión de Django
+            request.session.flush()
+            messages.success(request, "Has cerrado sesión exitosamente.")
+        except Exception as e:
+            print(f"Error al cerrar sesión: {e}")
+            
+        return redirect('home')

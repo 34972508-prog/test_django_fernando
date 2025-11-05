@@ -120,3 +120,58 @@ class CakeProduct(Product):
         data = super().to_dict()
         data.update({"type": self.type, "weight": self._weight})
         return data
+
+# ===================================================
+# --- CLASES PARA USUARIOS (ESTO ES LO QUE FALTA) ---
+# ===================================================
+
+class BaseUser(ABC):
+    """
+    Clase base abstracta para todos los tipos de usuarios.
+    Define la estructura común.
+    """
+    def __init__(self, user_id, username, password):
+        self._user_id = user_id
+        self._username = username
+        self._password = password # ¡Inseguro! Solo para demo
+
+    @property
+    def user_id(self):
+        return self._user_id
+
+    @property
+    def username(self):
+        return self._username
+
+    @property
+    def password(self):
+        return self._password
+
+    @property
+    @abstractmethod
+    def role(self):
+        """Método abstracto que las clases hijas deben implementar."""
+        pass
+
+    def to_dict(self):
+        """Convierte el objeto a un diccionario para guardarlo en JSON."""
+        return {
+            "id": self._user_id,
+            "username": self._username,
+            "password": self._password,
+            "role": self.role # Llama a la propiedad de la clase hija
+        }
+
+class ClientUser(BaseUser):
+    """Implementación concreta para un usuario 'Cliente'."""
+    
+    @property
+    def role(self):
+        return "client"
+
+class AdminUser(BaseUser):
+    """Implementación concreta para un usuario 'Administrador'."""
+    
+    @property
+    def role(self):
+        return "admin"

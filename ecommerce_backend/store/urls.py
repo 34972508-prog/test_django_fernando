@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 from .views import ProductListCreateAPIView, ProductDetailAPIView, AdminProductView,\
     ProductFormView, DeleteProductHTMLView, List_productView,\
     ProductDetailHTMLView, CategoryFormView,\
-    AdminCategoryView, DeleteCategoryView
+    AdminCategoryView, DeleteCategoryView, LoginView, RegisterView, LogoutView
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -36,6 +36,10 @@ urlpatterns = [
     path('category/edit/<int:pk>/', CategoryFormView.as_view(), name='category-edit'),
     path('category/delete/<int:pk>/', DeleteCategoryView.as_view(), name='category-delete-html'), # <-- NUEVA
    
+   # --- RUTAS DE AUTENTICACIÓN SIMULADA ---
+    path('login/', LoginView.as_view(), name='login'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('logout/', LogoutView.as_view(), name='logout'),
     
 ]
 if settings.DEBUG:

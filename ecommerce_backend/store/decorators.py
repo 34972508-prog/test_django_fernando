@@ -6,36 +6,28 @@ import json
 
 def admin_required(view_func):
     """
-    Decorador que verifica si el usuario tiene un rol de administrador 
-    y es compatible con las vistas basadas en clases (View) de Django.
+    Decorador que verifica si el ROL DE ADMIN está en la SESIÓN de Django.
     """
     @wraps(view_func)
     def wrapper(self, request, *args, **kwargs):
         
-        # 🔑 Lógica de Autenticación:
-        # En el entorno de Django, el objeto 'request' se pasa directamente.
+        # --- NUEVA LÓGICA DE SESIÓN ---
         
-        # **NOTA IMPORTANTE:**
-        # Como estás simulando la autenticación con un header, 
-        # debemos chequear el header aquí. 
-        # En producción, esto se haría verificando request.user.is_staff o request.session.get('user_role').
+        # Verificamos el rol guardado en la sesión
+        user_role = request.session.get('user_role', None)
         
-        # Simulando la verificación del header 'Authorization'
-        auth_header = request.headers.get('Authorization', '')
-        
-        if auth_header.lower() == 'admin':
-            # Si la autenticación es exitosa, ejecuta la función de la vista (get, post)
+        if user_role == 'admin':
+            # Si es 'admin', ejecuta la función de la vista (get, post)
             return view_func(self, request, *args, **kwargs)
         else:
-            # Si falla la autenticación, devolvemos una respuesta 403 de Django
+            # Si no es admin (o no está logueado), devolvemos 403
             
-            # Prepara el JSON de error
             error_response = json.dumps({"error": "Acceso denegado. Se requiere rol de administrador."})
             
-            # Devuelve una respuesta HTTP 403 (Acceso Denegado) compatible con Django
+            # Devuelve una respuesta HTTP 403 (Acceso Denegado)
             return HttpResponseForbidden(
                 error_response, 
-                content_type='application/json' # Especifica el tipo de contenido
+                content_type='application/json'
             )
             
     return wrapper
