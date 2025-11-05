@@ -2,8 +2,8 @@ from django.urls import path
 from django.views.generic import TemplateView
 from .views import ProductListCreateAPIView, ProductDetailAPIView, AdminProductView,\
     ProductFormView, DeleteProductHTMLView, List_productView,\
-    ProductDetailHTMLView, CategoryFormView,\
-    AdminCategoryView, DeleteCategoryView
+    ProductDetailHTMLView, CartView, AdminCategoryView, CategoryFormView, DeleteCategoryView,\
+    CheckoutView,AdminCategoryView, DeleteCategoryView
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -37,6 +37,10 @@ urlpatterns = [
     path('category/delete/<int:pk>/', DeleteCategoryView.as_view(), name='category-delete-html'), # <-- NUEVA
    
     
+    # carrito 
+    path('cart/', CartView.as_view(), name='cart'),
+    path('checkout/', CheckoutView.as_view(), name='checkout'),
+    path('order-confirmation/', TemplateView.as_view(template_name='store/confirmacion_pago.html'), name='order-confirmation'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

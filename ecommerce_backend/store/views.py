@@ -264,8 +264,7 @@ class ProductDetailHTMLView(View):
         }
         return render(request, 'store/product_detail.html', context)
     
-
-# --- VISTAS HTML PARA CATEGORÍAS ---
+   
 # (Estas vistas están correctas y no requieren cambios)
 
 class AdminCategoryView(View):
@@ -349,3 +348,189 @@ class DeleteCategoryView(View):
             messages.error(request, f"Error al eliminar la categoría. Asegúrate de que no esté en uso por ningún producto.")
         
         return redirect('admin-category-view') # Redirige a la lista de categorías
+    
+
+    # --- VISTAS HTML PARA CATEGORÍAS ---
+# (Estas vistas están correctas y no requieren cambios)
+
+class AdminCategoryView(View):
+    """
+    Vista para listar todas las categorías en una tabla HTML.
+    """
+    def get(self, request):
+        service = ProductService()
+        all_categories = service.get_all_categories()
+        context = {
+            'categories': all_categories,
+        }
+        return render(request, 'store/admin_categories.html', context)
+    
+
+class CartView(View):
+    def get(self, request):
+        # Obtener o crear carrito en sesión
+        cart = request.session.get('cart', {})
+        
+        # Obtener productos del carrito
+        service = ProductService()
+        cart_items = []
+        total = 0
+        
+        for product_id, quantity in cart.items():
+            product = service.get_product_by_id(int(product_id))
+            if product:
+                item_total = product['price'] * quantity
+                cart_items.append({
+                    'product': product,
+                    'quantity': quantity,
+                    'total': item_total
+                })
+                total += item_total
+        
+        context = {
+            'cart_items': cart_items,
+            'total': total
+        }
+        return render(request, 'store/cart.html', context)
+
+    def post(self, request):
+        action = request.POST.get('action')
+        product_id = request.POST.get('product_id')
+        
+        if not product_id:
+            messages.error(request, "Producto no válido")
+            return redirect('cart')
+            
+        cart = request.session.get('cart', {})
+        
+        if action == 'add':
+            quantity = int(request.POST.get('quantity', 1))
+            if product_id in cart:
+                cart[product_id] += quantity
+            else:
+                cart[product_id] = quantity
+            messages.success(request, "Producto agregado al carrito")
+            
+        elif action == 'remove':
+            if product_id in cart:
+                del cart[product_id]
+                messages.success(request, "Producto eliminado del carrito")
+                
+        request.session['cart'] = cart
+        return redirect('cart')
+
+
+class CategoryFormView(View):
+    """
+    Vista para mostrar y procesar el formulario de
+    CREACIÓN o EDICIÓN de categorías.
+    """
+    
+    def get(self, request, pk=None):
+        service = ProductService()
+        category_data = None
+        form_title = "Crear Nueva Categoría"
+
+        if pk:
+            # Modo Edición: Obtenemos los datos de la categoría
+            category_data = service.get_category_by_id(pk)
+            if not category_data:
+                messages.error(request, "Categoría no encontrada")
+                return redirect('admin-category-view') # Redirige a la lista de categorías
+            form_title = f"Editar Categoría: {category_data.get('name')}"
+
+        context = {
+            'form_title': form_title,
+            'category': category_data,
+            'is_edit': pk is not None,
+            'pk': pk
+        }
+        return render(request, 'store/category_form.html', context)
+
+    def post(self, request, pk=None):
+        service = ProductService()
+        category_name = request.POST.get('name')
+
+        if not category_name:
+            messages.error(request, "El nombre de la categoría no puede estar vacío.")
+            return render(request, 'store/category_form.html', {'name': category_name})
+
+        if pk:
+            # Modo Edición (Actualizar)
+            updated_category = service.update_category(pk, {'name': category_name})
+            if updated_category:
+                messages.success(request, f"Categoría '{category_name}' actualizada exitosamente.")
+                return redirect('admin-category-view') # Redirige a la lista
+            else:
+                messages.error(request, "Error al actualizar la categoría.")
+                return redirect('category-edit', pk=pk)
+        else:
+            # Modo Creación
+            new_category = service.create_category({'name': category_name})
+            if new_category:
+                messages.success(request, f"Categoría '{category_name}' creada exitosamente.")
+                return redirect('admin-category-view') # Redirige a la lista
+            else:
+                messages.error(request, "Error al guardar la categoría.")
+                return render(request, 'store/category_form.html', {'name': category_name})
+
+class DeleteCategoryView(View):
+    """
+    Vista específica para eliminar categorías desde el HTML (POST).
+    """
+    def post(self, request, pk):
+        service = ProductService()
+        
+        if service.delete_category(pk):
+            messages.success(request, f"Categoría eliminada exitosamente.")
+        else:
+            # El servicio devuelve False si no se encuentra o si está en uso
+            messages.error(request, f"Error al eliminar la categoría. Asegúrate de que no esté en uso por ningún producto.")
+        
+        return redirect('admin-category-view') # Redirige a la lista de categorías
+# ...existing code...
+
+class CheckoutView(View):
+    def get(self, request):
+        cart = request.session.get('cart', {})
+        if not cart:
+            messages.warning(request, "Tu carrito está vacío")
+            return redirect('cart')
+            
+        service = ProductService()
+        cart_items = []
+        total = 0
+        
+        for product_id, quantity in cart.items():
+            product = service.get_product_by_id(int(product_id))
+            if product:
+                item_total = product['price'] * quantity
+                cart_items.append({
+                    'product': product,
+                    'quantity': quantity,
+                    'total': item_total
+                })
+                total += item_total
+                
+        context = {
+            'cart_items': cart_items,
+            'total': total
+        }
+        return render(request, 'store/checkout.html', context)
+
+    def post(self, request):
+        # Aquí irá la lógica de procesamiento del pago
+        try:
+            # Simular procesamiento de pago
+            cart = request.session.get('cart', {})
+            if not cart:
+                raise ValueError("Carrito vacío")
+                
+            # Limpiar el carrito después del pago exitoso
+            request.session['cart'] = {}
+            messages.success(request, "¡Pago procesado con éxito! Gracias por tu compra.")
+            return redirect('order-confirmation')
+            
+        except Exception as e:
+            messages.error(request, f"Error al procesar el pago: {str(e)}")
+            return redirect('checkout')

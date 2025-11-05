@@ -1,0 +1,104 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Finalizar Compra</h2>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Información de Pago</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre completo</label>
+                            <input type="text" class="form-control" id="nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input type="radio" class="btn-check" name="options" id="option1" autocomplete="off" checked>
+                            <label class="btn btn-primary" for="option1">Retiro en Local</label>
+
+                            <input type="radio" class="btn-check" name="options" id="option2" autocomplete="off">
+                            <label class="btn btn-primary" for="option2">Llega a casa</label>
+
+                        </div>
+                        <div id="pickupInfo" class="mb-3" style="display:block;">
+                            <label class="form-label text-muted">Retiro en Local: Av. Principal 123, horario 9-18</label>
+                        </div>
+
+                        <div id="homeAddressLabel" class="mb-3" style="display:none;">
+                            <label for="direccion" class="form-label">Ingrese la dirección de envío</label>
+                            <textarea class="form-control" id="direccion" name="direccion" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="tarjeta" class="form-label">Número de tarjeta</label>
+                            <input type="text" class="form-control" id="tarjeta" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Confirmar Pago</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Resumen del Pedido</h5>
+                    {% for item in cart_items %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{{ item.product.title }} x {{ item.quantity }}</span>
+                        <span>${{ item.total }}</span>
+                    </div>
+                    {% endfor %}
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong>${{ total }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const pickupRadio = document.getElementById('option1');
+  const homeRadio = document.getElementById('option2');
+  const pickupInfo = document.getElementById('pickupInfo');
+  const homeAddress = document.getElementById('homeAddressLabel');
+
+  function toggleDelivery() {
+    if (homeRadio.checked) {
+      homeAddress.style.display = 'block';
+      pickupInfo.style.display = 'none';
+      // hacer required el textarea si llega a casa
+      document.getElementById('direccion').setAttribute('required', 'required');
+    } else {
+      homeAddress.style.display = 'none';
+      pickupInfo.style.display = 'block';
+      document.getElementById('direccion').removeAttribute('required');
+    }
+  }
+
+  pickupRadio.addEventListener('change', toggleDelivery);
+  homeRadio.addEventListener('change', toggleDelivery);
+
+  // estado inicial
+  toggleDelivery();
+  
+});
+</script>
+{% endblock %}
