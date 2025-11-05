@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class Category:
     def __init__(self, category_id, name):
         self._category_id = category_id
@@ -121,6 +122,39 @@ class CakeProduct(Product):
         data.update({"type": self.type, "weight": self._weight})
         return data
 
+
+# carrito de compras simple
+
+class CartItem:
+    def __init__(self, product_id, quantity=1):
+        self.product_id = product_id
+        self.quantity = quantity
+
+class Cart:
+    def __init__(self):
+        self.items = {}  # product_id: CartItem
+        
+    def add_item(self, product_id, quantity=1):
+        if product_id in self.items:
+            self.items[product_id].quantity += quantity
+        else:
+            self.items[product_id] = CartItem(product_id, quantity)
+    
+    def remove_item(self, product_id):
+        if product_id in self.items:
+            del self.items[product_id]
+    
+    def get_total(self):
+        from .product_service import ProductService
+        total = 0
+        service = ProductService()
+        for item in self.items.values():
+            product = service.get_product_by_id(item.product_id)
+            if product:
+                total += product['price'] * item.quantity
+        return total
+
+
 # ===================================================
 # --- CLASES PARA USUARIOS (ESTO ES LO QUE FALTA) ---
 # ===================================================
@@ -175,3 +209,4 @@ class AdminUser(BaseUser):
     @property
     def role(self):
         return "admin"
+
