@@ -89,3 +89,25 @@ class UserService:
         except Exception as e:
             print(f"Error al crear usuario: {e}")
             return None
+    
+
+    def delete_user(self, user_id):
+        """
+        Busca y elimina un usuario por su ID.
+        Devuelve True si se eliminó, False si no se encontró.
+        """
+        initial_count = len(self._users)
+        
+        # Filtra la lista para excluir el usuario con el ID dado.
+        # Es crucial convertir el user_id a int para la comparación, ya que viene de la URL (pk).
+        self._users = [u for u in self._users if u.user_id != int(user_id)]
+        
+        final_count = len(self._users)
+        
+        # Si la lista se redujo, significa que se eliminó el usuario
+        if final_count < initial_count:
+            # Si se eliminó, guarda la lista actualizada en el JSON
+            self._save_users()
+            return True
+        else:
+            return False

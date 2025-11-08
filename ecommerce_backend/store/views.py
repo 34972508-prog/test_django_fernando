@@ -26,6 +26,10 @@ from django.core.files.base import ContentFile
 # ... (imports existentes)
 from .mixins import AdminRequiredMixin # <-- AÑADIR
 
+# Inicializacion del servicio de usuarios y productos(global para las vistas)
+user_service = UserService()
+product_service = ProductService()
+
 class ProductListCreateAPIView(APIView):
     """
     Vista para listar productos (con filtros) y crear nuevos productos.
@@ -648,3 +652,73 @@ class LogoutView(View):
             
         return redirect('home')
 
+
+# ... Asegúrate de que user_service esté inicializado globalmente ...
+class AdminUserView(AdminRequiredMixin, View):
+    """
+    Vista para listar todos los usuarios (Admin View).
+    """
+    def get(self, request):
+        
+        # 1. Usar UserService para obtener la lista de OBJETOS de usuario
+        all_users = user_service._users # Accede directamente a la lista cargada
+        
+        context = {
+            # Pasar la lista de objetos de usuario al template
+            'users': all_users, 
+            'titulo': 'Administración de Usuarios'
+        }
+        # 2. Renderizar el nuevo template
+        return render(request, 'store/admin_users.html', context)
+        
+
+class DeleteUserHTMLView(AdminRequiredMixin, View):
+    """
+    Vista para manejar la eliminación de usuarios.
+    """
+    def post(self, request, pk):
+        # Asumiendo que has añadido un método delete_user(pk) a tu UserService
+        if user_service.delete_user(pk):
+            messages.success(request, f"Usuario con ID {pk} eliminado exitosamente.")
+        else:
+            messages.error(request, f"Error al eliminar el usuario con ID {pk}.")
+        
+        return redirect('admin-user-view')
+
+# =======================================
+# VISTA DE PERFIL (Asociada a la URL: profile)
+# =======================================
+
+def profile_view(request):
+    """
+    Muestra el perfil del usuario logueado.
+    Recupera el objeto completo del usuario del UserService.
+    """
+    # 1. Obtener el username de la sesión simulada
+    logged_in_username = request.session.get('username')
+    
+    if not logged_in_username:
+        # Si no hay sesión, redirige al login
+        messages.warning(request, "Debes iniciar sesión para ver tu perfil.")
+        return redirect('login') 
+    
+    # 2. Recuperar el objeto de usuario completo (AdminUser o ClientUser)
+    user_object = user_service.get_user_by_username(logged_in_username)
+    
+    if not user_object:
+        # Caso de seguridad si el usuario fue borrado del JSON
+        request.session.flush() 
+        messages.error(request, "Perfil no encontrado. Inicia sesión de nuevo.")
+        return redirect('login')
+        
+    context = {
+        # 'user' pasa el objeto completo (con .username, .email, .address, .role, etc.)
+        'user': user_object, 
+        # Variable para el Navbar (redundante si usas un context processor, pero seguro)
+        'username': user_object.username,
+        # 'is_admin' se usa en el template del perfil para mostrar la etiqueta
+        'is_admin': user_object.role == 'admin', 
+    }
+    
+    # Asumo que el template se llama 'store/profile_template.html'
+    return render(request, 'store/profile_user.html', context)
