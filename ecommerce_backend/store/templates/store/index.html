@@ -1,180 +1,253 @@
-{% extends 'store/base.html' %}
-{% load static %}
+{% extends 'store/base.html' %} {% load static %} {% block title %}Inicio{%endblock title %} {% block content %}
 
-{% block title %}Inicio{% endblock title %}
 
-{% block content %}
+  <div class="hero-section">
+    <div
+      id="carouselExampleAutoplaying"
+      class="carousel slide hero-carousel"
+      data-bs-ride="carousel"
+      data-bs-interval="3000"
+    >
+      <div class="carousel-inner w-100 h-100">
+        {% comment %} Nota: Ajusta la ruta estática si es necesario (ej:
+        /media/productos/carrouselX.jpg) {% endcomment %} {# Item 1: Activo por
+        defecto #}
+        <div class="carousel-item active w-100 h-100">
+          <img
+            src="/media/productos/carrousel1.jpg"
+            class="d-block w-100 hero-img-fixed"
+            alt="Tortas de Diseño"
+          />
+          <div class="dark-overlay"></div>
+        </div>
 
+        {# Item 2 #}
+        <div class="carousel-item w-100 h-100">
+          <img
+            src="/media/productos/carrousel2.jpg"
+            class="d-block w-100 hero-img-fixed"
+            alt="Desayunos Sorpresa"
+          />
+          <div class="dark-overlay"></div>
+        </div>
+
+        {# Item 3 #}
+        <div class="carousel-item w-100 h-100">
+          <img
+            src="/media/productos/carrousel3.jpg"
+            class="d-block w-100 hero-img-fixed"
+            alt="Mesa Dulce Artesanal"
+          />
+          <div class="dark-overlay"></div>
+        </div>
+
+        {# Item 4 #}
+        <div class="carousel-item w-100 h-100">
+          <img
+            src="/media/productos/carrousel4.jpg"
+            class="d-block w-100 hero-img-fixed"
+            alt="Promociones de la Semana"
+          />
+          <div class="dark-overlay"></div>
+        </div>
+      </div>
+    </div>
+    <div class="container hero-content">
+      <div class="starter-template text-center py-5">
+        <h2 class="mt-5 display-4 text-warning text-shadow-lg">
+          ¡Bienvenidos a Quiero Algo Dulce!
+        </h2>
+        <p class="lead text-light text-shadow-lg">
+          Tu tienda online de repostería artesanal.
+        </p>
+        <hr class="w-50 mx-auto border-warning" />
+
+        <div class="text-white small mt-4 p-3 border rounded hero-info-box">
+          <h3 class="mb-2 text-warning">Detalles del Proyecto</h3>
+          <p class="mb-1">
+            <em>Este es un sitio e-commerce construido con Django / Python.</em>
+          </p>
+          <hr class="my-2 border-secondary" />
+          <p class="mb-0">Grupo: N° <strong class="text-light"> </strong></p>
+          <p class="mb-0">
+            Universidad Nacional de Jujuy Facultad de Ingenieria
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 <main role="main" class="container mt-3">
-    
-    <!-- Sección de Bienvenida e Información del Curso -->
-    <div class="starter-template text-center py-5">
-        <h2 class="mt-5 display-4 text-warning">¡Bienvenidos a Quiero Algo Dulce!</h2>
-        <p class="lead text-light">Tu tienda online de repostería artesanal.</p>
-        <hr class="w-50 mx-auto border-warning">
-        
-        <div class="text-secondary small mt-4 p-3 border rounded">
-            <h3 class="mb-2">Detalles del Proyecto</h3>
-            <p class="mb-1"><em>Este es un sitio e-commerce construido con Django / Python.</em></p>
-            <hr class="my-2">
-            <p class="mb-0">Grupo: N° <strong class="text-light"> </strong></p>
-            <p class="mb-0">Universidad Nacional de Jujuy Facultad de Ingenieria</p>
+  <!-- Sección de Categorías -->
+  <h3 class="text-center mt-5 mb-4 text-warning">
+    Explora Nuestras Categorías
+  </h3>
+
+  <div class="row g-4 justify-content-center pb-5">
+    {% comment %} Tarjeta 1: Tortas {% endcomment %}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+      <a href="{% url 'product-list' %}" class="text-decoration-none">
+        <div
+          class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300"
+        >
+          <div
+            class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center"
+            style="height: 150px"
+          >
+            <img
+              class="img-fluid"
+              src="{% static 'myapp/LogoQAD1.png' %} "
+              alt="Tortas"
+              style="object-fit: cover; width: 100%; height: 100%"
+            />
+          </div>
+          <div class="card-body text-center">
+            <h5 class="card-text fw-bold">Tortas</h5>
+          </div>
         </div>
-    </div>
-    
-<h3 class="text-center mt-5 mb-4 text-warning">Especiales del Mes</h3>
-
-    <div id="carouselExampleAutoplaying" class="carousel slide mb-5 shadow-lg rounded" data-bs-ride="carousel" data-bs-interval="3000">
-        
-        <div class="carousel-inner rounded">
-            
-            {% comment %} Item 1: Activo por defecto {% endcomment %}
-            {# Item 1: Activo por defecto #}
-            <div class="carousel-item active carousel-image-container">
-                <img src="/media/productos/carrousel1.jpg" class="d-block w-100 carousel-img-fixed" alt="Tortas de Diseño">
-                <div class="dark-overlay"></div> {# Superposición oscura #}
-                <div class="carousel-caption d-none d-md-block">
-                    <h5 class="fw-bold text-shadow">Tortas de Diseño</h5>
-                    <p class="text-shadow">Personalizamos tus eventos especiales.</p>
-                </div>
-            </div>
-
-            {# Item 2 #}
-            <div class="carousel-item carousel-image-container">
-                <img src="/media/productos/carrousel2.jpg" class="d-block w-100 carousel-img-fixed" alt="Desayunos Sorpresa">
-                <div class="dark-overlay"></div> 
-                <div class="carousel-caption d-none d-md-block">
-                    <h5 class="fw-bold text-shadow">Desayunos Sorpresa</h5>
-                    <p class="text-shadow">El regalo perfecto para empezar el día.</p>
-                </div>
-            </div>
-
-            {# Item 3 #}
-            <div class="carousel-item carousel-image-container">
-                <img src="/media/productos/carrousel3.jpg" class="d-block w-100 carousel-img-fixed" alt="Mesa Dulce Artesanal">
-                <div class="dark-overlay"></div> 
-                <div class="carousel-caption d-none d-md-block">
-                    <h5 class="fw-bold text-shadow">Mesa Dulce Artesanal</h5>
-                    <p class="text-shadow">Variedad de postres y bocados.</p>
-                </div>
-            </div>
-
-            {# Item 4 #}
-            <div class="carousel-item carousel-image-container">
-                <img src="/media/productos/carrousel4.jpg" class="d-block w-100 carousel-img-fixed" alt="Promociones de la Semana">
-                <div class="dark-overlay"></div> 
-                <div class="carousel-caption d-none d-md-block">
-                    <h5 class="fw-bold text-shadow">Promociones de la Semana</h5>
-                    <p class="text-shadow">¡No te pierdas nuestros descuentos!</p>
-                </div>
-            </div>
-
-        </div>
-        
+      </a>
     </div>
 
-    <!-- Sección de Categorías -->
-    <h3 class="text-center mt-5 mb-4 text-warning">Explora Nuestras Categorías</h3>
-    
-    <div class="row g-4 justify-content-center pb-5">
-        
-        {% comment %} Tarjeta 1: Tortas {% endcomment %}
-        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-            <a href="{% url 'product-list' %}" class="text-decoration-none">
-                <div class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300">
-                    <div class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center" style="height: 150px;">
-                        <img class="img-fluid" src="{% static 'myapp/LogoQAD1.png' %} " alt="Tortas" style="object-fit: cover; width: 100%; height: 100%;">
-                    </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-text fw-bold">Tortas</h5>
-                    </div>
-                </div>
-            </a>
+    {% comment %} Tarjeta 2: Desayunos {% endcomment %}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+      <a href="{% url 'product-list' %}" class="text-decoration-none">
+        <div
+          class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300"
+        >
+          <div
+            class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center"
+            style="height: 150px"
+          >
+            <img
+              class="img-fluid"
+              src="{% static 'myapp/LogoQAD1.png' %} "
+              alt="Desayunos"
+              style="object-fit: cover; width: 100%; height: 100%"
+            />
+          </div>
+          <div class="card-body text-center">
+            <h5 class="card-text fw-bold">Desayunos</h5>
+          </div>
         </div>
-
-
-        {% comment %} Tarjeta 2: Desayunos {% endcomment %}
-        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-            <a href="{% url 'product-list' %}" class="text-decoration-none">
-                <div class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300">
-                    <div class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center" style="height: 150px;">
-                        <img class="img-fluid" src="{% static 'myapp/LogoQAD1.png' %} " alt="Desayunos" style="object-fit: cover; width: 100%; height: 100%;">
-                    </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-text fw-bold">Desayunos</h5>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        {% comment %} Tarjeta 3: Catering {% endcomment %}
-        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-            <a href="{% url 'product-list' %}" class="text-decoration-none">
-                <div class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300">
-                    <div class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center" style="height: 150px;">
-                        <img class="img-fluid" src="{% static 'myapp/LogoQAD1.png' %} " alt="Catering" style="object-fit: cover; width: 100%; height: 100%;">
-                    </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-text fw-bold">Catering</h5>
-                    </div>
-                </div>
-            </a>
-        </div>
-        
-        {% comment %} Tarjeta 4: Tartas {% endcomment %}
-        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-            <a href="{% url 'product-list' %}" class="text-decoration-none">
-                <div class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300">
-                    <div class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center" style="height: 150px;">
-                        <img class="img-fluid" src="{% static 'myapp/LogoQAD1.png' %} " alt="Tartas" style="object-fit: cover; width: 100%; height: 100%;">
-                    </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-text fw-bold">Tartas</h5>
-                    </div>
-                </div>
-            </a>
-        </div>
-        
+      </a>
     </div>
+
+    {% comment %} Tarjeta 3: Catering {% endcomment %}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+      <a href="{% url 'product-list' %}" class="text-decoration-none">
+        <div
+          class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300"
+        >
+          <div
+            class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center"
+            style="height: 150px"
+          >
+            <img
+              class="img-fluid"
+              src="{% static 'myapp/LogoQAD1.png' %} "
+              alt="Catering"
+              style="object-fit: cover; width: 100%; height: 100%"
+            />
+          </div>
+          <div class="card-body text-center">
+            <h5 class="card-text fw-bold">Catering</h5>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    {% comment %} Tarjeta 4: Tartas {% endcomment %}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+      <a href="{% url 'product-list' %}" class="text-decoration-none">
+        <div
+          class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300"
+        >
+          <div
+            class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center"
+            style="height: 150px"
+          >
+            <img
+              class="img-fluid"
+              src="{% static 'myapp/LogoQAD1.png' %} "
+              alt="Tartas"
+              style="object-fit: cover; width: 100%; height: 100%"
+            />
+          </div>
+          <div class="card-body text-center">
+            <h5 class="card-text fw-bold">Tartas</h5>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
 </main>
 
-{% endblock content %}
+{% endblock content %} 
 {% block extra_styles %}
 <style>
-    /* 1. Contenedor para hacer la superposición posible */
-    .carousel-image-container {
+    /* 1. Contenedor Principal (Define el área del "Hero") */
+    .hero-section {
         position: relative;
-        height: 550px; /* Altura fija para el carrusel */
-        overflow: hidden; /* Oculta cualquier desbordamiento de la imagen */
+        min-height: 650px; /* Altura del carrusel */
+        width: 100%;
+        
+        /* 💡 SOLUCIÓN: Ajustar el margen superior para eliminar espacios innecesarios. */
+        /* Si tu barra de navegación NO es fija, este ajuste puede ser necesario. */
+        margin-top: 0; /* Asegúrate que no haya margen superior indeseado */
+        
+        display: flex;
+        align-items: center; /* Centra verticalmente el contenido de bienvenida */
+        justify-content: center;
+        background-color: #333;
     }
 
-    /* 2. Imagen fija dentro del contenedor */
-    .carousel-img-fixed {
-        object-fit: cover; /* Asegura que la imagen cubra todo el espacio sin distorsionarse */
+    /* 2. Carrusel como Fondo */
+    .hero-carousel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
         height: 100%;
-        filter: brightness(0.9); /* Oscurece la imagen ligeramente (Alternativa al overlay) */
+        z-index: 1; 
     }
 
-    /* 3. Superposición Oscura (Alternativa o complemento al filter brightness) */
-    /* Este DIV semitransparente se posiciona sobre la imagen */
+    /* 3. Imagen fija dentro del carrusel */
+    .hero-img-fixed {
+        object-fit: cover;
+        height: 100%;
+        filter: brightness(0.85);
+    }
+
+    /* 4. Superposición Oscura (Refuerza el contraste) */
     .dark-overlay {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.2); /* Negro con 20% de opacidad */
-        z-index: 1; /* Asegura que esté justo debajo del texto de la caption */
-    }
-    
-    /* 4. Estilo para la Sombra del Texto */
-    .text-shadow {
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    }
-
-    /* Ajustar el caption para que quede sobre el overlay */
-    .carousel-caption {
+        background-color: rgba(0, 0, 0, 0.2); 
         z-index: 2;
     }
+
+    /* 5. Contenido de Bienvenida (Posicionado encima) */
+    .hero-content {
+        position: relative;
+        z-index: 10; /* Debe estar por encima del carrusel y el overlay */
+        max-width: 900px;
+        color: white; 
+    }
+    
+    /* 6. Mejorar legibilidad del texto */
+    .text-shadow-lg {
+        text-shadow: 2px 2px 6px rgba(0, 0, 0, 1);
+    }
+    
+    /* Caja de información del proyecto */
+    .hero-info-box {
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(5px);
+        border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+
 </style>
 {% endblock extra_styles %}
