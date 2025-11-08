@@ -22,6 +22,57 @@
         </div>
     </div>
     
+<h3 class="text-center mt-5 mb-4 text-warning">Especiales del Mes</h3>
+
+    <div id="carouselExampleAutoplaying" class="carousel slide mb-5 shadow-lg rounded" data-bs-ride="carousel" data-bs-interval="3000">
+        
+        <div class="carousel-inner rounded">
+            
+            {% comment %} Item 1: Activo por defecto {% endcomment %}
+            {# Item 1: Activo por defecto #}
+            <div class="carousel-item active carousel-image-container">
+                <img src="/media/productos/carrousel1.jpg" class="d-block w-100 carousel-img-fixed" alt="Tortas de Diseño">
+                <div class="dark-overlay"></div> {# Superposición oscura #}
+                <div class="carousel-caption d-none d-md-block">
+                    <h5 class="fw-bold text-shadow">Tortas de Diseño</h5>
+                    <p class="text-shadow">Personalizamos tus eventos especiales.</p>
+                </div>
+            </div>
+
+            {# Item 2 #}
+            <div class="carousel-item carousel-image-container">
+                <img src="/media/productos/carrousel2.jpg" class="d-block w-100 carousel-img-fixed" alt="Desayunos Sorpresa">
+                <div class="dark-overlay"></div> 
+                <div class="carousel-caption d-none d-md-block">
+                    <h5 class="fw-bold text-shadow">Desayunos Sorpresa</h5>
+                    <p class="text-shadow">El regalo perfecto para empezar el día.</p>
+                </div>
+            </div>
+
+            {# Item 3 #}
+            <div class="carousel-item carousel-image-container">
+                <img src="/media/productos/carrousel3.jpg" class="d-block w-100 carousel-img-fixed" alt="Mesa Dulce Artesanal">
+                <div class="dark-overlay"></div> 
+                <div class="carousel-caption d-none d-md-block">
+                    <h5 class="fw-bold text-shadow">Mesa Dulce Artesanal</h5>
+                    <p class="text-shadow">Variedad de postres y bocados.</p>
+                </div>
+            </div>
+
+            {# Item 4 #}
+            <div class="carousel-item carousel-image-container">
+                <img src="/media/productos/carrousel4.jpg" class="d-block w-100 carousel-img-fixed" alt="Promociones de la Semana">
+                <div class="dark-overlay"></div> 
+                <div class="carousel-caption d-none d-md-block">
+                    <h5 class="fw-bold text-shadow">Promociones de la Semana</h5>
+                    <p class="text-shadow">¡No te pierdas nuestros descuentos!</p>
+                </div>
+            </div>
+
+        </div>
+        
+    </div>
+
     <!-- Sección de Categorías -->
     <h3 class="text-center mt-5 mb-4 text-warning">Explora Nuestras Categorías</h3>
     
@@ -88,3 +139,42 @@
 </main>
 
 {% endblock content %}
+{% block extra_styles %}
+<style>
+    /* 1. Contenedor para hacer la superposición posible */
+    .carousel-image-container {
+        position: relative;
+        height: 550px; /* Altura fija para el carrusel */
+        overflow: hidden; /* Oculta cualquier desbordamiento de la imagen */
+    }
+
+    /* 2. Imagen fija dentro del contenedor */
+    .carousel-img-fixed {
+        object-fit: cover; /* Asegura que la imagen cubra todo el espacio sin distorsionarse */
+        height: 100%;
+        filter: brightness(0.9); /* Oscurece la imagen ligeramente (Alternativa al overlay) */
+    }
+
+    /* 3. Superposición Oscura (Alternativa o complemento al filter brightness) */
+    /* Este DIV semitransparente se posiciona sobre la imagen */
+    .dark-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.2); /* Negro con 20% de opacidad */
+        z-index: 1; /* Asegura que esté justo debajo del texto de la caption */
+    }
+    
+    /* 4. Estilo para la Sombra del Texto */
+    .text-shadow {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Ajustar el caption para que quede sobre el overlay */
+    .carousel-caption {
+        z-index: 2;
+    }
+</style>
+{% endblock extra_styles %}

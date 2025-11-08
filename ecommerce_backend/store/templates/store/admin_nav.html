@@ -1,0 +1,37 @@
+{# store/templates/store/admin_nav.html #}
+
+{% load static %}
+
+{# Solo mostramos este menú si el usuario actual es administrador #}
+{% if request.session.user_role == 'admin' %}
+<div class="container my-3">
+    <h5 class="mb-2 text-secondary">Panel de Administración:</h5>
+    <ul class="nav nav-pills nav-fill bg-light p-2 rounded shadow-sm">
+        
+        {# Opción 1: Productos (Vista actual: admin-product-view) #}
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'admin-product-view' %}active{% endif %}" 
+               href="{% url 'admin-product-view' %}">
+                Productos 🎂
+            </a>
+        </li>
+        
+        {# Opción 2: Usuarios (Vista: admin-user-view) #}
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'admin-user-view' %}active{% endif %}" 
+               href="{% url 'admin-user-view' %}">
+                Usuarios 👥
+            </a>
+        </li>
+        
+        {# Opción 3: Categorías (Vista: admin-category-view) #}
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'admin-category-view' %}active{% endif %}" 
+               href="{% url 'admin-category-view' %}">
+                Categorías 🏷️
+            </a>
+        </li>
+        
+    </ul>
+</div>
+{% endif %}
