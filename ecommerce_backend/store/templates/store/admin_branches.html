@@ -90,7 +90,7 @@
                 const lon = branch.longitude;
 
                 // 1. Inicializar el mapa
-                const map = L.map(mapId).setView([-24.18416, -65.3009], 15); // Nivel de zoom 15
+                const map = L.map(mapId).setView([lat, lon], 15); // Nivel de zoom 15
 
                 // 2. Añadir la capa de "tiles" (el fondo del mapa)
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

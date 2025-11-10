@@ -136,7 +136,7 @@
         "title": "prueba",
         "description": "hola",
         "price": 35555.0,
-        "stock": 20,
+        "stock": 10,
         "category_id": 1,
         "branch_id": 2,
         "image_url": "https://tse2.mm.bing.net/th/id/OIP.9nF0JvIjsHkIb_wdENR3QAHaE8?rs=1&pid=ImgDetMain&o=7&rm=3",
