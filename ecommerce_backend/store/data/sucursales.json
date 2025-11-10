@@ -1,0 +1,16 @@
+[
+    {
+        "id": 1,
+        "name": "Pastelería Centro",
+        "address": "Av. Siempre Viva 742, Centro",
+        "latitude": -24.1834,
+        "longitude": -65.3312
+    },
+    {
+        "id": 2,
+        "name": "Café de la Plaza",
+        "address": "Calle Falsa 123, Plaza Principal",
+        "latitude": -24.1850,
+        "longitude": -65.3300
+    }
+]

@@ -49,8 +49,9 @@
                             </div>
                         </div>
 
+                        {# --- FILA ACTUALIZADA CON SUCURSAL --- #}
                         <div class="row">
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label for="category_id" class="form-label d-flex justify-content-between">
                                     <span>Categoría: <span class="text-danger">*</span></span>
                                     <a href="{% url 'category-create' %}" class="btn btn-outline-success btn-sm" style="--bs-btn-padding-y: .1rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">
@@ -64,8 +65,9 @@
                                     </option>
                             
                                     {% for category in categories %}
+                                        {# Usamos |add:0 para forzar la comparación como números #}
                                         <option value="{{ category.id }}" 
-                                                {% if category.id == product.category_id %}selected{% endif %}>
+                                                {% if category.id == product.category_id|add:0 %}selected{% endif %}>
                                             {{ category.name }}
                                         </option>
                                     {% endfor %}
@@ -75,12 +77,37 @@
                                     Por favor, selecciona una categoría.
                                 </div>
                             </div>
+
+                            {# --- NUEVO CAMPO DE SUCURSAL --- #}
+                            <div class="col-md-6 mb-3">
+                                <label for="branch_id" class="form-label">Sucursal: <span class="text-danger">*</span></label>
+                                <select id="branch_id" name="branch_id" class="form-select" required>
+                                    <option value="" disabled {% if not product.branch_id %}selected{% endif %}>
+                                        Selecciona...
+                                    </option>
+                            
+                                    {# La vista (ProductFormView) DEBE pasar 'branches' en el contexto #}
+                                    {% for branch in branches %}
+                                        <option value="{{ branch.id }}" 
+                                                {% if branch.id == product.branch_id|add:0 %}selected{% endif %}>
+                                            {{ branch.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">
+                                    Por favor, selecciona una sucursal.
+                                </div>
+                            </div>
+                        </div>
+
+                        {# --- FILA DE PRECIO, STOCK Y PESO --- #}
+                        <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label for="price" class="form-label">Precio ($):</label>
                                 <input type="number" id="price" name="price" 
                                     class="form-control" 
                                     value="{{ product.price|default:'' }}" 
-                                    required min="0" step="1"
+                                    required min="0" step="0.01"
                                 >
                             </div>
 
@@ -92,17 +119,18 @@
                                     required min="0"
                                 >
                             </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="weight" class="form-label">Peso (kg):</label>
+                                <input type="number" id="weight" name="weight" 
+                                    class="form-control" 
+                                    value="{{ product.weight|default:'' }}" 
+                                    step="0.1" min="0"
+                                >
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="weight" class="form-label">Peso (kg):</label>
-                            <input type="number" id="weight" name="weight" 
-                                class="form-control" 
-                                value="{{ product.weight|default:'' }}" 
-                                step="0.1"
-                            >
-                        </div>
-
+                        {# --- CAMPOS DE IMAGEN (Sin cambios) --- #}
                         <div class="mb-4">
                             <label for="image_url" class="form-label">URL de la imagen (Externa):</label>
                             {% if product.image_url and not product.image_url|slice:":/media/" %}
@@ -144,9 +172,9 @@
     </div>
 {% endblock content %}
 
-{% block extra_scripts %}
+{% block extra_js %}
 <script>
-    // Ejemplo de cómo desactivar el envío si hay campos inválidos
+    // Script de validación de Bootstrap
     (function () {
         'use strict'
         var forms = document.querySelectorAll('.needs-validation')
@@ -162,4 +190,4 @@
             })
     })()
 </script>
-{% endblock extra_scripts %}
+{% endblock extra_js %}

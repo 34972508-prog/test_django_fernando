@@ -8,7 +8,7 @@
     <h5 class="mb-2 text-secondary">Panel de Administración:</h5>
     <ul class="nav nav-pills nav-fill bg-light p-2 rounded shadow-sm">
         
-        {# Opción 1: Productos (Vista actual: admin-product-view) #}
+        {# Opción 1: Productos #}
         <li class="nav-item">
             <a class="nav-link {% if request.resolver_match.url_name == 'admin-product-view' %}active{% endif %}" 
                href="{% url 'admin-product-view' %}">
@@ -16,7 +16,7 @@
             </a>
         </li>
         
-        {# Opción 2: Usuarios (Vista: admin-user-view) #}
+        {# Opción 2: Usuarios #}
         <li class="nav-item">
             <a class="nav-link {% if request.resolver_match.url_name == 'admin-user-view' %}active{% endif %}" 
                href="{% url 'admin-user-view' %}">
@@ -24,11 +24,19 @@
             </a>
         </li>
         
-        {# Opción 3: Categorías (Vista: admin-category-view) #}
+        {# Opción 3: Categorías #}
         <li class="nav-item">
             <a class="nav-link {% if request.resolver_match.url_name == 'admin-category-view' %}active{% endif %}" 
                href="{% url 'admin-category-view' %}">
                 Categorías 🏷️
+            </a>
+        </li>
+
+        {# --- NUEVA OPCIÓN: SUCURSALES --- #}
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'admin-branch-view' %}active{% endif %}" 
+               href="{% url 'admin-branch-view' %}">
+                Sucursales 📍
             </a>
         </li>
         

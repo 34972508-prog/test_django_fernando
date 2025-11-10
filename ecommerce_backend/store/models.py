@@ -1,6 +1,39 @@
 from abc import ABC, abstractmethod
 
+# --- NUEVA CLASE BRANCH ---
+class Branch:
+    """Representa una sucursal o tienda física."""
+    def __init__(self, branch_id, name, address, latitude, longitude):
+        self._branch_id = branch_id
+        self._name = name
+        self._address = address
+        self._latitude = latitude
+        self._longitude = longitude
 
+    @property
+    def branch_id(self): return self._branch_id
+    @property
+    def name(self): return self._name
+    @property
+    def address(self): return self._address
+    @property
+    def latitude(self): return self._latitude
+    @property
+    def longitude(self): return self._longitude
+
+    def to_dict(self):
+        return {
+            "id": self._branch_id,
+            "name": self._name,
+            "address": self._address,
+            "latitude": self._latitude,
+            "longitude": self._longitude,
+        }
+    
+    def __str__(self):
+        return self._name
+
+# --- CLASE CATEGORY (Sin cambios) ---
 class Category:
     def __init__(self, category_id, name):
         self._category_id = category_id
@@ -20,51 +53,48 @@ class Category:
     def __str__(self):
         return self._name
 
-# --- CLASE BASE ABSTRACTA (Sin cambios) ---
+# --- CLASE BASE PRODUCT (Actualizada) ---
 class Product(ABC):
-    def __init__(self, product_id, title, description, price, stock, category_id, image_url=None):
+    # Añadido 'branch_id' al constructor
+    def __init__(self, product_id, title, description, price, stock, category_id, branch_id, image_url=None):
         self._product_id = product_id
         self._title = title
         self._description = description
         self.price = price
         self.stock = stock
         self._category_id = category_id
+        self._branch_id = branch_id # <-- NUEVO
         self._image_url = image_url
 
     # Properties de Lectura
     @property
-    def product_id(self):
-        return self._product_id
-
+    def product_id(self): return self._product_id
     @property
-    def title(self):
-        return self._title
+    def title(self): return self._title
     @title.setter
-    def title(self, value):
-        self._title = value 
-
+    def title(self, value): self._title = value 
     @property
-    def description(self):
-        return self._description
+    def description(self): return self._description
     @description.setter
-    def description(self, value):
-        self._description = value
+    def description(self, value): self._description = value
+    @property
+    def category_id(self): return self._category_id
+    
+    # --- NUEVO PROPERTY ---
+    @property
+    def branch_id(self): return self._branch_id
+    @branch_id.setter
+    def branch_id(self, value): self._branch_id = value
+    # --- FIN NUEVO PROPERTY ---
 
     @property
-    def category_id(self):
-        return self._category_id
-
-    @property
-    def image_url(self):
-        return self._image_url
+    def image_url(self): return self._image_url
     @image_url.setter
-    def image_url(self, value):
-        self._image_url = value
+    def image_url(self, value): self._image_url = value
 
     # Properties de Precio y Stock con validación
     @property
-    def price(self):
-        return self._price
+    def price(self): return self._price
     @price.setter
     def price(self, value):
         if not isinstance(value, (int, float)) or value < 0:
@@ -72,20 +102,19 @@ class Product(ABC):
         self._price = value
 
     @property
-    def stock(self):
-        return self._stock
+    def stock(self): return self._stock
     @stock.setter
     def stock(self, value):
         if not isinstance(value, int) or value < 0:
             raise ValueError("El stock debe ser un número entero no negativo.")
         self._stock = value
 
-    # Método Abstracto que debe implementar CakeProduct
     @abstractmethod
     def get_invoice_description(self):
         pass
 
     def to_dict(self):
+        # Añadido 'branch_id' al diccionario
         return {
             "id": self._product_id,
             "title": self._title,
@@ -93,26 +122,24 @@ class Product(ABC):
             "price": self._price,
             "stock": self._stock,
             "category_id": self._category_id,
+            "branch_id": self._branch_id, # <-- NUEVO
             "image_url": self._image_url,
         }
 
-# --- CLASE CONCRETA PARA TORTAS ---
+# --- CLASE CAKEPRODUCT (Actualizada) ---
 class CakeProduct(Product):
     """Representa un producto físico concreto (una torta) con un peso."""
-    def __init__(self, product_id, title, description, price, stock, category_id, image_url=None, weight=None):
-        super().__init__(product_id, title, description, price, stock, category_id, image_url)
+    # Añadido 'branch_id' y pasado a super()
+    def __init__(self, product_id, title, description, price, stock, category_id, branch_id, image_url=None, weight=None):
+        super().__init__(product_id, title, description, price, stock, category_id, branch_id, image_url)
         self._weight = weight
-        self.type = 'cake' # Identificador para la serialización
+        self.type = 'cake' 
 
     @property
-    def weight(self):
-        return self._weight
-    
+    def weight(self): return self._weight
     @weight.setter
-    def weight(self, value):
-        self._weight = value
+    def weight(self, value): self._weight = value
 
-    # Implementación requerida por Product (ABC)
     def get_invoice_description(self):
         weight_info = f" (Peso: {self._weight}kg)" if self._weight else ""
         return f"Torta: {self._title}{weight_info}"
@@ -123,7 +150,7 @@ class CakeProduct(Product):
         return data
 
 
-# carrito de compras simple
+# --- CARRITO Y USUARIOS (Sin cambios) ---
 
 class CartItem:
     def __init__(self, product_id, quantity=1):
@@ -154,59 +181,32 @@ class Cart:
                 total += product['price'] * item.quantity
         return total
 
-
-# ===================================================
-# --- CLASES PARA USUARIOS (ESTO ES LO QUE FALTA) ---
-# ===================================================
-
 class BaseUser(ABC):
-    """
-    Clase base abstracta para todos los tipos de usuarios.
-    Define la estructura común.
-    """
     def __init__(self, user_id, username, password):
         self._user_id = user_id
         self._username = username
-        self._password = password # ¡Inseguro! Solo para demo
-
+        self._password = password 
     @property
-    def user_id(self):
-        return self._user_id
-
+    def user_id(self): return self._user_id
     @property
-    def username(self):
-        return self._username
-
+    def username(self): return self._username
     @property
-    def password(self):
-        return self._password
-
+    def password(self): return self._password
     @property
     @abstractmethod
-    def role(self):
-        """Método abstracto que las clases hijas deben implementar."""
-        pass
-
+    def role(self): pass
     def to_dict(self):
-        """Convierte el objeto a un diccionario para guardarlo en JSON."""
         return {
             "id": self._user_id,
             "username": self._username,
             "password": self._password,
-            "role": self.role # Llama a la propiedad de la clase hija
+            "role": self.role
         }
 
 class ClientUser(BaseUser):
-    """Implementación concreta para un usuario 'Cliente'."""
-    
     @property
-    def role(self):
-        return "client"
+    def role(self): return "client"
 
 class AdminUser(BaseUser):
-    """Implementación concreta para un usuario 'Administrador'."""
-    
     @property
-    def role(self):
-        return "admin"
-
+    def role(self): return "admin"

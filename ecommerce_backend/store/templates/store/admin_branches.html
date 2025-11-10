@@ -1,0 +1,107 @@
+{% extends 'store/base.html' %} 
+{% load static %} 
+
+{% block title %}Administrar Sucursales{% endblock %} 
+
+{% block extra_styles %}
+    {# --- CORREGIDO: Cambiado 'myapp' por 'store' --- #}
+    <link rel="stylesheet" href="{% static 'store/leaflet/leaflet.css' %}"/>
+
+    <style>
+        /* Estilo para los contenedores de mapa */
+        .map-container {
+            height: 300px;
+            width: 100%;
+            border-radius: 0.5rem;
+            border: 1px solid #ddd;
+            z-index: 1; /* Asegura que el mapa esté visible */
+        }
+    </style>
+{% endblock extra_styles %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4">Gestión de Sucursales 📍</h1>
+
+    <p class="text-muted">Listado de sucursales registradas en el sistema. 
+
+[Image of a map with location pins]
+</p>
+    
+    <div class="row g-4">
+        {% for branch in branches %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ branch.name }}</h5>
+                    <p class="card-text text-muted">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        {{ branch.address }}
+                    </p>
+                    <p class="card-text small">
+                        ID: {{ branch.id }} | Lat: {{ branch.latitude }} | Lon: {{ branch.longitude }}
+                    </p>
+                </div>
+                <div class="card-footer bg-white p-2">
+                    {# Contenedor del mapa #}
+                    <div id="map-{{ branch.id }}" class="map-container"></div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col">
+            <p class="text-center text-muted">No hay sucursales registradas en <code>sucursales.json</code>.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+    {# 3. Datos JSON (ya estaba en la posición correcta) #}
+    {{ branches_json|json_script:"branches-data" }}
+
+    {# --- CORREGIDO: Cambiado 'myapp' por 'store' --- #}
+    <script src="{% static 'store/leaflet/leaflet.js' %}"></script>
+
+    {# 5. Script de inicialización (sin cambios) #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let branches;
+            try {
+                const data = JSON.parse(document.getElementById('branches-data').textContent);
+                branches = data;
+            } catch (e) {
+                console.error("Error al parsear datos JSON de sucursales:", e);
+                branches = []; // Usa un array vacío como fallback
+            }
+            
+            // Iterar sobre cada sucursal para inicializar su mapa
+            branches.forEach(branch => {
+                const mapId = `map-${branch.id}`;
+                const mapElement = document.getElementById(mapId);
+
+                if (!mapElement) {
+                    console.warn(`Elemento del mapa ${mapId} no encontrado.`);
+                    return;
+                }
+
+                const lat = branch.latitude;
+                const lon = branch.longitude;
+
+                // 1. Inicializar el mapa
+                const map = L.map(mapId).setView([-24.18416, -65.3009], 15); // Nivel de zoom 15
+
+                // 2. Añadir la capa de "tiles" (el fondo del mapa)
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+
+                // 3. Añadir un marcador (pin)
+                L.marker([lat, lon]).addTo(map)
+                    .bindPopup(`<b>${branch.name}</b><br>${branch.address}`)
+                    .openPopup();
+            });
+        });
+    </script>
+{% endblock extra_js %}
