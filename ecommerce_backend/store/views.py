@@ -24,8 +24,10 @@ from django.core.files.base import ContentFile
 from .mixins import AdminRequiredMixin 
 
 from .branch_service import BranchService 
+from django.http import JsonResponse
 from django.core.serializers.json import DjangoJSONEncoder
 import json
+
 
 # Inicializacion de los servicios (global para las vistas)
 user_service = UserService()
@@ -257,11 +259,33 @@ class List_productView(View):
     """
     def get(self, request):
         service = ProductService()
-        productos = service.get_all_products()
+        branch_service = BranchService()
+
+        # 🔑 1. OBTENER SUCURSAL SELECCIONADA
+        # El ID de la sucursal se guarda en la sesión con la clave 'selected_branch_id'
+        selected_branch_id = request.session.get('selected_branch_id')
+
+        all_products = service.get_all_products() 
+
+        if selected_branch_id:
+            # 🔑 2. FILTRAR PRODUCTOS POR SUCURSAL
+            branch_id = int(selected_branch_id)
+            productos = [prod for prod in all_products if prod.get('branch_id') == branch_id]
+            
+            branches = branch_service.get_all_branches()
+            branch_name = next((b['name'] for b in branches if b['id'] == branch_id), "Catálogo")
+            #branch_name = f" (Sucursal ID: {branch_id})"  # ME da el Id de la sucursal seleccionada
+        else:
+            # Si no hay sucursal seleccionada, No mostrar productos hasta que se seleccione una
+            productos = []
+            branch_name = " (Por favor selecciona una sucursal)"
         
+        # Preparar el contexto para el template
         context = {
             'productos': productos,
-            'titulo': 'Catálogo de Productos'
+            'titulo': f'Catálogo de Productos - Sucursal {branch_name}',
+            # Flag para JS: muestra el modal si la sucursal no está seleccionada
+            'show_branch_modal': selected_branch_id is None
         }
         return render(request, 'store/list_product.html', context)
 
@@ -274,9 +298,19 @@ class ProductDetailHTMLView(View):
     def get(self, request, pk):
         service = ProductService()
         product = service.get_product_by_id(pk)
+
+        selected_branch_id = request.session.get('selected_branch_id')
+
         if not product:
             messages.error(request, "Producto no encontrado")
             return redirect('product-list-html')
+
+        # VERIFICAR LA SUCURSAL DEL PRODUCTO
+        if selected_branch_id and product.get('branch_id') != int(selected_branch_id):
+            messages.warning(request, "El producto no está disponible en la sucursal seleccionada.")
+            return redirect('product-list-html')
+
+         # Preparar el contexto para el template
         
         context = {
             'producto': product,
@@ -616,3 +650,46 @@ class AdminBranchView(AdminRequiredMixin, View):
             'branches_json': branches
         }
         return render(request, self.template_name, context)
+
+class SetBranchView(View):
+    """Guarda el ID de la sucursal en la sesión del usuario."""
+    def post(self, request):
+        branch_id = request.POST.get('branch_id')
+        
+        if branch_id and branch_id.isdigit():
+            request.session['selected_branch_id'] = int(branch_id)
+            return JsonResponse({'success': True, 'branch_id': int(branch_id)})
+        
+        return JsonResponse({'success': False, 'error': 'ID de sucursal inválido'}, status=400)
+    
+class HomeView(View):
+    """
+    Vista para renderizar la página de inicio (index.html).
+    Incluye la lógica para mostrar el modal de selección de sucursal.
+    """
+    def get(self, request):
+        
+        # 1. Obtener la sucursal de la sesión
+        selected_branch_id = request.session.get('selected_branch_id')
+        
+        # 2. Obtener TODAS las sucursales para el modal
+        branches = branch_service.get_all_branches()
+
+        context = {
+            'branches': branches,
+            # Esta bandera controla si el JavaScript debe abrir el modal
+            'show_branch_modal': selected_branch_id is None, 
+            'titulo': 'Inicio'
+        }
+        
+        # Asumiendo que index.html está en 'store/index.html'
+        return render(request, 'store/index.html', context)
+
+# --- VISTA PARA LIMPIAR LA SUCURSAL SELECCIONADA ---
+class ClearBranchView(View):
+    """Vista para limpiar la sucursal seleccionada de la sesión."""
+    def get(self, request):
+        if 'selected_branch_id' in request.session:
+            del request.session['selected_branch_id']
+            messages.info(request, "La sucursal seleccionada ha sido borrada de tu sesión.")
+        return redirect('home') # Redirige al inicio (donde el modal saltará)

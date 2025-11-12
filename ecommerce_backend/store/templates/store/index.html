@@ -1,4 +1,32 @@
 {% extends 'store/base.html' %} {% load static %} {% block title %}Inicio{%endblock title %} {% block content %}
+<div class="modal fade" id="branchSelectorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="branchSelectorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="branchSelectorModalLabel">¡Bienvenido! Elige tu Sucursal</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Para ver el stock y precios correctos, por favor selecciona tu sucursal:</p>
+                    <div class="list-group">
+                        {% for branch in branches %}
+                        <button 
+                            type="button" 
+                            class="list-group-item list-group-item-action branch-select-btn"
+                            data-branch-id="{{ branch.id }}"
+                        >
+                            <strong>{{ branch.name }}</strong><br>
+                            <small class="text-muted">{{ branch.address }}</small>
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <small class="text-danger" id="branchError" style="display:none;">Por favor, selecciona una sucursal.</small>
+                    {% csrf_token %} 
+                </div>
+            </div>
+        </div>
+    </div>
 
 
   <div class="hero-section">
@@ -183,6 +211,58 @@
 </main>
 
 {% endblock content %} 
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Asegurate de que estas variables sean pasadas por el contexto
+      var showModalStr = "{{ show_branch_modal|lower }}";
+      var showModal = showModalStr === 'true';
+
+      var modalElement = document.getElementById('branchSelectorModal');
+      if (modalElement && showModal) {
+        // INciar el modal
+        var modal = new bootstrap.Modal(modalElement, {
+          backdrop: 'static',
+          keyboard: false // Evita cerrar con ESC
+        });
+        modal.show();
+      }
+
+      document.querySelectorAll('.branch-select-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          var branchId = this.getAttribute('data-branch-id');
+          var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+          document.querySelectorAll('.branch-select-btn').forEach(btn => btn.disabled = true);
+
+          fetch("{% url 'set-branch' %}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-CSRFToken': csrfToken
+            },
+            body: `branch_id=${branchId}`
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              var modal = bootstrap.Modal.getInstance(modalElement);
+              modal.hide();
+              window.location.reload();
+            } else {
+              throw new Error( data.error || 'Error al establecer la sucursal');
+            }
+          })
+          .catch(error => {
+            document.getElementById('branchError').textContent = 'Error: ' + error.message;
+            document.getElementById('branchError').style.display = 'block';
+            document.querySelectorAll('.branch-select-btn').forEach(btn => btn.disabled = false);
+          });
+      });
+    });
+    });
+</script>
+{% endblock extra_js %}
 {% block extra_styles %}
 <style>
     /* 1. Contenedor Principal (Define el área del "Hero") */
