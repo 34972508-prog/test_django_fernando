@@ -1,42 +1,61 @@
 {% extends 'store/base.html' %} {% load static %} {% block title %}Vista de
 Productos{% endblock %} {% block content %}
 <div class="container my-4">
-  <h1 class="mb-4">Catálogo de Productos (Tortas) 🎂</h1>
-
-  {% if error_message %}
-  <div class="alert alert-danger" role="alert">{{ error_message }}</div>
-  {% elif messages %} {% for message in messages %}
-  <div
-    class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}"
-    role="alert"
-  >
-    {{ message }}
-  </div>
-  {% endfor %} {% endif %}
-
-  <div class="mb-3">
-    <a
-      href="{% url 'product-create' %}"
-      class="btn btn-primary d-inline-flex align-items-center"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="me-2"
+  <h1 class="mb-4">Catálogo de Productos 🎂</h1>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Administración de Productos {{ filter_message }}</h2>
+    <div>
+      {% if show_clear_filter %}
+      <a
+        href="{% url 'admin-clear-branch-filter' %}"
+        class="btn btn-warning me-2"
       >
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M12 5l0 14" />
-        <path d="M5 12l14 0" />
-      </svg>
-      Crear Producto
-    </a>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-list"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M9 6l11 0" />
+          <path d="M9 12l11 0" />
+          <path d="M9 18l11 0" />
+          <path d="M5 6l0 .01" />
+          <path d="M5 12l0 .01" />
+          <path d="M5 18l0 .01" />
+        </svg>
+        Limpiar Filtro
+      </a>
+      {% endif %}
+      <a
+        href="{% url 'product-create' %}"
+        class="btn btn-primary d-inline-flex align-items-center"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="me-2"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M12 5l0 14" />
+          <path d="M5 12l14 0" />
+        </svg>
+        Crear Producto
+      </a>
+    </div>
   </div>
 
   <p class="text-muted">
@@ -210,49 +229,54 @@ Productos{% endblock %} {% block content %}
     text-overflow: ellipsis;
   }
 </style>
-{% endblock extra_styles %}
-{% block extra_js %}
+{% endblock extra_styles %} {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var productDetailModal = document.getElementById('productDetailModal');
-        
-        // Listener para cuando el modal se está abriendo
-        productDetailModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget; // Botón que disparó el modal
-            var detailUrl = button.getAttribute('data-url'); // La URL con ?modal=true
-            
-            var modalBody = productDetailModal.querySelector('#productDetailBody');
-            var modalTitle = productDetailModal.querySelector('#productDetailModalLabel');
+  document.addEventListener("DOMContentLoaded", function () {
+    var productDetailModal = document.getElementById("productDetailModal");
 
-            // 1. Mostrar estado de carga y título temporal
-            modalBody.innerHTML = '<div class="text-center p-5"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
-            modalTitle.textContent = 'Detalle del Producto';
+    // Listener para cuando el modal se está abriendo
+    productDetailModal.addEventListener("show.bs.modal", function (event) {
+      var button = event.relatedTarget; // Botón que disparó el modal
+      var detailUrl = button.getAttribute("data-url"); // La URL con ?modal=true
 
-            // 2. Cargar contenido vía AJAX
-            fetch(detailUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.text();
-                })
-                .then(html => {
-                    // 3. Insertar el fragmento HTML cargado en el cuerpo del modal
-                    modalBody.innerHTML = html; 
-                    // 4. Opcional: Actualizar el título con el nombre del producto si es necesario
-                    // modalTitle.textContent = 'Detalle: ' + button.title; 
-                })
-                .catch(error => {
-                    // 5. Mostrar mensaje de error si la carga falla
-                    modalBody.innerHTML = '<div class="alert alert-danger">Error al cargar el detalle: ' + error.message + '</div>';
-                    console.error('Error fetching detail:', error);
-                });
-        });
-        
-        // Opcional: Limpiar el modal al cerrarse para evitar mostrar datos antiguos
-        productDetailModal.addEventListener('hidden.bs.modal', function () {
-             productDetailModal.querySelector('#productDetailBody').innerHTML = '';
+      var modalBody = productDetailModal.querySelector("#productDetailBody");
+      var modalTitle = productDetailModal.querySelector(
+        "#productDetailModalLabel"
+      );
+
+      // 1. Mostrar estado de carga y título temporal
+      modalBody.innerHTML =
+        '<div class="text-center p-5"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+      modalTitle.textContent = "Detalle del Producto";
+
+      // 2. Cargar contenido vía AJAX
+      fetch(detailUrl)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.text();
+        })
+        .then((html) => {
+          // 3. Insertar el fragmento HTML cargado en el cuerpo del modal
+          modalBody.innerHTML = html;
+          // 4. Opcional: Actualizar el título con el nombre del producto si es necesario
+          // modalTitle.textContent = 'Detalle: ' + button.title;
+        })
+        .catch((error) => {
+          // 5. Mostrar mensaje de error si la carga falla
+          modalBody.innerHTML =
+            '<div class="alert alert-danger">Error al cargar el detalle: ' +
+            error.message +
+            "</div>";
+          console.error("Error fetching detail:", error);
         });
     });
+
+    // Opcional: Limpiar el modal al cerrarse para evitar mostrar datos antiguos
+    productDetailModal.addEventListener("hidden.bs.modal", function () {
+      productDetailModal.querySelector("#productDetailBody").innerHTML = "";
+    });
+  });
 </script>
 {% endblock extra_js %}

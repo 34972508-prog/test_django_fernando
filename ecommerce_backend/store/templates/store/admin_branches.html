@@ -59,17 +59,17 @@
 
         <div class="col-lg-4">
             <div id="branch-list-container">
-                {% for branch in branches %}
+                {% for branch in branches %}           
                     <div class="branch-item" 
-                         data-id="{{ branch.id }}" 
-                         data-lat="{{ branch.latitude }}" 
-                         data-lon="{{ branch.longitude }}">
+                        data-id="{{ branch.id }}" 
+                        data-lat="{{ branch.latitude }}" 
+                        data-lon="{{ branch.longitude }}">
                         
                         <h5 class="card-title">{{ branch.name }}</h5>
                         <p class="card-text text-muted mb-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             {{ branch.address }}
                         </p>
+                        <span class="filter-status badge bg-success" data-id="{{ branch.id }}" style="display:none;">Filtro Aplicado</span>
                     </div>
                 {% empty %}
                     <p class="p-3 text-center text-muted">No hay sucursales registradas.</p>
@@ -87,11 +87,30 @@
 {% endblock content %}
 
 {% block extra_js %}
+
     {{ branches_json|json_script:"branches-data" }}
 
     <script src="{% static 'store/leaflet/leaflet.js' %}"></script>
 
     <script>
+        // Función para obtener el CSRF token de la cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+
         document.addEventListener('DOMContentLoaded', function() {
             let branches;
             try {
@@ -135,12 +154,14 @@
             }
 
             const branchItems = document.querySelectorAll('.branch-item');
+            const filterStatusIndicators = document.querySelectorAll('.filter-status');
 
             branchItems.forEach(item => {
                 item.addEventListener('click', function() {
                     const id = this.dataset.id;
                     const lat = this.dataset.lat;
                     const lon = this.dataset.lon;
+                    const branchName = this.querySelector('h5').textContent;
 
                     map.flyTo([lat, lon], 16); 
 
@@ -149,6 +170,40 @@
                             markers[id].openPopup();
                         }, 500); 
                     }
+
+                    // 2. Ejecutar la llamada AJAX para guardar el filtro en la sesión
+                    const formData = new FormData();
+                    formData.append('branch_id', id);
+
+                    fetch("{% url 'admin-set-branch-filter' %}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken, // CLAVE: Necesario para POST en Django
+                        },
+                        body: formData 
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                        // 3. ÉXITO: Mostrar un mensaje o actualizar un indicador, pero NO redirigir.
+                            alert(`Filtro de productos establecido para: ${branchName}. Vaya al panel de Productos.`);
+                    
+                        // Opcional: Actualizar indicador de filtro
+                            filterStatusIndicators.forEach(indicator => {
+                                indicator.style.display = 'none';
+                            });
+                            const selectedIndicator = document.querySelector(`.filter-status[data-id="${id}"]`);
+                            if (selectedIndicator) {
+                                selectedIndicator.style.display = 'inline-block';
+                            }
+                        } else {
+                            alert('Error al establecer el filtro: ' + (data.error || 'Respuesta inválida'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error en la solicitud AJAX:', error);
+                        alert('Hubo un error de conexión al guardar el filtro.');
+                     });    
                 });
             });
 

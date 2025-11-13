@@ -37,8 +37,11 @@ urlpatterns = [
    
     # --- NUEVA RUTA DE SUCURSALES ---
     path('admin/branches/', views.AdminBranchView.as_view(), name='admin-branch-view'),
+    path('admin/products/filter/set/', views.SetAdminBranchFilterView.as_view(), name='admin-set-branch-filter'),
+    path('admin/products/filter/clear/', views.ClearAdminBranchFilterView.as_view(), name='admin-clear-branch-filter'),
     path('set-branch/', views.SetBranchView.as_view(), name='set-branch'),  # Ruta para establecer la sucursal seleccionada
     path('clear-branch/', views.ClearBranchView.as_view(), name='clear-branch'), # Ruta para limpiar la sucursal seleccionada
+    
 
     # Vistas de Cliente (HTML)
     path('products/list', views.List_productView.as_view(), name='product-list-html'),

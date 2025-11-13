@@ -97,7 +97,33 @@ class ProductDetailAPIView(APIView):
 class AdminProductView(AdminRequiredMixin,View):
     def get(self, request):
         service = ProductService()
+        
+        # 🔑 CLAVE: Chequear la sesión en busca del filtro temporal del admin
+        branch_id_filter = request.session.get('admin_product_filter_branch_id')
+        filter_message = "(Mostrando todos)"
+        branch_name = None # Vble para el nombre de la sucursal filtrada
+
         all_products = service.get_all_products()
+
+        if branch_id_filter:
+            # 1. Obtener la sucursal completa para el nombre (Necesitas la lógica de branch_service)
+            # --- ASUMIENDO QUE branch_service EXISTE Y FUNCIONA ---
+            selected_branch = branch_service.get_branch_by_id(branch_id_filter) 
+            
+            if selected_branch:
+                branch_name = selected_branch.get('name', f"ID: {branch_id_filter}") # Obtiene el nombre
+                filter_message = f" en Sucursal {branch_name}" # Mensaje mejorado
+            else:
+                filter_message = f" (Filtrado por Sucursal ID: {branch_id_filter}, nombre no encontrado)"
+
+
+            # Filtrar los productos localmente
+            all_products = [
+                p for p in all_products 
+                if p.get('branch_id') == branch_id_filter
+            ]
+            
+        
         
         # --- MEJORA: Obtener nombres de categorías ---
         all_categories = service.get_all_categories()
@@ -111,6 +137,8 @@ class AdminProductView(AdminRequiredMixin,View):
 
         context = {
             'products': all_products,
+            'filter_message': filter_message,
+            'show_clear_filter': branch_id_filter is not None # Para mostrar el botón de limpiar filtro
         }
         return render(request, 'store/admin_products.html', context)
 
@@ -300,13 +328,17 @@ class ProductDetailHTMLView(View):
         product = service.get_product_by_id(pk)
 
         selected_branch_id = request.session.get('selected_branch_id')
+        
+        # 🔑 NUEVA LÓGICA: Verificar si el usuario es administrador
+        is_admin = request.session.get('user_role') == 'admin'
 
         if not product:
             messages.error(request, "Producto no encontrado")
             return redirect('product-list-html')
 
         # VERIFICAR LA SUCURSAL DEL PRODUCTO
-        if selected_branch_id and product.get('branch_id') != int(selected_branch_id):
+        # SOLO aplicar esta validación si NO es un administrador
+        if not is_admin and selected_branch_id and product.get('branch_id') != int(selected_branch_id):
             messages.warning(request, "El producto no está disponible en la sucursal seleccionada.")
             return redirect('product-list-html')
 
@@ -693,3 +725,36 @@ class ClearBranchView(View):
             del request.session['selected_branch_id']
             messages.info(request, "La sucursal seleccionada ha sido borrada de tu sesión.")
         return redirect('home') # Redirige al inicio (donde el modal saltará)
+
+
+
+class SetAdminBranchFilterView(AdminRequiredMixin, View):
+
+    """Guarda temporalmente el ID de la sucursal en la sesión del admin y devuelve JSON."""
+    
+    # ⚠️ CAMBIAMOS a método POST, es más seguro y estándar para acciones
+    def post(self, request):
+        # 1. Obtener el ID de la sucursal del cuerpo de la solicitud POST
+        branch_id_str = request.POST.get('branch_id')
+            
+        if not branch_id_str or not branch_id_str.isdigit():
+            return JsonResponse({'success': False, 'error': 'ID de sucursal inválido'}, status=400)
+                
+        branch_id = int(branch_id_str)
+            
+        # 2. Guardar el filtro en la sesión
+        request.session['admin_product_filter_branch_id'] = branch_id
+            
+        # 3. Respuesta JSON de éxito
+        return JsonResponse({'success': True, 'branch_id': branch_id})
+        
+# La vista ClearAdminBranchFilterView puede permanecer como GET si lo deseas, pero POST es preferible.
+# Si la dejas como GET, la llamarías con un <a> normal, pero ya no tendrías el problema del redirect.
+
+class ClearAdminBranchFilterView(AdminRequiredMixin, View):
+    """Limpia el filtro de sucursal de la sesión del admin."""
+    def get(self, request):
+        if 'admin_product_filter_branch_id' in request.session:
+            del request.session['admin_product_filter_branch_id']
+            messages.info(request, "Filtro de sucursal de administración limpiado.")
+        return redirect('admin-product-view')
