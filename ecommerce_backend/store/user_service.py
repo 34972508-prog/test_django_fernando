@@ -22,12 +22,14 @@ class UserService:
                 data = json.load(f)
                 user_objects = []
                 for item in data:
-                    args = (item['id'], item['username'], item['password'])
+                    args = (item['id'], item['username'], item['password'], item.get('email'), item.get('address'))
                     
                     # Aquí ocurre la magia (Polimorfismo)
                     if item['role'] == 'admin':
+                        # AdminUser ahora debe aceptar los 5 argumentos
                         user_objects.append(AdminUser(*args))
                     else:
+                        # ClientUser ahora debe aceptar los 5 argumentos
                         user_objects.append(ClientUser(*args))
                 
                 return user_objects
@@ -38,11 +40,13 @@ class UserService:
                 # Si creamos el archivo, añadimos el admin por defecto
                 admin_data = {
                     "id": 1, "username": "admin", 
-                    "password": "adminpassword123", "role": "admin"
+                    "password": "adminpassword123", "role": "admin",
+                    "email": "admin@test.com", "address": "N/A" # Asegúrate de que el JSON inicial los tenga
                 }
                 json.dump([admin_data], f, indent=4)
                 # Devolvemos el objeto admin instanciado
-                return [AdminUser(admin_data['id'], admin_data['username'], admin_data['password'])]
+                return [AdminUser(admin_data['id'], admin_data['username'], admin_data['password'],
+                                  admin_data['email'], admin_data['address'])] # Inicialización con 5 args
             
     def _save_users(self):
         """
@@ -64,7 +68,7 @@ class UserService:
         # Ahora busca en la propiedad .username del objeto
         return next((u for u in self._users if u.username.lower() == username.lower()), None)
 
-    def create_user(self, username, password):
+    def create_user(self, username, password, email= None, address=None):
         """
         Crea un nuevo objeto ClientUser, lo guarda y devuelve su dict.
         """
@@ -78,7 +82,9 @@ class UserService:
             new_user = ClientUser(
                 user_id=new_id,
                 username=username,
-                password=password
+                password=password,
+                email=email,
+                address=address
             )
             
             self._users.append(new_user)

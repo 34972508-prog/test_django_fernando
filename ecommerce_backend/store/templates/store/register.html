@@ -3,34 +3,105 @@
 {% block title %}Registrarse{% endblock %}
 
 {% block content %}
-<div class="container my-4" style="max-width: 600px;">
-    <h2 class="mb-4">Crear una Cuenta</h2>
+<div class="container my-5" style="max-width: 600px;">
+    <h2 class="mb-4 text-center text-success fw-bold">Crear una Cuenta</h2>
 
-    {% if messages %} 
-        {% for message in messages %}
-            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}" role="alert">
-                {{ message }}
-            </div>
-        {% endfor %} 
+    <!-- Espacio para el mensaje de error personalizado -->
+    {% if error_message %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-danger">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 9v4" /><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" /><path d="M12 17h.01" />
+        </svg>
+        <strong>Error:</strong> {{ error_message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     {% endif %}
 
-    <form method="post">
+    <form method="post" class="p-4">
         {% csrf_token %}
+        <!-- Nombre de Usuario -->
+        <div class="mb-3">
+            <label for="id_username" class="form-label fw-semibold">Nombre de Usuario</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+                        <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                    </svg>
+                </span>
+                <input type="text" name="username" class="form-control border-start-0" id="id_username" placeholder="Elige tu nombre de usuario" value="{{ username }}" required>
+            </div>
+        </div>
+        <!-- Correo Electrónico (Nuevo Campo) -->
+        <div class="mb-3">
+            <label for="id_email" class="form-label fw-semibold">Correo Electrónico</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" />
+                        <path d="M3 7l9 6l9 -6" />
+                    </svg>
+                </span>
+                <input type="email" name="email" class="form-control border-start-0" id="id_email" placeholder="ejemplo@correo.com" value="{{ email }}" required>
+            </div>
+        </div>     
+        <!-- Domicilio (Nuevo Campo) -->
+        <div class="mb-3">
+            <label for="id_address" class="form-label fw-semibold">Domicilio (Opcional)</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                        <path d="M12.72 21.828c-3.134 -0.375 -5.72 -1.728 -7.675 -3.683a9.006 9.006 0 0 1 0 -12.28a9.006 9.006 0 0 1 12.274 0c2.203 2.204 3.12 6.551 0.447 10.158" />
+                    </svg>
+                </span>
+                <input type="text" name="address" class="form-control border-start-0" id="id_address" placeholder="Calle, número, ciudad" value="{{ address }}">
+            </div>
+        </div>
+        <!-- Contraseña -->
+        <div class="mb-3">
+            <label for="id_password" class="form-label fw-semibold">Contraseña</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" />
+                        <path d="M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z" />
+                        <path d="M10 11v-2a2 2 0 1 1 4 0v2" />
+                    </svg>
+                </span>
+                <input type="password" name="password" class="form-control border-start-0" id="id_password" required>
+            </div>
+        </div>
+        <!-- Confirmar Contraseña -->
+        <div class="mb-4">
+            <label for="id_password2" class="form-label fw-semibold">Confirmar Contraseña</label>
+            <div class="input-group">
+                 <span class="input-group-text bg-white border-end-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" />
+                        <path d="M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z" />
+                        <path d="M10 11v-2a2 2 0 1 1 4 0v2" />
+                    </svg>
+                </span>
+                <input type="password" name="password2" class="form-control border-start-0" id="id_password2" required>
+            </div>
+        </div>
 
-        <div class="mb-3">
-            <label for="id_username" class="form-label">Nombre de Usuario</label>
-            <input type="text" name="username" class="form-control" id="id_username" required>
-        </div>
-        <div class="mb-3">
-            <label for="id_password" class="form-label">Contraseña</label>
-            <input type="password" name="password" class="form-control" id="id_password" required>
-        </div>
-        <div class="mb-3">
-            <label for="id_password2" class="form-label">Confirmar Contraseña</label>
-            <input type="password" name="password2" class="form-control" id="id_password2" required>
-        </div>
+        <button type="submit" class="btn btn-success w-100 fw-bold py-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M9 12l2 2l4 -4" />
+            </svg>
+            Crear Cuenta
+        </button>
 
-        <button type="submit" class="btn btn-success w-100">Registrarse</button>
+        <p class="text-center mt-3 mb-0">
+            ¿Ya tienes una cuenta? <a href="{% url 'login' %}" class="text-decoration-none">Iniciar Sesión</a>
+        </p>
     </form>
 </div>
 {% endblock %}

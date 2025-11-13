@@ -3,18 +3,32 @@
         "id": 1,
         "username": "admin",
         "password": "adminpassword123",
-        "role": "admin"
+        "role": "admin",
+        "email": "admin@test.com",
+        "address": "N/A"
     },
     {
         "id": 2,
         "username": "Angie",
         "password": "220595",
-        "role": "admin"
+        "role": "admin",
+        "email": "cliente1@mail.com",
+        "address": "Calle Falsa 123, Ciudad"
     },
     {
         "id": 3,
         "username": "Alice",
         "password": "alice123",
-        "role": "client"
+        "role": "client",
+        "email": "nuevo_usuario@test.com",
+        "address": "Av. Siempre Viva 742"
+    },
+    {
+        "id": 4,
+        "username": "Augusto",
+        "password": "12345",
+        "role": "client",
+        "email": "agus@gmail.com",
+        "address": "2345"
     }
 ]

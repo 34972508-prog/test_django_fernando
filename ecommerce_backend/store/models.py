@@ -201,16 +201,23 @@ class Cart:
         return cart
 
 class BaseUser(ABC):
-    def __init__(self, user_id, username, password):
+    def __init__(self, user_id, username, password, email=None, address=None):
         self._user_id = user_id
         self._username = username
         self._password = password 
+        self._email = email
+        self._address = address
+
     @property
     def user_id(self): return self._user_id
     @property
     def username(self): return self._username
     @property
     def password(self): return self._password
+    @property
+    def email(self): return self._email
+    @property
+    def address(self): return self._address
     @property
     @abstractmethod
     def role(self): pass
@@ -219,13 +226,25 @@ class BaseUser(ABC):
             "id": self._user_id,
             "username": self._username,
             "password": self._password,
-            "role": self.role
+            "role": self.role,
+            "email": self._email,
+            "address": self._address
         }
 
 class ClientUser(BaseUser):
+    # El constructor de ClientUser hereda automáticamente de BaseUser
+    # si no lo defines, pero por si acaso, lo definimos para asegurar la recepción
+    def __init__(self, user_id, username, password, email=None, address=None):
+        super().__init__(user_id, username, password, email, address) # Llama a la base con los nuevos campos
+
     @property
     def role(self): return "client"
 
 class AdminUser(BaseUser):
+    # NOTA: Asegúrate de que AdminUser también maneje email y address si es necesario
+    # Por ahora, mantendremos la simplificación, pero debe heredar.
+    def __init__(self, user_id, username, password, email=None, address=None):
+        super().__init__(user_id, username, password, email, address)
+        
     @property
     def role(self): return "admin"

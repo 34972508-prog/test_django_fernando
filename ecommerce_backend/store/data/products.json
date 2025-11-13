@@ -142,5 +142,17 @@
         "image_url": "https://tse2.mm.bing.net/th/id/OIP.9nF0JvIjsHkIb_wdENR3QAHaE8?rs=1&pid=ImgDetMain&o=7&rm=3",
         "type": "cake",
         "weight": 15.0
+    },
+    {
+        "id": 114,
+        "title": "Tortas Clasica y de Cumpleaños",
+        "description": "3 rellenos  y decorado con glaseado, fondant, crema, chocolate u otros ingredientes a elección",
+        "price": 30000.0,
+        "stock": 5,
+        "category_id": 1,
+        "branch_id": 3,
+        "image_url": "/media/productos/f44a7d3a75ad4db699afe6db29edce0e.webp",
+        "type": "cake",
+        "weight": 2.5
     }
 ]

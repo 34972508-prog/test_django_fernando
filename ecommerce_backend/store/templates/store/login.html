@@ -3,20 +3,61 @@
 {% block title %}Iniciar Sesión{% endblock %}
 
 {% block content %}
-<div class="container my-4" style="max-width: 500px;">
-    <h2 class="mb-4">Iniciar Sesión</h2>
-
-    <form method="post">
+<div class="container my-5" style="max-width: 500px;">
+    <h2 class="mb-4 text-center text-primary fw-bold">Iniciar Sesión</h2>
+    <!-- Espacio para el mensaje de error personalizado -->
+    {% if error_message %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-danger">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 9v4" /><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" /><path d="M12 17h.01" />
+        </svg>
+        <strong>Error:</strong> {{ error_message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    <form method="post" class="p-4  ">
         {% csrf_token %}
+        <!-- Campo de Usuario -->
         <div class="mb-3">
-            <label for="id_username" class="form-label">Usuario</label>
-            <input type="text" name="username" class="form-control" id="id_username" required>
+            <label for="id_username" class="form-label fw-semibold">Usuario</label>
+            <div class="input-group">
+                <!-- Icono de Usuario -->
+                <span class="input-group-text bg-white border-end-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                        <path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+                        <path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855" />
+                    </svg>
+                </span>
+                <input type="text" name="username" class="form-control border-start-0" id="id_username" placeholder="Ingresa tu nombre de usuario" required>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="id_password" class="form-label">Contraseña</label>
-            <input type="password" name="password" class="form-control" id="id_password" required>
+        <!-- Campo de Contraseña -->
+        <div class="mb-4">
+            <label for="id_password" class="form-label fw-semibold">Contraseña</label>
+            <div class="input-group">
+                <!-- Icono de Contraseña -->
+                <span class="input-group-text bg-white border-end-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" />
+                        <path d="M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z" />
+                        <path d="M10 11v-2a2 2 0 1 1 4 0v2" />
+                    </svg>
+                </span>
+                <input type="password" name="password" class="form-control border-start-0" id="id_password" placeholder="Ingresa tu contraseña" required>
+            </div>
         </div>
-        <button type="submit" class="btn btn-primary w-100">Entrar</button>
+        <button type="submit" class="btn btn-primary w-100 fw-bold py-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" /><path d="M20 12h-13l3 -3m0 6l-3 -3" />
+            </svg>
+            Entrar
+        </button>
+        <p class="text-center mt-3 mb-0">
+            ¿No tienes una cuenta? <a href="{% url 'register' %}" class="text-decoration-none">Regístrate aquí</a>
+        </p>
     </form>
 </div>
 {% endblock %}

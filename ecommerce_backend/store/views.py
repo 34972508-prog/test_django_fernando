@@ -592,48 +592,64 @@ class LoginView(View):
             request.session['username'] = user.username
             request.session['user_role'] = user.role
             
-            messages.success(request, f"¡Bienvenido, {user.username}!")
+            #messages.success(request, f"¡Bienvenido, {user.username}!")
             
             if user.role == 'admin':
                 return redirect('admin-product-view')
             else:
                 return redirect('product-list-html')
         else:
-            messages.error(request, "Usuario o contraseña incorrectos.")
-            return render(request, 'store/login.html')
+            error_message = "Usuario o contraseña incorrectos. Por favor, intenta de nuevo."
+            return render(request, 'store/login.html', {'error_message': error_message})
+            
 
 class RegisterView(View):
     
     def get(self, request):
         if request.session.get('user_id'):
             return redirect('home')
-        return render(request, 'store/register.html')
+        # Pasamos None para evitar errores si no hay datos en la sesión
+        return render(request, 'store/register.html', {
+            'username': None, 
+            'email': None, 
+            'address': None
+        })
 
     def post(self, request):
         service = UserService()
         username = request.POST.get('username')
         pass1 = request.POST.get('password')
         pass2 = request.POST.get('password2')
+        email = request.POST.get('email')
+        address = request.POST.get('address')
+        # Datos para repoblar el formulario en caso de error
+        context_error = {
+            'username': username,
+            'email': email,
+            'address': address
+        }
         
-        if not username or not pass1 or not pass2:
-            messages.error(request, "Todos los campos son obligatorios.")
+        
+        if not username or not pass1 or not pass2 or not email:
+            context_error['error_message'] = "Los campos de Usuario, Contraseña y Correo son obligatorios."
             return render(request, 'store/register.html')
             
         if pass1 != pass2:
-            messages.error(request, "Las contraseñas no coinciden.")
+            context_error['error_message'] = "Las contraseñas no coinciden."
             return render(request, 'store/register.html')
 
-        new_user = service.create_user(username, pass1)
+        new_user = service.create_user(username, pass1, email= email, address = address)
         
         if new_user:
             request.session['user_id'] = new_user['id']
             request.session['username'] = new_user['username']
             request.session['user_role'] = new_user['role']
+           
             
-            messages.success(request, "¡Registro exitoso! Has iniciado sesión.")
+            #messages.success(request, "¡Registro exitoso! Has iniciado sesión.")
             return redirect('product-list-html') 
         else:
-            messages.error(request, "El nombre de usuario ya existe.")
+            context_error['error_message'] = "El nombre de usuario ya existe o hubo un error al crear la cuenta."
             return render(request, 'store/register.html')
 
 class LogoutView(View):
@@ -654,12 +670,21 @@ class AdminUserView(AdminRequiredMixin, View):
     Vista para listar todos los usuarios (Admin View).
     """
     def get(self, request):
+        user_service = UserService()
+
+        # 🔑 CLAVE 1: Forzar la recarga de los datos desde user.json
+        user_service._load_users() # Suponiendo que tienes un método 'load_data'
         
         all_users = user_service._users # Accede directamente a la lista cargada
+
+        # 2. 🔑 CLAVE: Obtener el ID del usuario logueado desde la sesión
+        logged_in_user_id = request.session.get('user_id')
         
         context = {
             'users': all_users, 
-            'titulo': 'Administración de Usuarios'
+            'titulo': 'Administración de Usuarios',
+            # 3. 🔑 CLAVE: Pasar el ID del admin al template
+            'current_user_id': logged_in_user_id
         }
         return render(request, 'store/admin_users.html', context)
         
@@ -686,8 +711,11 @@ def profile_view(request):
     if not logged_in_username:
         messages.warning(request, "Debes iniciar sesión para ver tu perfil.")
         return redirect('login') 
-    
-    user_object = user_service.get_user_by_username(logged_in_username)
+    # Forzar la recarga de usuarios para ver archivo JSON actualizado
+    service = UserService()
+    service._load_users()
+
+    user_object = service.get_user_by_username(logged_in_username)
     
     if not user_object:
         request.session.flush() 
@@ -698,6 +726,8 @@ def profile_view(request):
         'user': user_object, 
         'username': user_object.username,
         'is_admin': user_object.role == 'admin', 
+        'email': user_object.email,
+        'address': user_object.address,
     }
     
     return render(request, 'store/profile_user.html', context)
