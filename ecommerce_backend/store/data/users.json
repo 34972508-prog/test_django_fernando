@@ -7,14 +7,14 @@
     },
     {
         "id": 2,
-        "username": "prueba",
-        "password": "prueba123",
-        "role": "client"
+        "username": "Angie",
+        "password": "220595",
+        "role": "admin"
     },
     {
         "id": 3,
-        "username": "prueba2",
-        "password": "prueba2123",
+        "username": "Alice",
+        "password": "alice123",
         "role": "client"
     }
 ]

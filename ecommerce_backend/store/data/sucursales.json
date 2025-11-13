@@ -1,0 +1,52 @@
+[
+    {
+        "id": 1,
+        "name": "Pastelería Centro",
+        "address": "Av. Siempre Viva 742, Centro",
+        "latitude": -24.1834,
+        "longitude": -65.3312,
+        "is_open": true,
+        "opening_hours": "09:00 - 20:00 (Corrido)",
+        "phone": "+54 388 4221111"
+    },
+    {
+        "id": 2,
+        "name": "Café de la Plaza",
+        "address": "Calle Falsa 123, Centro",
+        "latitude": -24.1850,
+        "longitude": -65.3300,
+        "is_open": true,
+        "opening_hours": "08:30 - 13:00 / 17:00 - 21:00",
+        "phone": "+54 388 4232222"
+    },
+    {
+        "id": 3,
+        "name": "Dulce Tentación - Alto Comedero",
+        "address": "Av. Forestal N° 450, Alto Comedero",
+        "latitude": -24.2305,
+        "longitude": -65.2918,
+        "is_open": true,
+        "opening_hours": "10:00 - 14:00 / 16:00 - 20:30",
+        "phone": "+54 388 4283333"
+    },
+    {
+        "id": 4,
+        "name": "Sabores del Río",
+        "address": "Calle Los Alisos 200, Bajo La Viña",
+        "latitude": -24.1687,
+        "longitude": -65.3090,
+        "is_open": true,
+        "opening_hours": "09:30 - 20:30 (Corrido)",
+        "phone": "+54 388 4254444"
+    },
+    {
+        "id": 5,
+        "name": "Esquina del Postre",
+        "address": "Necochea y Belgrano 101, Centro",
+        "latitude": -24.1873,
+        "longitude": -65.3285,
+        "is_open": true,
+        "opening_hours": "10:00 - 13:30 / 16:30 - 20:00",
+        "phone": "+54 388 4275555"
+    }
+]

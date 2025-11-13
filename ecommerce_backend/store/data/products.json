@@ -6,6 +6,7 @@
         "price": 35000.0,
         "stock": 0,
         "category_id": 1,
+        "branch_id": 1,
         "image_url": "https://3.bp.blogspot.com/-tcb1UL2M3So/U3zj4eaKYjI/AAAAAAACND0/lazS68SNa5A/s1600/las-fotos-mas-lindas-y-hermosas-de-internet-fondos-y-wallpapers-gratis-para-compartir-imagenes-gratis+(7).jpg",
         "type": "cake",
         "weight": 1.5
@@ -17,6 +18,7 @@
         "price": 28500.0,
         "stock": 8,
         "category_id": 2,
+        "branch_id": 1,
         "image_url": "https://2.bp.blogspot.com/-_VS7i7Jnp-s/UcBdeNBKCqI/AAAAAAAB0W0/n6AlrQeZdwg/s1600/Amanecer-en-Alaska.jpg",
         "type": "cake",
         "weight": 1.2
@@ -28,6 +30,7 @@
         "price": 32000.0,
         "stock": 12,
         "category_id": 1,
+        "branch_id": 1,
         "image_url": "https://3.bp.blogspot.com/-DX9-ZpjN904/U_emMocc4uI/AAAAAAACR70/ll9TwkTijL4/s1600/saint-michael-church-brixen-1920x1200-wallpaper.jpg",
         "type": "cake",
         "weight": 1.4
@@ -39,6 +42,7 @@
         "price": 25000,
         "stock": 10,
         "category_id": 3,
+        "branch_id": 1,
         "image_url": "/api/media/productos/lemon_pie.jpg",
         "type": "cake",
         "weight": 0.9
@@ -50,6 +54,7 @@
         "price": 38000,
         "stock": 7,
         "category_id": 1,
+        "branch_id": 1,
         "image_url": "/api/media/productos/torta.jpeg",
         "type": "cake",
         "weight": 1.6
@@ -61,6 +66,7 @@
         "price": 29500.0,
         "stock": 9,
         "category_id": 2,
+        "branch_id": 1,
         "image_url": "/media/productos/0dde24a75e514fc5bc1308241b4c8122.jpg",
         "type": "cake",
         "weight": 1.1
@@ -72,6 +78,7 @@
         "price": 34000,
         "stock": 6,
         "category_id": 1,
+        "branch_id": 1,
         "image_url": "/api/media/productos/torta.jpeg",
         "type": "cake",
         "weight": 1.7
@@ -83,6 +90,7 @@
         "price": 27000,
         "stock": 11,
         "category_id": 3,
+        "branch_id": 1,
         "image_url": "/api/media/productos/tarta_manzana.jpg",
         "type": "cake",
         "weight": 1.0
@@ -94,6 +102,43 @@
         "price": 35555.0,
         "stock": 20,
         "category_id": 1,
+        "branch_id": 1,
+        "image_url": "https://tse2.mm.bing.net/th/id/OIP.9nF0JvIjsHkIb_wdENR3QAHaE8?rs=1&pid=ImgDetMain&o=7&rm=3",
+        "type": "cake",
+        "weight": 15.0
+    },
+    {
+        "id": 111,
+        "title": "Torta Tres Leches Gourmet",
+        "description": "Esponjoso bizcocho bañado en una mezcla de tres leches y cubierto con merengue italiano.",
+        "price": 34000,
+        "stock": 6,
+        "category_id": 1,
+        "branch_id": 2,
+        "image_url": "/api/media/productos/torta.jpeg",
+        "type": "cake",
+        "weight": 1.7
+    },
+    {
+        "id": 112,
+        "title": "Tarta de Manzana y Canela",
+        "description": "Relleno clásico de manzana caramelizada y canela bajo una rejilla de masa quebrada.",
+        "price": 27000,
+        "stock": 11,
+        "category_id": 3,
+        "branch_id": 2,
+        "image_url": "/api/media/productos/tarta_manzana.jpg",
+        "type": "cake",
+        "weight": 1.0
+    },
+    {
+        "id": 113,
+        "title": "prueba",
+        "description": "hola",
+        "price": 35555.0,
+        "stock": 10,
+        "category_id": 1,
+        "branch_id": 2,
         "image_url": "https://tse2.mm.bing.net/th/id/OIP.9nF0JvIjsHkIb_wdENR3QAHaE8?rs=1&pid=ImgDetMain&o=7&rm=3",
         "type": "cake",
         "weight": 15.0

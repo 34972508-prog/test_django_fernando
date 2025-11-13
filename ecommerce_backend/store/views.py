@@ -14,18 +14,26 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib import messages
 
-# ... (imports existentes)
-from .user_service import UserService # <-- AÑADIR
-from django.contrib import messages # <-- AÑADIR
+from .user_service import UserService 
+from django.contrib import messages 
 
-# Se usan default_storage para el manejo de archivos local o en la nube (S3)
 from uuid import uuid4
 import os
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
-# ... (imports existentes)
-from .mixins import AdminRequiredMixin # <-- AÑADIR
+from .mixins import AdminRequiredMixin 
+
+from .branch_service import BranchService 
+from django.http import JsonResponse
+from django.core.serializers.json import DjangoJSONEncoder
+import json
+
+
+# Inicializacion de los servicios (global para las vistas)
+user_service = UserService()
+product_service = ProductService()
+branch_service = BranchService() # <-- Asegurarse que esté instanciado globalmente
 
 class ProductListCreateAPIView(APIView):
     """
@@ -87,11 +95,36 @@ class ProductDetailAPIView(APIView):
 
 # --- VISTAS HTML PARA PRODUCTOS ---
 
-# 🛑 INICIO DE LA CORRECCIÓN EN views.py 🛑
 class AdminProductView(AdminRequiredMixin,View):
     def get(self, request):
         service = ProductService()
+        
+        # 🔑 CLAVE: Chequear la sesión en busca del filtro temporal del admin
+        branch_id_filter = request.session.get('admin_product_filter_branch_id')
+        filter_message = "(Mostrando todos)"
+        branch_name = None # Vble para el nombre de la sucursal filtrada
+
         all_products = service.get_all_products()
+
+        if branch_id_filter:
+            # 1. Obtener la sucursal completa para el nombre (Necesitas la lógica de branch_service)
+            # --- ASUMIENDO QUE branch_service EXISTE Y FUNCIONA ---
+            selected_branch = branch_service.get_branch_by_id(branch_id_filter) 
+            
+            if selected_branch:
+                branch_name = selected_branch.get('name', f"ID: {branch_id_filter}") # Obtiene el nombre
+                filter_message = f" en Sucursal {branch_name}" # Mensaje mejorado
+            else:
+                filter_message = f" (Filtrado por Sucursal ID: {branch_id_filter}, nombre no encontrado)"
+
+
+            # Filtrar los productos localmente
+            all_products = [
+                p for p in all_products 
+                if p.get('branch_id') == branch_id_filter
+            ]
+            
+        
         
         # --- MEJORA: Obtener nombres de categorías ---
         all_categories = service.get_all_categories()
@@ -105,129 +138,138 @@ class AdminProductView(AdminRequiredMixin,View):
 
         context = {
             'products': all_products,
+            'filter_message': filter_message,
+            'show_clear_filter': branch_id_filter is not None # Para mostrar el botón de limpiar filtro
         }
         return render(request, 'store/admin_products.html', context)
-# 🛑 FIN DE LA CORRECCIÓN EN views.py 🛑
 
 
-class ProductFormView(AdminRequiredMixin,View):
+class ProductFormView(AdminRequiredMixin, View):
     """
-    Vista dedicada para mostrar el formulario de creación o edición, 
-    y manejar el envío (POST) de esos formularios.
+    Vista para crear (GET, POST) y editar (GET, POST) productos.
+    Requiere ser administrador.
+    (ESTA ES LA VERSIÓN CORREGIDA Y ÚNICA)
     """
+    template_name = 'store/product_form.html'
     
-    #@method_decorator(admin_required)
+    # Usamos los servicios globales
+    service = product_service
+    branch_service = branch_service
+
     def get(self, request, pk=None):
-        service = ProductService()
+        context = {}
+        # Cargar categorías para el dropdown
+        context['categories'] = self.service.get_all_categories()
+        
+        # --- ¡CORREGIDO! ---
+        # Cargar sucursales para el dropdown
+        context['branches'] = self.branch_service.get_all_branches()
+        # --- FIN CORREGIDO ---
 
-        # Pide las categorías para el combo
-        all_categories = service.get_all_categories() 
-       
-        product_data = None
-        form_title = "Crear Nuevo Producto"
-
-        # Modo Edición
-        if pk is not None:
-            product_data = service.get_product_by_id(pk)
-            if not product_data:
-                messages.error(request, "Producto no encontrado")
+        if pk:
+            # --- MODO EDICIÓN ---
+            product = self.service.get_product_by_id(pk)
+            if not product:
+                messages.error(request, 'Producto no encontrado.')
                 return redirect('admin-product-view')
-            form_title = f"Editar Producto "
-        
-        context = {
-            'form_title': form_title,
-            'product': product_data,
-            'is_edit': pk is not None,
-            'pk': pk,
-            'categories': all_categories  # Pásalas al template
-        }
-        return render(request, 'store/product_form.html', context)
+            context['form_title'] = f'Editar Producto: {product["title"]}'
+            context['product'] = product
+            context['is_edit'] = True
+        else:
+            # --- MODO CREACIÓN ---
+            context['form_title'] = 'Crear Nuevo Producto'
+            context['is_edit'] = False
 
-    #@method_decorator(admin_required)
+        return render(request, self.template_name, context)
+
     def post(self, request, pk=None):
-        service = ProductService()
-
-        # Obtener datos del formulario
-        title = request.POST.get('title')
-        description = request.POST.get('description')
-        category_id = request.POST.get('category_id')
-        price = request.POST.get('price')
-        stock = request.POST.get('stock')
-        weight = request.POST.get('weight')
-
-        # Manejo de la imagen subida
-        image_file = request.FILES.get('image_file')
-        # Mantiene la URL existente si no se sube una nueva
-        image_url = request.POST.get('image_url', '') 
+        data = request.POST.copy()
         
+        # --- Lógica de datos (convertir a tipos correctos) ---
+        try:
+            data['price'] = float(data.get('price'))
+            data['stock'] = int(data.get('stock'))
+            data['category_id'] = int(data.get('category_id'))
+            
+            # --- ¡CORREGIDO! ---
+            # Obtener y validar el ID de la sucursal
+            branch_id_str = data.get('branch_id')
+            if not branch_id_str:
+                raise ValueError("La sucursal es obligatoria.")
+            data['branch_id'] = int(branch_id_str)
+            # --- FIN CORREGIDO ---
+
+            weight = data.get('weight')
+            data['weight'] = float(weight) if weight else None
+            
+        except (ValueError, TypeError) as e:
+            messages.error(request, f'Datos inválidos. Verifica precio, stock, peso o IDs. Error: {e}')
+            # Recargar el formulario con los datos anteriores y los dropdowns
+            context = {
+                'form_title': 'Crear Nuevo Producto' if not pk else 'Editar Producto',
+                'is_edit': bool(pk),
+                'product': data, # Devolver los datos POST para rellenar el formulario
+                'categories': self.service.get_all_categories(),
+                'branches': self.branch_service.get_all_branches() # ¡No olvidar!
+            }
+            return render(request, self.template_name, context)
+
+        # --- Lógica de Imagen (Manejo de subida y URL) ---
+        image_url_externa = data.get('image_url')
+        image_file = request.FILES.get('image_file')
+
         if image_file:
             try:
-                # Genera un nombre único y la ruta de guardado (dentro de la subcarpeta 'productos')
                 file_name = f"productos/{uuid4().hex}{os.path.splitext(image_file.name)[1]}"
-                
-                # Guarda el archivo usando el sistema de almacenamiento por defecto (local o S3)
                 path = default_storage.save(file_name, ContentFile(image_file.read()))
-                
-                # Obtiene la URL/Path que el template debe usar (ej: /media/productos/xyz.jpg o URL S3)
-                image_url = default_storage.url(path)
+                data['image_url'] = default_storage.url(path) # Sobrescribe cualquier URL
                 
             except Exception as e:
                 messages.error(request, f"Error al subir la imagen: {str(e)}")
                 # Si falla la subida, se devuelve el control al formulario
-                return redirect('product-create' if not pk else 'product-edit', pk=pk)
-            
-        # Validaciones básicas
-        if not title or not price or not stock or not category_id:
-            error_msg = "Título, categoría, precio y stock son campos obligatorios"
-            messages.error(request, error_msg)
-            if pk:
-                return redirect('product-edit', pk=pk)
+                context = {
+                    'form_title': 'Crear Nuevo Producto' if not pk else 'Editar Producto',
+                    'is_edit': bool(pk),
+                    'product': data,
+                    'categories': self.service.get_all_categories(),
+                    'branches': self.branch_service.get_all_branches()
+                }
+                return render(request, self.template_name, context)
+        
+        elif image_url_externa:
+            data['image_url'] = image_url_externa
+        
+        elif pk:
+            # Si es edición, no hay archivo nuevo ni URL, mantener la imagen anterior
+            product_actual = self.service.get_product_by_id(pk)
+            data['image_url'] = product_actual.get('image_url', '') # Mantener la URL anterior
+        else:
+            # Si es creación y no se provee nada
+            data['image_url'] = '' 
+        
+        # --- Lógica de Creación/Actualización ---
+        if pk:
+            # --- ACTUALIZAR (EDITAR) ---
+            product = self.service.update_product(pk, data)
+            if product:
+                messages.success(request, f'Producto "{product["title"]}" actualizado con éxito.')
             else:
-                return redirect('product-create')
+                messages.error(request, 'Error al actualizar el producto.')
+        else:
+            # --- CREAR ---
+            product = self.service.create_product(data)
+            if product:
+                messages.success(request, f'Producto "{product["title"]}" creado con éxito.')
+            else:
+                messages.error(request, 'Error al crear el producto.')
 
-        try:
-            # Preparar datos para el servicio
-            product_data = {
-                'title': title,
-                'description': description or '',
-                'category_id': int(category_id),
-                'price': float(price),
-                'stock': int(stock),
-                'image_url': image_url or '', # Usa la URL/Path generada o la existente
-                'weight': float(weight) if weight else 0.0,
-                'type': 'cake'  # Valor por defecto
-            }
-        except (ValueError, TypeError) as e:
-            error_msg = f"Error en el formato de los datos: {str(e)}"
-            messages.error(request, error_msg)
-            if pk:
-                return redirect('product-edit', pk=pk)
-            else:
-                return redirect('product-create')
+        return redirect('admin-product-view')
 
-        # Lógica de creación o edición
-        if pk is None:
-            new_product = service.create_product(product_data)
-            if new_product:
-                messages.success(request, "Producto creado exitosamente")
-                return redirect('admin-product-view')
-            else:
-                messages.error(request, "Error al crear el producto")
-                return redirect('product-create')
-        else:          
-            updated_product = service.update_product(pk, product_data)
-            if updated_product:
-                messages.success(request, "Producto actualizado exitosamente")
-                return redirect('admin-product-view')
-            else:
-                messages.error(request, "Error al actualizar el producto")
-                return redirect('product-edit', pk=pk)
 
 class DeleteProductHTMLView(AdminRequiredMixin,View):
     """
     Vista específica para eliminar productos desde el HTML
     """
-    
     def post(self, request, pk):
         service = ProductService()
         
@@ -238,6 +280,7 @@ class DeleteProductHTMLView(AdminRequiredMixin,View):
         
         return redirect('admin-product-view')
 
+
 class List_productView(View):
     """
     Vista para listar productos en HTML (catálogo público)
@@ -245,13 +288,36 @@ class List_productView(View):
     """
     def get(self, request):
         service = ProductService()
-        productos = service.get_all_products()
+        branch_service = BranchService()
+
+        # 🔑 1. OBTENER SUCURSAL SELECCIONADA
+        # El ID de la sucursal se guarda en la sesión con la clave 'selected_branch_id'
+        selected_branch_id = request.session.get('selected_branch_id')
+
+        all_products = service.get_all_products() 
+
+        if selected_branch_id:
+            # 🔑 2. FILTRAR PRODUCTOS POR SUCURSAL
+            branch_id = int(selected_branch_id)
+            productos = [prod for prod in all_products if prod.get('branch_id') == branch_id]
+            
+            branches = branch_service.get_all_branches()
+            branch_name = next((b['name'] for b in branches if b['id'] == branch_id), "Catálogo")
+            #branch_name = f" (Sucursal ID: {branch_id})"  # ME da el Id de la sucursal seleccionada
+        else:
+            # Si no hay sucursal seleccionada, No mostrar productos hasta que se seleccione una
+            productos = []
+            branch_name = " (Por favor selecciona una sucursal)"
         
+        # Preparar el contexto para el template
         context = {
             'productos': productos,
-            'titulo': 'Catálogo de Productos'
+            'titulo': f'Catálogo de Productos - Sucursal {branch_name}',
+            # Flag para JS: muestra el modal si la sucursal no está seleccionada
+            'show_branch_modal': selected_branch_id is None
         }
         return render(request, 'store/list_product.html', context)
+
 
 class ProductDetailHTMLView(View):
     """
@@ -261,18 +327,36 @@ class ProductDetailHTMLView(View):
     def get(self, request, pk):
         service = ProductService()
         product = service.get_product_by_id(pk)
+
+        selected_branch_id = request.session.get('selected_branch_id')
+        
+        # 🔑 NUEVA LÓGICA: Verificar si el usuario es administrador
+        is_admin = request.session.get('user_role') == 'admin'
+
         if not product:
             messages.error(request, "Producto no encontrado")
             return redirect('product-list-html')
+
+        # VERIFICAR LA SUCURSAL DEL PRODUCTO
+        # SOLO aplicar esta validación si NO es un administrador
+        if not is_admin and selected_branch_id and product.get('branch_id') != int(selected_branch_id):
+            messages.warning(request, "El producto no está disponible en la sucursal seleccionada.")
+            return redirect('product-list-html')
+
+         # Preparar el contexto para el template
         
         context = {
             'producto': product,
             'titulo': product.get('title', 'Detalle del producto')
         }
-        return render(request, 'store/product_detail.html', context)
+        # 🔑 CLAVE: Determinar qué template renderizar
+        if request.GET.get('modal') == 'true':
+            return render(request, 'store/product_detail_modal_fragment.html', context)
+        else:
+            return render(request, 'store/product_detail.html', context)
+
     
-   
-# (Estas vistas están correctas y no requieren cambios)
+# --- VISTAS HTML PARA CATEGORÍAS (VERSIÓN ÚNICA Y CORRECTA) ---
 
 class AdminCategoryView(AdminRequiredMixin,View):
     """
@@ -292,18 +376,16 @@ class CategoryFormView(AdminRequiredMixin,View):
     Vista para mostrar y procesar el formulario de
     CREACIÓN o EDICIÓN de categorías.
     """
-    
     def get(self, request, pk=None):
         service = ProductService()
         category_data = None
         form_title = "Crear Nueva Categoría"
 
         if pk:
-            # Modo Edición: Obtenemos los datos de la categoría
             category_data = service.get_category_by_id(pk)
             if not category_data:
                 messages.error(request, "Categoría no encontrada")
-                return redirect('admin-category-view') # Redirige a la lista de categorías
+                return redirect('admin-category-view') 
             form_title = f"Editar Categoría: {category_data.get('name')}"
 
         context = {
@@ -323,20 +405,18 @@ class CategoryFormView(AdminRequiredMixin,View):
             return render(request, 'store/category_form.html', {'name': category_name})
 
         if pk:
-            # Modo Edición (Actualizar)
             updated_category = service.update_category(pk, {'name': category_name})
             if updated_category:
                 messages.success(request, f"Categoría '{category_name}' actualizada exitosamente.")
-                return redirect('admin-category-view') # Redirige a la lista
+                return redirect('admin-category-view') 
             else:
                 messages.error(request, "Error al actualizar la categoría.")
                 return redirect('category-edit', pk=pk)
         else:
-            # Modo Creación
             new_category = service.create_category({'name': category_name})
             if new_category:
                 messages.success(request, f"Categoría '{category_name}' creada exitosamente.")
-                return redirect('admin-category-view') # Redirige a la lista
+                return redirect('admin-category-view')
             else:
                 messages.error(request, "Error al guardar la categoría.")
                 return render(request, 'store/category_form.html', {'name': category_name})
@@ -351,35 +431,16 @@ class DeleteCategoryView(AdminRequiredMixin,View):
         if service.delete_category(pk):
             messages.success(request, f"Categoría eliminada exitosamente.")
         else:
-            # El servicio devuelve False si no se encuentra o si está en uso
             messages.error(request, f"Error al eliminar la categoría. Asegúrate de que no esté en uso por ningún producto.")
         
-        return redirect('admin-category-view') # Redirige a la lista de categorías
-    
+        return redirect('admin-category-view') 
 
 
-# --- VISTAS HTML PARA CATEGORÍAS ---
-# (Estas vistas están correctas y no requieren cambios)
-
-class AdminCategoryView(View):
-    """
-    Vista para listar todas las categorías en una tabla HTML.
-    """
-    def get(self, request):
-        service = ProductService()
-        all_categories = service.get_all_categories()
-        context = {
-            'categories': all_categories,
-        }
-        return render(request, 'store/admin_categories.html', context)
-    
+# --- VISTAS DE CARRITO Y CHECKOUT ---
 
 class CartView(View):
     def get(self, request):
-        # Obtener o crear carrito en sesión
         cart = request.session.get('cart', {})
-        
-        # Obtener productos del carrito
         service = ProductService()
         cart_items = []
         total = 0
@@ -466,76 +527,6 @@ class CartView(View):
         })
 
 
-class CategoryFormView(View):
-    """
-    Vista para mostrar y procesar el formulario de
-    CREACIÓN o EDICIÓN de categorías.
-    """
-    
-    def get(self, request, pk=None):
-        service = ProductService()
-        category_data = None
-        form_title = "Crear Nueva Categoría"
-
-        if pk:
-            # Modo Edición: Obtenemos los datos de la categoría
-            category_data = service.get_category_by_id(pk)
-            if not category_data:
-                messages.error(request, "Categoría no encontrada")
-                return redirect('admin-category-view') # Redirige a la lista de categorías
-            form_title = f"Editar Categoría: {category_data.get('name')}"
-
-        context = {
-            'form_title': form_title,
-            'category': category_data,
-            'is_edit': pk is not None,
-            'pk': pk
-        }
-        return render(request, 'store/category_form.html', context)
-
-    def post(self, request, pk=None):
-        service = ProductService()
-        category_name = request.POST.get('name')
-
-        if not category_name:
-            messages.error(request, "El nombre de la categoría no puede estar vacío.")
-            return render(request, 'store/category_form.html', {'name': category_name})
-
-        if pk:
-            # Modo Edición (Actualizar)
-            updated_category = service.update_category(pk, {'name': category_name})
-            if updated_category:
-                messages.success(request, f"Categoría '{category_name}' actualizada exitosamente.")
-                return redirect('admin-category-view') # Redirige a la lista
-            else:
-                messages.error(request, "Error al actualizar la categoría.")
-                return redirect('category-edit', pk=pk)
-        else:
-            # Modo Creación
-            new_category = service.create_category({'name': category_name})
-            if new_category:
-                messages.success(request, f"Categoría '{category_name}' creada exitosamente.")
-                return redirect('admin-category-view') # Redirige a la lista
-            else:
-                messages.error(request, "Error al guardar la categoría.")
-                return render(request, 'store/category_form.html', {'name': category_name})
-
-class DeleteCategoryView(View):
-    """
-    Vista específica para eliminar categorías desde el HTML (POST).
-    """
-    def post(self, request, pk):
-        service = ProductService()
-        
-        if service.delete_category(pk):
-            messages.success(request, f"Categoría eliminada exitosamente.")
-        else:
-            # El servicio devuelve False si no se encuentra o si está en uso
-            messages.error(request, f"Error al eliminar la categoría. Asegúrate de que no esté en uso por ningún producto.")
-        
-        return redirect('admin-category-view') # Redirige a la lista de categorías
-
-
 class CheckoutView(View):
     def get(self, request):
         cart = request.session.get('cart', {})
@@ -565,14 +556,11 @@ class CheckoutView(View):
         return render(request, 'store/checkout.html', context)
 
     def post(self, request):
-        # Aquí irá la lógica de procesamiento del pago
         try:
-            # Simular procesamiento de pago
             cart = request.session.get('cart', {})
             if not cart:
                 raise ValueError("Carrito vacío")
                 
-            # Limpiar el carrito después del pago exitoso
             request.session['cart'] = {}
             messages.success(request, "¡Pago procesado con éxito! Gracias por tu compra.")
             return redirect('order-confirmation')
@@ -583,14 +571,6 @@ class CheckoutView(View):
 
 
 # --- VISTAS DE AUTENTICACIÓN (Simuladas con JSON) ---
-
-# --- DENTRO DE store/views.py ---
-
-    # ... (deja todas las otras vistas como están) ...
-
-    # =======================================
-    # VISTAS DE AUTENTICACIÓN (Simuladas con JSON)
-    # =======================================
 
 class LoginView(View):
     
@@ -604,34 +584,24 @@ class LoginView(View):
         username = request.POST.get('username')
         password = request.POST.get('password')
         
-        # 'user' es ahora un OBJETO (AdminUser o ClientUser) o None
         user = service.get_user_by_username(username)
         
-        # --- 🛑 ESTA ES LA CORRECCIÓN ---
-        # Cambiamos user['password'] por user.password
         if user and user.password == password:
             
-            # ¡ÉXITO! Guardamos las propiedades del OBJETO en la sesión
-            # Cambiamos ['id'] por .user_id
-            # Cambiamos ['username'] por .username
-            # Cambiamos ['role'] por .role
             request.session['user_id'] = user.user_id
             request.session['username'] = user.username
             request.session['user_role'] = user.role
             
             messages.success(request, f"¡Bienvenido, {user.username}!")
             
-            # Usamos la propiedad .role
             if user.role == 'admin':
                 return redirect('admin-product-view')
             else:
                 return redirect('product-list-html')
         else:
-            # Fallo
             messages.error(request, "Usuario o contraseña incorrectos.")
             return render(request, 'store/login.html')
 
-# ... (El resto de las vistas RegisterView y LogoutView quedan igual) ...
 class RegisterView(View):
     
     def get(self, request):
@@ -653,17 +623,15 @@ class RegisterView(View):
             messages.error(request, "Las contraseñas no coinciden.")
             return render(request, 'store/register.html')
 
-        # Intentar crear el usuario
         new_user = service.create_user(username, pass1)
         
         if new_user:
-            # Loguear al usuario automáticamente
             request.session['user_id'] = new_user['id']
             request.session['username'] = new_user['username']
             request.session['user_role'] = new_user['role']
             
             messages.success(request, "¡Registro exitoso! Has iniciado sesión.")
-            return redirect('product-list-html') # Redirigir a la lista de productos
+            return redirect('product-list-html') 
         else:
             messages.error(request, "El nombre de usuario ya existe.")
             return render(request, 'store/register.html')
@@ -671,7 +639,6 @@ class RegisterView(View):
 class LogoutView(View):
     def get(self, request):
         try:
-            # Limpiar la sesión de Django
             request.session.flush()
             messages.success(request, "Has cerrado sesión exitosamente.")
         except Exception as e:
@@ -679,3 +646,154 @@ class LogoutView(View):
             
         return redirect('home')
 
+
+# --- VISTAS DE USUARIOS Y PERFIL ---
+
+class AdminUserView(AdminRequiredMixin, View):
+    """
+    Vista para listar todos los usuarios (Admin View).
+    """
+    def get(self, request):
+        
+        all_users = user_service._users # Accede directamente a la lista cargada
+        
+        context = {
+            'users': all_users, 
+            'titulo': 'Administración de Usuarios'
+        }
+        return render(request, 'store/admin_users.html', context)
+        
+
+class DeleteUserHTMLView(AdminRequiredMixin, View):
+    """
+    Vista para manejar la eliminación de usuarios.
+    """
+    def post(self, request, pk):
+        if user_service.delete_user(pk):
+            messages.success(request, f"Usuario con ID {pk} eliminado exitosamente.")
+        else:
+            messages.error(request, f"Error al eliminar el usuario con ID {pk}.")
+        
+        return redirect('admin-user-view')
+
+
+def profile_view(request):
+    """
+    Muestra el perfil del usuario logueado.
+    """
+    logged_in_username = request.session.get('username')
+    
+    if not logged_in_username:
+        messages.warning(request, "Debes iniciar sesión para ver tu perfil.")
+        return redirect('login') 
+    
+    user_object = user_service.get_user_by_username(logged_in_username)
+    
+    if not user_object:
+        request.session.flush() 
+        messages.error(request, "Perfil no encontrado. Inicia sesión de nuevo.")
+        return redirect('login')
+        
+    context = {
+        'user': user_object, 
+        'username': user_object.username,
+        'is_admin': user_object.role == 'admin', 
+    }
+    
+    return render(request, 'store/profile_user.html', context)
+
+# --- VISTA DE SUCURSALES ---
+
+class AdminBranchView(AdminRequiredMixin, View):
+    """
+    Vista para listar todas las sucursales (solo admin).
+    """
+    template_name = 'store/admin_branches.html'
+    service = BranchService()
+
+    def get(self, request):
+        branches = self.service.get_all_branches()
+        
+        context = {
+            'branches': branches,
+            # --- 🛑 ¡CORRECCIÓN! 🛑 ---
+            # Quitamos json.dumps. La etiqueta |json_script se encarga de esto.
+            'branches_json': branches
+        }
+        return render(request, self.template_name, context)
+
+class SetBranchView(View):
+    """Guarda el ID de la sucursal en la sesión del usuario."""
+    def post(self, request):
+        branch_id = request.POST.get('branch_id')
+        
+        if branch_id and branch_id.isdigit():
+            request.session['selected_branch_id'] = int(branch_id)
+            return JsonResponse({'success': True, 'branch_id': int(branch_id)})
+        
+        return JsonResponse({'success': False, 'error': 'ID de sucursal inválido'}, status=400)
+    
+class HomeView(View):
+    """
+    Vista para renderizar la página de inicio (index.html).
+    Incluye la lógica para mostrar el modal de selección de sucursal.
+    """
+    def get(self, request):
+        
+        # 1. Obtener la sucursal de la sesión
+        selected_branch_id = request.session.get('selected_branch_id')
+        
+        # 2. Obtener TODAS las sucursales para el modal
+        branches = branch_service.get_all_branches()
+
+        context = {
+            'branches': branches,
+            # Esta bandera controla si el JavaScript debe abrir el modal
+            'show_branch_modal': selected_branch_id is None, 
+            'titulo': 'Inicio'
+        }
+        
+        # Asumiendo que index.html está en 'store/index.html'
+        return render(request, 'store/index.html', context)
+
+# --- VISTA PARA LIMPIAR LA SUCURSAL SELECCIONADA ---
+class ClearBranchView(View):
+    """Vista para limpiar la sucursal seleccionada de la sesión."""
+    def get(self, request):
+        if 'selected_branch_id' in request.session:
+            del request.session['selected_branch_id']
+            messages.info(request, "La sucursal seleccionada ha sido borrada de tu sesión.")
+        return redirect('home') # Redirige al inicio (donde el modal saltará)
+
+
+
+class SetAdminBranchFilterView(AdminRequiredMixin, View):
+
+    """Guarda temporalmente el ID de la sucursal en la sesión del admin y devuelve JSON."""
+    
+    # ⚠️ CAMBIAMOS a método POST, es más seguro y estándar para acciones
+    def post(self, request):
+        # 1. Obtener el ID de la sucursal del cuerpo de la solicitud POST
+        branch_id_str = request.POST.get('branch_id')
+            
+        if not branch_id_str or not branch_id_str.isdigit():
+            return JsonResponse({'success': False, 'error': 'ID de sucursal inválido'}, status=400)
+                
+        branch_id = int(branch_id_str)
+            
+        # 2. Guardar el filtro en la sesión
+        request.session['admin_product_filter_branch_id'] = branch_id
+            
+        # 3. Respuesta JSON de éxito
+        return JsonResponse({'success': True, 'branch_id': branch_id})
+        
+# La vista ClearAdminBranchFilterView puede permanecer como GET si lo deseas, pero POST es preferible.
+# Si la dejas como GET, la llamarías con un <a> normal, pero ya no tendrías el problema del redirect.
+
+class ClearAdminBranchFilterView(AdminRequiredMixin, View):
+    """Limpia el filtro de sucursal de la sesión del admin."""
+    def get(self, request):
+        if 'admin_product_filter_branch_id' in request.session:
+            del request.session['admin_product_filter_branch_id']
+            messages.info(request, "Filtro de sucursal de administración limpiado.")
+        return redirect('admin-product-view')
