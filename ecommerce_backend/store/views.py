@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .product_service import ProductService
 from .decorators import admin_required
+from .cart_service import CartService
 
 from django.shortcuts import render, redirect
 from django.views import View
@@ -425,6 +426,44 @@ class CartView(View):
                 
         request.session['cart'] = cart
         return redirect('cart')
+    def cart_view(request):
+        cart_service = CartService()
+    
+        if 'user_id' not in request.session:
+            return redirect('login')
+        
+        user_id = request.session['user_id']
+        cart = cart_service.get_cart(user_id)
+        
+        if request.method == 'POST':
+            action = request.POST.get('action')
+            product_id = int(request.POST.get('product_id'))
+            quantity = int(request.POST.get('quantity', 1))
+            
+            if action == 'add':
+                cart.add_item(product_id, quantity)
+            elif action == 'remove':
+                cart.remove_item(product_id)
+                
+            cart_service.save_cart(cart)
+            cart = cart_service.get_cart(user_id)
+        
+        # Obtener los productos para mostrar en el carrito
+        product_service = ProductService()
+        cart_items = []
+        for item in cart.items.values():
+            product = product_service.get_product_by_id(item.product_id)
+            if product:
+                cart_items.append({
+                    'product': product,
+                    'quantity': item.quantity,
+                    'subtotal': product['price'] * item.quantity
+                })
+        total=cart.get_total()
+        return render(request, 'store/cart.html', {
+            'cart_items': cart_items,
+            'total': cart.get_total()
+        })
 
 
 class CategoryFormView(View):

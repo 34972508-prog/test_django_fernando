@@ -3,7 +3,8 @@ from django.views.generic import TemplateView
 from .views import ProductListCreateAPIView, ProductDetailAPIView, AdminProductView,\
     ProductFormView, DeleteProductHTMLView, List_productView,\
     ProductDetailHTMLView, CartView, AdminCategoryView, CategoryFormView, DeleteCategoryView,\
-    CheckoutView,AdminCategoryView, DeleteCategoryView, LoginView, RegisterView, LogoutView
+    CheckoutView,AdminCategoryView, DeleteCategoryView, LoginView, RegisterView, LogoutView\
+    
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -46,6 +47,7 @@ urlpatterns = [
     path('cart/', CartView.as_view(), name='cart'),
     path('checkout/', CheckoutView.as_view(), name='checkout'),
     path('order-confirmation/', TemplateView.as_view(template_name='store/confirmacion_pago.html'), name='order-confirmation'),
+    #path('cart/', views.cart_view, name='cart'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

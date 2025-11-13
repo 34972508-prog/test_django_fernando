@@ -27,10 +27,10 @@
                             <input type="email" class="form-control" id="email" required>
                         </div>
                         <div class="form-check mb-3">
-                            <input type="radio" class="btn-check" name="options" id="option1" autocomplete="off" checked>
+                            <input type="radio" class="btn-check" name="options" id="option1" autocomplete="off" >
                             <label class="btn btn-primary" for="option1">Retiro en Local</label>
 
-                            <input type="radio" class="btn-check" name="options" id="option2" autocomplete="off">
+                            <input type="radio" class="btn-check" name="options" id="option2" autocomplete="off" >
                             <label class="btn btn-primary" for="option2">Llega a casa</label>
 
                         </div>
@@ -43,8 +43,36 @@
                             <textarea class="form-control" id="direccion" name="direccion" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="tarjeta" class="form-label">Número de tarjeta</label>
-                            <input type="text" class="form-control" id="tarjeta" required>
+                            <label class="form-label d-block mb-2">Método de pago</label>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="payment_method" id="pay_credit" value="credit" autocomplete="off">
+                                    <label class="btn btn-outline-primary w-100 text-start" for="pay_credit">
+                                        <strong>Tarjeta de crédito</strong><br><small class="text-muted">Visa / Mastercard</small>
+                                    </label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="payment_method" id="pay_debit" value="debit" autocomplete="off">
+                                    <label class="btn btn-outline-primary w-100 text-start" for="pay_debit">
+                                        <strong>Tarjeta de débito</strong><br><small class="text-muted">Débito</small>
+                                    </label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="payment_method" id="pay_transfer" value="transfer" autocomplete="off">
+                                    <label class="btn btn-outline-primary w-100 text-start" for="pay_transfer">
+                                        <strong>Transferencia / QR</strong><br><small class="text-muted">CBU / Código QR</small>
+                                    </label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="payment_method" id="pay_cash" value="cash" autocomplete="off" checked>
+                                    <label class="btn btn-outline-primary w-100 text-start" for="pay_cash">
+                                        <strong>Pago en efectivo</strong><br><small class="text-muted">Al retirar</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- campos dinámicos según método -->
+                            <div id="paymentDetails" class="mb-3"></div>
                         </div>
                         <button type="submit" class="btn btn-success">Confirmar Pago</button>
                     </form>
@@ -98,6 +126,82 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // estado inicial
   toggleDelivery();
+  const paymentDetails = document.getElementById('paymentDetails');
+
+  function renderPaymentFields(method) {
+    if (!paymentDetails) return;
+    let html = '';
+    if (method === 'credit' || method === 'debit') {
+      html = `
+        <div class="mb-2">
+          <label for="card_number" class="form-label">Número de tarjeta</label>
+          <input type="text" class="form-control" id="card_number" name="card_number" inputmode="numeric" placeholder="1234 5678 9012 3456" required>
+        </div>
+        <div class="row g-2">
+          <div class="col-6">
+            <label for="card_exp" class="form-label">Expiración (MM/AA)</label>
+            <input type="text" class="form-control" id="card_exp" name="card_exp" placeholder="MM/AA" required>
+          </div>
+          <div class="col-6">
+            <label for="card_cvc" class="form-label">CVC</label>
+            <input type="text" class="form-control" id="card_cvc" name="card_cvc" inputmode="numeric" placeholder="CVC" required>
+          </div>
+        </div>`;
+    } else if (method === 'transfer') {
+      html = `
+        <div class="mb-2">
+          <label class="form-label">Instrucciones de transferencia</label>
+          <div class="border rounded p-2">
+            <p class="mb-1"><strong>CBU:</strong> 0000000000000000000000</p>
+            <p class="mb-1"><strong>Titular:</strong> Mi Tienda SRL</p>
+            <small class="text-muted">Una vez realizada la transferencia, indica el número de operación.</small>
+          </div>
+          <label for="transfer_ref" class="form-label mt-2">Número de operación (opcional)</label>
+          <input type="text" class="form-control" id="transfer_ref" name="transfer_ref">
+        </div>`;
+    } else { // cash
+      html = `
+        <div class="mb-2">
+          <label class="form-label">Pago en efectivo</label>
+          <p class="small text-muted mb-0">Pagarás en efectivo al momento del retiro o entrega.</p>
+        </div>`;
+    }
+    paymentDetails.innerHTML = html;
+  }
+
+  // attach listeners
+  document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+    radio.addEventListener('change', (e) => renderPaymentFields(e.target.value));
+  });
+
+  // initial render (pick checked or default to cash)
+  const checked = document.querySelector('input[name="payment_method"]:checked');
+  if (checked) renderPaymentFields(checked.value);
+  else renderPaymentFields('cash');
+
+  // basic client-side validation for card fields
+  const form = document.getElementById('checkoutForm');
+  if (form) {
+    form.addEventListener('submit', function (ev) {
+      const pm = document.querySelector('input[name="payment_method"]:checked');
+      if (!pm) {
+        ev.preventDefault();
+        alert('Selecciona un método de pago.');
+        return;
+      }
+      if ((pm.value === 'credit' || pm.value === 'debit')) {
+        const card = document.getElementById('card_number');
+        const exp = document.getElementById('card_exp');
+        const cvc = document.getElementById('card_cvc');
+        if (!card || !exp || !cvc || !card.value.trim() || !exp.value.trim() || !cvc.value.trim()) {
+          ev.preventDefault();
+          alert('Completa los datos de la tarjeta.');
+        }
+      }
+      // si se requiere, se puede añadir lógica para validar dirección cuando delivery = home
+    });
+  }
+
   
 });
 </script>

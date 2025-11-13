@@ -131,16 +131,26 @@ class CartItem:
         self.quantity = quantity
 
 class Cart:
-    def __init__(self):
+    def __init__(self, user_id=None):
+        self.user_id = user_id
         self.items = {}  # product_id: CartItem
         
     def add_item(self, product_id, quantity=1):
+        product_id = int(product_id)
         if product_id in self.items:
             self.items[product_id].quantity += quantity
         else:
             self.items[product_id] = CartItem(product_id, quantity)
     
+    def to_dict(self):
+        return {
+            "user_id": self.user_id,
+            "items": {str(k): {"product_id": v.product_id, "quantity": v.quantity} 
+                     for k, v in self.items.items()}
+        }
+    
     def remove_item(self, product_id):
+        product_id = int(product_id)
         if product_id in self.items:
             del self.items[product_id]
     
@@ -153,6 +163,15 @@ class Cart:
             if product:
                 total += product['price'] * item.quantity
         return total
+    @classmethod
+    def from_dict(cls, data):
+        cart = cls(user_id=data.get('user_id'))
+        for product_id, item_data in data.get('items', {}).items():
+            cart.items[int(product_id)] = CartItem(
+                item_data['product_id'], 
+                item_data['quantity']
+            )
+        return cart
 
 
 # ===================================================
