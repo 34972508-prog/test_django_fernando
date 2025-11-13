@@ -22,7 +22,10 @@ class BranchService:
                         name=b['name'],
                         address=b['address'],
                         latitude=b['latitude'],
-                        longitude=b['longitude']
+                        longitude=b['longitude'],
+                        is_open=b['is_open'],
+                        opening_hours=b['opening_hours'],
+                        phone=b['phone']
                     ) for b in data
                 ]
         

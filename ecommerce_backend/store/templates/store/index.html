@@ -1,22 +1,41 @@
 {% extends 'store/base.html' %} {% load static %} {% block title %}Inicio{%endblock title %} {% block content %}
+
 <div class="modal fade" id="branchSelectorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="branchSelectorModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-xl"> {# Cambiado a modal-xl para pantallas grandes #}
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="branchSelectorModalLabel">¡Bienvenido! Elige tu Sucursal</h5>
                 </div>
                 <div class="modal-body">
-                    <p>Para ver el stock y precios correctos, por favor selecciona tu sucursal:</p>
-                    <div class="list-group">
+                    <p class="text-center">Para ver el stock y precios correctos, por favor selecciona tu sucursal:</p>
+                    
+                    {# USAMOS LA GRILLA RESPONSIVA #}
+                    <div class="row g-3 justify-content-center">
                         {% for branch in branches %}
-                        <button 
-                            type="button" 
-                            class="list-group-item list-group-item-action branch-select-btn"
-                            data-branch-id="{{ branch.id }}"
-                        >
-                            <strong>{{ branch.name }}</strong><br>
-                            <small class="text-muted">{{ branch.address }}</small>
-                        </button>
+                        
+                        {# Columna responsiva: 1 por fila en sm, 2 en md, 4 en lg #}
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-3"> 
+                            
+                            <div 
+                                role="button" {# Hace que se comporte como botón para accesibilidad #}
+                                class="branch-card p-3 h-100 text-center shadow-sm"
+                                data-branch-id="{{ branch.id }}"
+                            >
+                                {# 🖼️ SVG de Fondo (Ajustado con CSS) #}
+                                <div class="branch-icon-bg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-home"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12.707 2.293l9 9c.63 .63 .184 1.707 -.707 1.707h-1v6a3 3 0 0 1 -3 3h-1v-7a3 3 0 0 0 -2.824 -2.995l-.176 -.005h-2a3 3 0 0 0 -3 3v7h-1a3 3 0 0 1 -3 -3v-6h-1c-.89 0 -1.337 -1.077 -.707 -1.707l9 -9a1 1 0 0 1 1.414 0m.293 11.707a1 1 0 0 1 1 1v7h-4v-7a1 1 0 0 1 .883 -.993l.117 -.007z" /></svg>
+                                </div>
+                                
+                                {# 📝 Contenido de la Sucursal (Encima del SVG) #}
+                                <div class="branch-content">
+                                    <strong class="text-primary">{{ branch.name }}</strong><br>
+                                    <small class="text-secondary">{{ branch.address }}</small> <br>
+                                    <span class="text-muted">{{ branch.opening_hours }}</span> <br>
+                                    <span class="text-muted">{{ branch.phone }}</span>
+                                </div>
+                                
+                            </div>
+                        </div>
                         {% endfor %}
                     </div>
                 </div>
@@ -27,6 +46,7 @@
             </div>
         </div>
     </div>
+{# ... Resto del index.html (hero-section, main, etc.) ... #}
 
 
   <div class="hero-section">
@@ -214,26 +234,58 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Asegurate de que estas variables sean pasadas por el contexto
+      // ... (Configuración del modal existente)
       var showModalStr = "{{ show_branch_modal|lower }}";
       var showModal = showModalStr === 'true';
-
       var modalElement = document.getElementById('branchSelectorModal');
+      
       if (modalElement && showModal) {
-        // INciar el modal
         var modal = new bootstrap.Modal(modalElement, {
           backdrop: 'static',
-          keyboard: false // Evita cerrar con ESC
+          keyboard: false
         });
         modal.show();
       }
 
-      document.querySelectorAll('.branch-select-btn').forEach(button => {
-        button.addEventListener('click', function() {
-          var branchId = this.getAttribute('data-branch-id');
-          var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+      // Elementos de feedback visual
+      var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+      var errorElement = document.getElementById('branchError');
+      var footer = modalElement ? modalElement.querySelector('.modal-footer') : null;
+      
+      // Función para mostrar el spinner de carga
+      function showLoading(show) {
+          if (footer) {
+              if (show) {
+                  // Agregamos un spinner a la derecha del footer
+                  footer.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <span class="text-info me-2">Estableciendo sucursal...</span>
+                        <div class="spinner-border spinner-border-sm text-info" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                  `;
+              } else {
+                  // Restaurar el contenido original del footer (solo el CSRF y el error)
+                  footer.innerHTML = `
+                    <small class="text-danger" id="branchError" style="display:none;">Por favor, selecciona una sucursal.</small>
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                  `;
+              }
+          }
+      }
 
-          document.querySelectorAll('.branch-select-btn').forEach(btn => btn.disabled = true);
+      // 2. Conectar el evento CLICK a todas las tarjetas de sucursal
+      document.querySelectorAll('.branch-card').forEach(card => { 
+        card.addEventListener('click', function() {
+          
+          // PASO 1: FEEDBACK VISUAL INMEDIATO
+          document.querySelectorAll('.branch-card').forEach(btn => btn.classList.add('disabled-selection'));
+          showLoading(true);
+
+          var branchId = this.getAttribute('data-branch-id');
+          
+          errorElement.style.display = 'none'; // Ocultar errores previos
 
           fetch("{% url 'set-branch' %}", {
             method: 'POST',
@@ -245,21 +297,27 @@
           })
           .then(response => response.json())
           .then(data => {
+            // PASO 3: ÉXITO - Ocultar modal y recargar
             if (data.success) {
-              var modal = bootstrap.Modal.getInstance(modalElement);
-              modal.hide();
+              var modalInstance = bootstrap.Modal.getInstance(modalElement);
+              modalInstance.hide();
               window.location.reload();
             } else {
               throw new Error( data.error || 'Error al establecer la sucursal');
             }
           })
           .catch(error => {
-            document.getElementById('branchError').textContent = 'Error: ' + error.message;
-            document.getElementById('branchError').style.display = 'block';
-            document.querySelectorAll('.branch-select-btn').forEach(btn => btn.disabled = false);
+            // PASO 4: FALLO - Mostrar error y re-habilitar
+            showLoading(false); // Ocultar spinner
+            
+            errorElement.textContent = 'Error: ' + error.message;
+            errorElement.style.display = 'block';
+            
+            // Re-habilitar las tarjetas (eliminar la clase de deshabilitación)
+            document.querySelectorAll('.branch-card').forEach(btn => btn.classList.remove('disabled-selection'));
           });
+        });
       });
-    });
     });
 </script>
 {% endblock extra_js %}
@@ -327,6 +385,55 @@
         background-color: rgba(0, 0, 0, 0.4);
         backdrop-filter: blur(5px);
         border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    .branch-card {
+        cursor: pointer;
+        border: 2px solid #ddd;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease-in-out;
+        position: relative; /* Contenedor para el SVG absoluto */
+        overflow: hidden;
+        background-color: #fcfcfc;
+    }
+    
+    /* Hover y estado activo/seleccionado */
+    .branch-card:hover {
+        border-color: #ffc107; /* Amarillo de advertencia/atención */
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Contenedor del SVG de Fondo */
+    .branch-icon-bg {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* Centra el SVG */
+        width: 100%; /* Tamaño grande */
+        height: 100%;
+        color: #e9ecef; /* Color muy claro (gris sutil) */
+        opacity: 0.8; 
+        z-index: 1; /* Fondo */
+    }
+    
+    /* SVG: Asegura que el ícono esté grande y bien centrado */
+    .branch-icon-bg svg {
+        width: 90%;
+        height: 90%;
+    }
+    
+    /* Contenido de texto: Debe ir encima del SVG */
+    .branch-content {
+        position: relative;
+        z-index: 2; /* Sobre el SVG */
+    }
+
+    /* Estilo para cuando se está procesando la selección */
+    .branch-card.disabled-selection {
+        opacity: 0.6; /* Atenúa visualmente la tarjeta */
+        cursor: not-allowed; /* Muestra el cursor de "prohibido" */
+        pointer-events: none; /* Crucial: Deshabilita el clic para evitar doble submit */
     }
 
 </style>
