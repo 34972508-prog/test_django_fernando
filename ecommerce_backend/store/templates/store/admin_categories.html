@@ -7,17 +7,6 @@
     <div class="container my-4">
         <h1 class="mb-4">Gestión de Categorías 📋</h1>
         
-        {% if messages %} 
-            {% for message in messages %}
-                <div
-                    class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}"
-                    role="alert"
-                >
-                    {{ message }}
-                </div>
-            {% endfor %} 
-        {% endif %}
-
         <div class="mb-3">
             <a href="{% url 'category-create' %}" class="btn btn-primary d-inline-flex align-items.center">
                 <svg

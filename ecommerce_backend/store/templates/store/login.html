@@ -6,14 +6,6 @@
 <div class="container my-4" style="max-width: 500px;">
     <h2 class="mb-4">Iniciar Sesión</h2>
 
-    {% if messages %} 
-        {% for message in messages %}
-            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}" role="alert">
-                {{ message }}
-            </div>
-        {% endfor %} 
-    {% endif %}
-
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">

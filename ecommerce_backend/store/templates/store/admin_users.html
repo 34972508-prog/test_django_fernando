@@ -7,15 +7,6 @@
 <div class="container my-4">
     <h1 class="mb-4">Administración de Usuarios 👥</h1>
 
-    {% if error_message %}
-    <div class="alert alert-danger" role="alert">{{ error_message }}</div>
-    {% elif messages %} 
-        {% for message in messages %}
-        <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}" role="alert">
-            {{ message }}
-        </div>
-        {% endfor %} 
-    {% endif %}
 
     <p class="text-muted">Gestión de todos los usuarios registrados en el sistema.</p>
 

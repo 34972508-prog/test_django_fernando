@@ -10,17 +10,7 @@
                 
                 <div class="card shadow-lg p-4">
                     <h1 class="card-title text-center mb-4">{{ form_title }} 🍰</h1>
-                     {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert 
-                                {% if message.tags == 'error' %}alert-danger
-                                {% elif message.tags == 'success' %}alert-success
-                                {% else %}alert-info{% endif %}" role="alert"
-                            >
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+   
 
                     <form method="post" class="needs-validation" novalidate enctype="multipart/form-data">
                         {% csrf_token %}
