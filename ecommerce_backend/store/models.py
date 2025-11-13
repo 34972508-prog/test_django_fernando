@@ -3,12 +3,15 @@ from abc import ABC, abstractmethod
 # --- NUEVA CLASE BRANCH ---
 class Branch:
     """Representa una sucursal o tienda física."""
-    def __init__(self, branch_id, name, address, latitude, longitude):
+    def __init__(self, branch_id, name, address, latitude, longitude, is_open , opening_hours, phone):
         self._branch_id = branch_id
         self._name = name
         self._address = address
         self._latitude = latitude
         self._longitude = longitude
+        self._is_open = is_open
+        self._opening_hours = opening_hours
+        self._phone = phone
 
     @property
     def branch_id(self): return self._branch_id
@@ -20,6 +23,12 @@ class Branch:
     def latitude(self): return self._latitude
     @property
     def longitude(self): return self._longitude
+    @property
+    def is_open(self): return self._is_open
+    @property
+    def opening_hours(self): return self._opening_hours
+    @property
+    def phone(self): return self._phone
 
     def to_dict(self):
         return {
@@ -28,6 +37,9 @@ class Branch:
             "address": self._address,
             "latitude": self._latitude,
             "longitude": self._longitude,
+            "is_open": self._is_open,
+            "opening_hours": self._opening_hours,
+            "phone": self._phone
         }
     
     def __str__(self):
