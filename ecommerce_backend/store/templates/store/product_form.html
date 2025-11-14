@@ -129,7 +129,7 @@
                                     <small class="d-block text-muted">Imagen actual (URL Externa). Sube un archivo para cambiarla.</small>
                                 </div>
                             {% endif %}
-                            <input type="url" id="image_url" name="image_url" placeholder="https://ejemplo.com/imagen.jpg"
+                            <input type="text" id="image_url" name="image_url" placeholder="https://ejemplo.com/imagen.jpg"
                                 value="{{ product.image_url|default:'' }}" class="form-control">
                             <small class="form-text text-muted">Pega aquí la URL de la imagen (http/https).</small>
                         </div>

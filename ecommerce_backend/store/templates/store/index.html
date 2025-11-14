@@ -46,7 +46,6 @@
             </div>
         </div>
     </div>
-{# ... Resto del index.html (hero-section, main, etc.) ... #}
 
 
   <div class="hero-section">
@@ -130,104 +129,130 @@
   <h3 class="text-center mt-5 mb-4 text-warning">
     Explora Nuestras Categorías
   </h3>
-
   <div class="row g-4 justify-content-center pb-5">
-    {% comment %} Tarjeta 1: Tortas {% endcomment %}
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-      <a href="{% url 'product-list' %}" class="text-decoration-none">
-        <div
-          class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300"
-        >
-          <div
-            class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center"
-            style="height: 150px"
-          >
-            <img
-              class="img-fluid"
-              src="{% static 'myapp/LogoQAD1.png' %} "
-              alt="Tortas"
-              style="object-fit: cover; width: 100%; height: 100%"
-            />
-          </div>
-          <div class="card-body text-center">
-            <h5 class="card-text fw-bold">Tortas</h5>
-          </div>
-        </div>
-      </a>
-    </div>
-
-    {% comment %} Tarjeta 2: Desayunos {% endcomment %}
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-      <a href="{% url 'product-list' %}" class="text-decoration-none">
-        <div
-          class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300"
-        >
-          <div
-            class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center"
-            style="height: 150px"
-          >
-            <img
-              class="img-fluid"
-              src="{% static 'myapp/LogoQAD1.png' %} "
-              alt="Desayunos"
-              style="object-fit: cover; width: 100%; height: 100%"
-            />
-          </div>
-          <div class="card-body text-center">
-            <h5 class="card-text fw-bold">Desayunos</h5>
+    
+    {# TARJETA 1: Tortas Clásicas #}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch">
+      <a href="#" class="text-decoration-none w-100">
+        <div class="flip-card shadow-lg h-100">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <img src="/media/productos/tortas_clasicas.jpg" alt="Tortas Clásicas" class="card-img-top flip-card-img"/>
+              <div class="overlay-text">
+                <p class="title">Tortas Clásicas</p>
+              </div>
+            </div>
+            <div class="flip-card-back">
+              <div class="back-content">
+                <p class="title">Tortas Clásicas</p>
+                <p class="slogan">Sabores que evocan recuerdos. ¡Elige tu favorita!</p>
+                <span class="btn btn-sm btn-light mt-2 border border-warning">Ver Productos</span>
+              </div>
+            </div>
           </div>
         </div>
       </a>
     </div>
 
-    {% comment %} Tarjeta 3: Catering {% endcomment %}
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-      <a href="{% url 'product-list' %}" class="text-decoration-none">
-        <div
-          class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300"
-        >
-          <div
-            class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center"
-            style="height: 150px"
-          >
-            <img
-              class="img-fluid"
-              src="{% static 'myapp/LogoQAD1.png' %} "
-              alt="Catering"
-              style="object-fit: cover; width: 100%; height: 100%"
-            />
-          </div>
-          <div class="card-body text-center">
-            <h5 class="card-text fw-bold">Catering</h5>
+    {# TARJETA 2: Postres Fríos  Cheesecakes #}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch">
+      <a href="#" class="text-decoration-none w-100">
+        <div class="flip-card shadow-lg h-100">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <img src="/media/productos/postres_frios.jpg" alt="Postres Fríos" class="card-img-top flip-card-img"/>
+              <div class="overlay-text">
+                <p class="title">Postres Fríos Cheesecakes</p>
+              </div>
+            </div>
+            <div class="flip-card-back">
+              <div class="back-content">
+                <p class="title">Postres Fríos Cheesecakes</p>
+                <p class="slogan">La frescura y cremosidad en cada bocado.</p>
+                <span class="btn btn-sm btn-light mt-2 border border-warning">Ver Productos</span>
+              </div>
+            </div>
           </div>
         </div>
       </a>
     </div>
 
-    {% comment %} Tarjeta 4: Tartas {% endcomment %}
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-      <a href="{% url 'product-list' %}" class="text-decoration-none">
-        <div
-          class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300"
-        >
-          <div
-            class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center"
-            style="height: 150px"
-          >
-            <img
-              class="img-fluid"
-              src="{% static 'myapp/LogoQAD1.png' %} "
-              alt="Tartas"
-              style="object-fit: cover; width: 100%; height: 100%"
-            />
-          </div>
-          <div class="card-body text-center">
-            <h5 class="card-text fw-bold">Tartas</h5>
+    {# TARJETA 3: Tartas y Pies #}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch">
+      <a href="#" class="text-decoration-none w-100">
+        <div class="flip-card shadow-lg h-100">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <img src="media/productos/tartas_pies.jpg" alt="Tartas y Pays" class="card-img-top flip-card-img"/>
+              <div class="overlay-text">
+                <p class="title">Tartas y Pays</p>
+              </div>
+            </div>
+            <div class="flip-card-back">
+              <div class="back-content">
+                <p class="title">Tartas y Pays</p>
+                <p class="slogan">Texturas crujientes y rellenos inolvidables.</p>
+                <span class="btn btn-sm btn-light mt-2 border border-warning">Ver Productos</span>
+              </div>
+            </div>
           </div>
         </div>
       </a>
     </div>
+
+    {# TARJETA 4: Tortas de Celebración #}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch">
+      <a href="#" class="text-decoration-none w-100">
+        <div class="flip-card shadow-lg h-100">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <img src="media/productos/tortas_celebracion.jpg" alt="Tortas de Celebración" class="card-img-top flip-card-img"/>
+              <div class="overlay-text">
+                <p class="title">Tortas de Celebración</p>
+              </div>
+            </div>
+            <div class="flip-card-back">
+              <div class="back-content">
+                <p class="title">Tortas de Celebración</p>
+                <p class="slogan">El centro de tu fiesta. Diseños a medida.</p>
+                <span class="btn btn-sm btn-light mt-2 border border-warning">Ver Productos</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+
   </div>
+  <!-- Sección sucursales ubicacíon -->
+  <div>
+    <h3 class="text-center mt-2 mb-4 text-warning">
+    Sucursales que puedes visitar
+    </h3>
+  </div>
+  <!-- Sección Acerca del Proyecto -->
+  <div class="container mt-3 mb-5">
+    <h3 class="text-center mt-2 mb-4 text-warning">
+    Acerca de "Quiero Algo Dulce"
+    </h3>
+    <section id="historia-proyecto" class="card shadow" style="background-color: #F5F1E5;">
+        
+        <div class="card-body p-5 position-relative">
+            <h3 class="card-title mb-4">¿Cómo nació "Quiero Algo Dulce"?</h3>
+            
+            <p class="card-text text-justify lead">El concepto surge de la <strong> experiencia directa con la industria de la repostería artesanal </strong>. Uno de los miembros del equipo, con un <strong> sólido historial como micro-emprendedor en el sector</strong>, identificó una <strong>brecha clave en el mercado</strong>: la dificultad para los artesanos para lograr una visibilidad efectiva y conectar eficientemente con su clientela potencial.</p>
+
+            <p class="card-text text-justify lead">Por esta razón, desarrollamos este <strong>e-commerce</strong>. Lo visualizamos como una <strong>solución tecnológica esencial</strong> que busca empoderar a todos aquellos que desean emprender en este rubro desde sus hogares, facilitando la <strong>gestión de pedidos, la promoción y la conexión con el cliente final</strong>.</p>
+
+            <p class="card-text text-justify lead"><strong>"Quiero Algo Dulce"</strong> es el resultado de la fusión de <strong>pasión por la repostería artesanal</strong> y un creciente interés y <strong>dominio en la programación y el desarrollo web</strong>. Este proyecto es nuestra apuesta actual de desarrollo que planeamos llevar a producción, convencidos de su valor y necesidad en el mercado.</p>
+            
+            <div class="position-absolute bottom-0 end-0 m-3">
+                <img src="/media/productos/logoTREE.png" alt="Logo de Quiero Algo Dulce" class="img-fluid" style="width: 60px; height: auto; opacity: 0.7;">
+            </div>
+        </div>
+    </section>
+</div>
 </main>
 
 {% endblock content %} 
@@ -275,11 +300,11 @@
           }
       }
 
-      // 2. Conectar el evento CLICK a todas las tarjetas de sucursal
+      // Conectar el evento CLICK a todas las tarjetas de sucursal
       document.querySelectorAll('.branch-card').forEach(card => { 
         card.addEventListener('click', function() {
           
-          // PASO 1: FEEDBACK VISUAL INMEDIATO
+          // VISUAL INMEDIATO
           document.querySelectorAll('.branch-card').forEach(btn => btn.classList.add('disabled-selection'));
           showLoading(true);
 
@@ -307,9 +332,8 @@
             }
           })
           .catch(error => {
-            // PASO 4: FALLO - Mostrar error y re-habilitar
-            showLoading(false); // Ocultar spinner
-            
+            // FALLO - Mostrar error y re-habilitar
+            showLoading(false);             
             errorElement.textContent = 'Error: ' + error.message;
             errorElement.style.display = 'block';
             
@@ -326,16 +350,12 @@
     /* 1. Contenedor Principal (Define el área del "Hero") */
     .hero-section {
         position: relative;
-        min-height: 650px; /* Altura del carrusel */
+        min-height: 650px; 
         width: 100%;
-        
-        /* 💡 SOLUCIÓN: Ajustar el margen superior para eliminar espacios innecesarios. */
-        /* Si tu barra de navegación NO es fija, este ajuste puede ser necesario. */
-        margin-top: 0; /* Asegúrate que no haya margen superior indeseado */
+        margin-top: 0; 
         
         display: flex;
-        align-items: center; /* Centra verticalmente el contenido de bienvenida */
-        justify-content: center;
+        align-items: center;         justify-content: center;
         background-color: #333;
     }
 
@@ -434,6 +454,126 @@
         opacity: 0.6; /* Atenúa visualmente la tarjeta */
         cursor: not-allowed; /* Muestra el cursor de "prohibido" */
         pointer-events: none; /* Crucial: Deshabilita el clic para evitar doble submit */
+    }
+
+    /* =================================================== */
+    /* ESTILOS PARA LAS TARJETAS FLIP (Categorías) */
+    /* =================================================== */
+
+    .flip-card {
+      background-color: transparent;
+      width: 100%;
+      height: 350px; 
+      perspective: 1000px; 
+      font-family: sans-serif;
+    }
+
+    /* El elemento A debe ser un bloque de altura 100% */
+    .row a {
+        width: 100%;
+        display: block; 
+    }
+
+    .title {
+      font-size: 1.5em;
+      font-weight: 900;
+      text-align: center;
+      margin: 0;
+    }
+
+    .slogan {
+      font-size: 1em;
+      font-weight: 400;
+      padding: 0 15px;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.8s;
+      transform-style: preserve-3d; 
+    }
+
+    .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+   .flip-card-front, .flip-card-back {
+      box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+      position: absolute; 
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      top: 0; 
+      left: 0;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden; 
+      border: 1px solid #ffc107;
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+
+    /* ------------------ FRENTE (IMAGEN) ------------------ */
+    .flip-card-front {
+      background-color: #f8f4f5; 
+      position: relative;
+    }
+
+    .flip-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.8);    }
+
+    /* Texto superpuesto en el frente */
+    .overlay-text {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente oscuro */
+        color: white;
+        padding: 10px 0;
+    }
+
+    /* ------------------ REVERSO (FRASE) ------------------ */
+    .flip-card-back {
+      background: #F5F1E5;  
+      color: #ffc107;
+      transform: rotateY(180deg);
+    }
+
+    .back-content {
+        padding: 20px;
+    }
+
+    .flip-card-back .title {
+        color: #ffc107;
+        margin-bottom: 10px;
+    }
+
+    /* Asegura que el botón sea visible */
+    .flip-card-back .btn-light {
+        font-weight: bold;
+        color: #ff9800;
+    }
+
+    /* Deshabilita el texto que aparece al seleccionar */
+    .flip-card-back p:last-child {
+        display: none; 
+    }
+
+    /* Puedes mantener este CSS en tu archivo styles.css */
+    .text-justify {
+        text-align: justify !important; /* Asegura que el texto esté justificado */
+    }
+
+    /* Opcional: Asegura que el color de fondo específico #F5F1E5 siempre se aplique */
+    .card-body {
+        background-color: inherit; 
     }
 
 </style>
