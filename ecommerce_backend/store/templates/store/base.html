@@ -82,7 +82,11 @@
                             {% endif %}
                         </ul>
                     </li>
-                    </ul>
+                </ul>
+                <a href="{% url 'cart' %}" class="btn btn-outline-primary position-relative me-3" id="cart-btn">
+  <img src="/path/to/image.png" alt="Mi Carrito" class="cart-icon">
+  <span class="visually-hidden">Mi Carrito</span>
+</a>
                 {% block buscador %}
                 <form method="get" class="d-flex" action="">
                     <input class="form-control me-2" type="text" name="q" value="{{ request.GET.q }}" placeholder="Buscar..." />

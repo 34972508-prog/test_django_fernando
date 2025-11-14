@@ -525,6 +525,17 @@ class CartView(View):
             'cart_items': cart_items,
             'total': cart.get_total()
         })
+    
+    def buy(request, product_id, quantity):
+        product = Product.objects.get(id=product_id)
+        if product.stock >= quantity:
+            product.stock -= quantity
+            product.save()
+            # Realice la compra y envíe una respuesta JSON exitosa
+            return JsonResponse({'status': 'success'})
+        else:
+            # Envíe una respuesta JSON de error si no hay suficiente stock
+            return JsonResponse({'status': 'error', 'message': 'No hay suficiente stock'})
 
 
 class CheckoutView(View):

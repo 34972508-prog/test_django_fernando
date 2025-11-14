@@ -30,5 +30,13 @@
         "role": "client",
         "email": "agus@gmail.com",
         "address": "2345"
+    },
+    {
+        "id": 5,
+        "username": "nico",
+        "password": "123",
+        "role": "client",
+        "email": "nic@gmail.com",
+        "address": "None"
     }
 ]

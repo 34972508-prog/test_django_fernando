@@ -64,11 +64,10 @@
                                     </label>
                                 </div>
                             </div>
-
-                            <!-- campos dinámicos según método -->
                             <div id="paymentDetails" class="mb-3"></div>
                         </div>
-                        <button type="submit" class="btn btn-success">Confirmar Pago</button>
+                        <button type="submit" class="btn btn-success" method="">Confirmar Pago</button>
+                        <a href="{% url 'cart' %}" class="btn btn-danger ms-2">Cancelar Pago</a>
                     </form>
                 </div>
             </div>
