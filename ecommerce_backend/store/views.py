@@ -8,7 +8,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .product_service import ProductService
 from .decorators import admin_required
-from .cart_service import CartService
+from .cart_service import CartService # <-- Importado
+
 
 from django.shortcuts import render, redirect
 from django.views import View
@@ -33,7 +34,8 @@ import json
 # Inicializacion de los servicios (global para las vistas)
 user_service = UserService()
 product_service = ProductService()
-branch_service = BranchService() # <-- Asegurarse que esté instanciado globalmente
+branch_service = BranchService() 
+cart_service = CartService() # <-- Instancia del servicio de carrito
 
 class ProductListCreateAPIView(APIView):
     """
@@ -438,23 +440,40 @@ class DeleteCategoryView(AdminRequiredMixin,View):
 
 # --- VISTAS DE CARRITO Y CHECKOUT ---
 
+# --- ¡INICIO DE LA CORRECCIÓN! ---
+
 class CartView(View):
+    """
+    Vista para mostrar y gestionar el carrito de un usuario.
+    Utiliza CartService para persistir los datos en carts.json.
+    """
+    
     def get(self, request):
-        cart = request.session.get('cart', {})
-        service = ProductService()
+        """
+        Muestra el carrito del usuario logueado.
+        """
+        # 1. Verificar si el usuario está logueado
+        user_id = request.session.get('user_id')
+        if not user_id:
+            messages.error(request, "Debes iniciar sesión para ver tu carrito.")
+            return redirect('login')
+        
+        # 2. Obtener el carrito usando el CartService
+        cart = cart_service.get_cart(user_id)
+        
+        # 3. Obtener detalles de productos
         cart_items = []
         total = 0
-        
-        for product_id, quantity in cart.items():
-            product = service.get_product_by_id(int(product_id))
+        for item in cart.items.values():
+            product = product_service.get_product_by_id(item.product_id)
             if product:
-                item_total = product['price'] * quantity
+                subtotal = product['price'] * item.quantity
                 cart_items.append({
                     'product': product,
-                    'quantity': quantity,
-                    'total': item_total
+                    'quantity': item.quantity,
+                    'subtotal': subtotal
                 })
-                total += item_total
+                total += subtotal
         
         context = {
             'cart_items': cart_items,
@@ -463,99 +482,88 @@ class CartView(View):
         return render(request, 'store/cart.html', context)
 
     def post(self, request):
+        """
+        Agrega o elimina productos del carrito del usuario logueado.
+        """
+        # 1. Verificar si el usuario está logueado
+        user_id = request.session.get('user_id')
+        if not user_id:
+            # Si es una petición fetch (AJAX) desde la lista de productos
+            # (El JS de list_product.html espera una respuesta 'ok')
+            if 'HTTP_X_REQUESTED_WITH' in request.META and request.META['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': 'No autenticado'}, status=401)
+            
+            messages.error(request, "Debes iniciar sesión para modificar tu carrito.")
+            return redirect('login')
+
         action = request.POST.get('action')
-        product_id = request.POST.get('product_id')
-        
-        if not product_id:
+        product_id_str = request.POST.get('product_id')
+
+        if not product_id_str or not product_id_str.isdigit():
             messages.error(request, "Producto no válido")
             return redirect('cart')
-            
-        cart = request.session.get('cart', {})
         
+        product_id = int(product_id_str)
+        
+        # 2. Obtener el carrito del servicio
+        cart = cart_service.get_cart(user_id)
+
         if action == 'add':
             quantity = int(request.POST.get('quantity', 1))
-            if product_id in cart:
-                cart[product_id] += quantity
+            
+            # (Opcional) Verificar stock
+            product = product_service.get_product_by_id(product_id)
+            if product and product['stock'] >= quantity:
+                cart.add_item(product_id, quantity)
+                messages.success(request, "Producto agregado al carrito")
             else:
-                cart[product_id] = quantity
-            messages.success(request, "Producto agregado al carrito")
+               messages.error(request, "No hay suficiente stock")
             
         elif action == 'remove':
-            if product_id in cart:
-                del cart[product_id]
-                messages.success(request, "Producto eliminado del carrito")
-                
-        request.session['cart'] = cart
+            cart.remove_item(product_id)
+            messages.success(request, "Producto eliminado del carrito")
+        
+        # 3. Guardar el carrito en el JSON
+        cart_service.save_cart(cart)
+        
+        # 4. Responder
+        # Si es AJAX (desde list_product.html), devolvemos JSON
+        if 'HTTP_X_REQUESTED_WITH' in request.META and request.META['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest':
+             return JsonResponse({'success': True})
+        
+        # Si es un POST normal (desde cart.html), redirigimos
         return redirect('cart')
-    def cart_view(request):
-        cart_service = CartService()
-    
-        if 'user_id' not in request.session:
-            return redirect('login')
-        
-        user_id = request.session['user_id']
-        cart = cart_service.get_cart(user_id)
-        
-        if request.method == 'POST':
-            action = request.POST.get('action')
-            product_id = int(request.POST.get('product_id'))
-            quantity = int(request.POST.get('quantity', 1))
-            
-            if action == 'add':
-                cart.add_item(product_id, quantity)
-            elif action == 'remove':
-                cart.remove_item(product_id)
-                
-            cart_service.save_cart(cart)
-            cart = cart_service.get_cart(user_id)
-        
-        # Obtener los productos para mostrar en el carrito
-        product_service = ProductService()
-        cart_items = []
-        for item in cart.items.values():
-            product = product_service.get_product_by_id(item.product_id)
-            if product:
-                cart_items.append({
-                    'product': product,
-                    'quantity': item.quantity,
-                    'subtotal': product['price'] * item.quantity
-                })
-        total=cart.get_total()
-        return render(request, 'store/cart.html', {
-            'cart_items': cart_items,
-            'total': cart.get_total()
-        })
-    
-    def buy(request, product_id, quantity):
-        product = Product.objects.get(id=product_id)
-        if product.stock >= quantity:
-            product.stock -= quantity
-            product.save()
-            # Realice la compra y envíe una respuesta JSON exitosa
-            return JsonResponse({'status': 'success'})
-        else:
-            # Envíe una respuesta JSON de error si no hay suficiente stock
-            return JsonResponse({'status': 'error', 'message': 'No hay suficiente stock'})
 
 
 class CheckoutView(View):
+    """
+    Vista para el checkout. Muestra el resumen y procesa el pago.
+    Utiliza CartService.
+    """
+    
     def get(self, request):
-        cart = request.session.get('cart', {})
-        if not cart:
+        # 1. Verificar si el usuario está logueado
+        user_id = request.session.get('user_id')
+        if not user_id:
+            messages.error(request, "Debes iniciar sesión para finalizar la compra.")
+            return redirect('login')
+            
+        # 2. Obtener carrito del servicio
+        cart = cart_service.get_cart(user_id)
+        if not cart.items:
             messages.warning(request, "Tu carrito está vacío")
             return redirect('cart')
             
-        service = ProductService()
+        # 3. Obtener detalles de productos
         cart_items = []
         total = 0
-        
-        for product_id, quantity in cart.items():
-            product = service.get_product_by_id(int(product_id))
+        for item in cart.items.values():
+            product = product_service.get_product_by_id(item.product_id)
             if product:
-                item_total = product['price'] * quantity
+                item_total = product['price'] * item.quantity
                 cart_items.append({
                     'product': product,
-                    'quantity': quantity,
+                    'quantity': item.quantity,
                     'total': item_total
                 })
                 total += item_total
@@ -567,18 +575,29 @@ class CheckoutView(View):
         return render(request, 'store/checkout.html', context)
 
     def post(self, request):
+        # 1. Verificar si el usuario está logueado
+        user_id = request.session.get('user_id')
+        if not user_id:
+            messages.error(request, "Tu sesión ha expirado.")
+            return redirect('login')
+            
         try:
-            cart = request.session.get('cart', {})
-            if not cart:
+            # 2. Obtener carrito para asegurarse de que no esté vacío
+            cart = cart_service.get_cart(user_id)
+            if not cart.items:
                 raise ValueError("Carrito vacío")
-                
-            request.session['cart'] = {}
+            
+            # 3. ¡CORREGIDO! Limpiar el carrito del JSON
+            cart_service.remove_cart(user_id)
+            
             messages.success(request, "¡Pago procesado con éxito! Gracias por tu compra.")
             return redirect('order-confirmation')
             
         except Exception as e:
             messages.error(request, f"Error al procesar el pago: {str(e)}")
             return redirect('checkout')
+
+# --- FIN DE LA CORRECCIÓN ---
 
 
 # --- VISTAS DE AUTENTICACIÓN (Simuladas con JSON) ---
@@ -608,6 +627,9 @@ class LoginView(View):
             if user.role == 'admin':
                 return redirect('admin-product-view')
             else:
+                # Si el cliente no tiene sucursal, irá a 'home'
+                if not request.session.get('selected_branch_id'):
+                     return redirect('home')
                 return redirect('product-list-html')
         else:
             error_message = "Usuario o contraseña incorrectos. Por favor, intenta de nuevo."
@@ -643,11 +665,12 @@ class RegisterView(View):
         
         if not username or not pass1 or not pass2 or not email:
             context_error['error_message'] = "Los campos de Usuario, Contraseña y Correo son obligatorios."
-            return render(request, 'store/register.html')
+            # Pasamos el contexto de error de vuelta al template
+            return render(request, 'store/register.html', context_error)
             
         if pass1 != pass2:
             context_error['error_message'] = "Las contraseñas no coinciden."
-            return render(request, 'store/register.html')
+            return render(request, 'store/register.html', context_error)
 
         new_user = service.create_user(username, pass1, email= email, address = address)
         
@@ -658,10 +681,11 @@ class RegisterView(View):
            
             
             #messages.success(request, "¡Registro exitoso! Has iniciado sesión.")
-            return redirect('product-list-html') 
+            # Redirigir a 'home' para que el modal de sucursal aparezca
+            return redirect('home') 
         else:
             context_error['error_message'] = "El nombre de usuario ya existe o hubo un error al crear la cuenta."
-            return render(request, 'store/register.html')
+            return render(request, 'store/register.html', context_error)
 
 class LogoutView(View):
     def get(self, request):
