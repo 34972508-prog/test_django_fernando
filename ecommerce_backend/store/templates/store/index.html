@@ -1,5 +1,5 @@
 {% extends 'store/base.html' %} {% load static %} {% block title %}Inicio{%endblock title %} {% block content %}
-
+{{ branches_json|json_script:"branches-data" }}
 <div class="modal fade" id="branchSelectorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="branchSelectorModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl"> {# Cambiado a modal-xl para pantallas grandes #}
             <div class="modal-content">
@@ -46,7 +46,6 @@
             </div>
         </div>
     </div>
-{# ... Resto del index.html (hero-section, main, etc.) ... #}
 
 
   <div class="hero-section">
@@ -130,195 +129,417 @@
   <h3 class="text-center mt-5 mb-4 text-warning">
     Explora Nuestras Categorías
   </h3>
-
   <div class="row g-4 justify-content-center pb-5">
-    {% comment %} Tarjeta 1: Tortas {% endcomment %}
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-      <a href="{% url 'product-list' %}" class="text-decoration-none">
-        <div
-          class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300"
-        >
-          <div
-            class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center"
-            style="height: 150px"
-          >
-            <img
-              class="img-fluid"
-              src="{% static 'myapp/LogoQAD1.png' %} "
-              alt="Tortas"
-              style="object-fit: cover; width: 100%; height: 100%"
-            />
-          </div>
-          <div class="card-body text-center">
-            <h5 class="card-text fw-bold">Tortas</h5>
-          </div>
-        </div>
-      </a>
-    </div>
-
-    {% comment %} Tarjeta 2: Desayunos {% endcomment %}
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-      <a href="{% url 'product-list' %}" class="text-decoration-none">
-        <div
-          class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300"
-        >
-          <div
-            class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center"
-            style="height: 150px"
-          >
-            <img
-              class="img-fluid"
-              src="{% static 'myapp/LogoQAD1.png' %} "
-              alt="Desayunos"
-              style="object-fit: cover; width: 100%; height: 100%"
-            />
-          </div>
-          <div class="card-body text-center">
-            <h5 class="card-text fw-bold">Desayunos</h5>
+    
+    {# TARJETA 1: Tortas Clásicas #}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch">
+      <a href="#" class="text-decoration-none w-100">
+        <div class="flip-card shadow-lg h-100">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <img src="/media/productos/tortas_clasicas.jpg" alt="Tortas Clásicas" class="card-img-top flip-card-img"/>
+              <div class="overlay-text">
+                <p class="title">Tortas Clásicas</p>
+              </div>
+            </div>
+            <div class="flip-card-back">
+              <div class="back-content">
+                <p class="title">Tortas Clásicas</p>
+                <p class="slogan">Sabores que evocan recuerdos. ¡Elige tu favorita!</p>
+                <span class="btn btn-sm btn-light mt-2 border border-warning">Ver Productos</span>
+              </div>
+            </div>
           </div>
         </div>
       </a>
     </div>
 
-    {% comment %} Tarjeta 3: Catering {% endcomment %}
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-      <a href="{% url 'product-list' %}" class="text-decoration-none">
-        <div
-          class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300"
-        >
-          <div
-            class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center"
-            style="height: 150px"
-          >
-            <img
-              class="img-fluid"
-              src="{% static 'myapp/LogoQAD1.png' %} "
-              alt="Catering"
-              style="object-fit: cover; width: 100%; height: 100%"
-            />
-          </div>
-          <div class="card-body text-center">
-            <h5 class="card-text fw-bold">Catering</h5>
+    {# TARJETA 2: Postres Fríos  Cheesecakes #}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch">
+      <a href="#" class="text-decoration-none w-100">
+        <div class="flip-card shadow-lg h-100">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <img src="/media/productos/postres_frios.jpg" alt="Postres Fríos" class="card-img-top flip-card-img"/>
+              <div class="overlay-text">
+                <p class="title">Postres Fríos Cheesecakes</p>
+              </div>
+            </div>
+            <div class="flip-card-back">
+              <div class="back-content">
+                <p class="title">Postres Fríos Cheesecakes</p>
+                <p class="slogan">La frescura y cremosidad en cada bocado.</p>
+                <span class="btn btn-sm btn-light mt-2 border border-warning">Ver Productos</span>
+              </div>
+            </div>
           </div>
         </div>
       </a>
     </div>
 
-    {% comment %} Tarjeta 4: Tartas {% endcomment %}
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-      <a href="{% url 'product-list' %}" class="text-decoration-none">
-        <div
-          class="card bg-secondary text-white shadow-lg h-100 transform hover:scale-105 transition duration-300"
-        >
-          <div
-            class="card-header p-0 overflow-hidden bg-dark d-flex justify-content-center align-items-center"
-            style="height: 150px"
-          >
-            <img
-              class="img-fluid"
-              src="{% static 'myapp/LogoQAD1.png' %} "
-              alt="Tartas"
-              style="object-fit: cover; width: 100%; height: 100%"
-            />
-          </div>
-          <div class="card-body text-center">
-            <h5 class="card-text fw-bold">Tartas</h5>
+    {# TARJETA 3: Tartas y Pies #}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch">
+      <a href="#" class="text-decoration-none w-100">
+        <div class="flip-card shadow-lg h-100">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <img src="media/productos/tartas_pies.jpg" alt="Tartas y Pays" class="card-img-top flip-card-img"/>
+              <div class="overlay-text">
+                <p class="title">Tartas y Pays</p>
+              </div>
+            </div>
+            <div class="flip-card-back">
+              <div class="back-content">
+                <p class="title">Tartas y Pays</p>
+                <p class="slogan">Texturas crujientes y rellenos inolvidables.</p>
+                <span class="btn btn-sm btn-light mt-2 border border-warning">Ver Productos</span>
+              </div>
+            </div>
           </div>
         </div>
       </a>
     </div>
-  </div>
+
+    {# TARJETA 4: Tortas de Celebración #}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch">
+      <a href="#" class="text-decoration-none w-100">
+        <div class="flip-card shadow-lg h-100">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <img src="media/productos/tortas_celebracion.jpg" alt="Tortas de Celebración" class="card-img-top flip-card-img"/>
+              <div class="overlay-text">
+                <p class="title">Tortas de Celebración</p>
+              </div>
+            </div>
+            <div class="flip-card-back">
+              <div class="back-content">
+                <p class="title">Tortas de Celebración</p>
+                <p class="slogan">El centro de tu fiesta. Diseños a medida.</p>
+                <span class="btn btn-sm btn-light mt-2 border border-warning">Ver Productos</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+
+<!-- Sección Mapa Interactivo -->
+<div class="container mt-5 mb-5">
+    <h3 class="text-center mb-4 text-warning">Encuentra Tu Sucursal Más Cercana</h3>
+    <p class="text-center text-muted mb-4">Haz clic en cualquier sucursal para establecerla como tu ubicación preferida</p>
+    
+    <div class="row g-4">
+        <!-- Lista de Sucursales -->
+        <div class="col-lg-4">
+            <div id="branch-list-container" class="shadow-sm">
+                {% for branch in branches %}           
+                    <div class="branch-item" 
+                        data-id="{{ branch.id }}" 
+                        data-lat="{{ branch.latitude }}" 
+                        data-lon="{{ branch.longitude }}">
+                        
+                        <h5 class="card-title mb-1">{{ branch.name }}</h5>
+                        <p class="card-text text-muted mb-1 small">
+                            <i class="fas fa-map-marker-alt"></i> {{ branch.address }}
+                        </p>
+                        <p class="card-text text-muted mb-0 small">
+                            <i class="fas fa-clock"></i> {{ branch.opening_hours }}
+                        </p>
+                        <span class="filter-status badge bg-success mt-1" data-id="{{ branch.id }}" style="display:none;">
+                            <i class="fas fa-check"></i> Seleccionada
+                        </span>
+                    </div>
+                {% empty %}
+                    <p class="p-3 text-center text-muted">No hay sucursales registradas.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Mapa -->
+        <div class="col-lg-8">
+            <div id="map-container-index" class="shadow-lg rounded">
+                <!-- Mapa se carga aquí -->
+            </div>
+        </div>
+    </div>
+</div>
+
+  <!-- Sección Acerca del Proyecto -->
+  <div class="container mt-3 mb-5">
+    <h3 class="text-center mt-2 mb-4 text-warning">
+    Acerca de "Quiero Algo Dulce"
+    </h3>
+    <section id="historia-proyecto" class="card shadow" style="background-color: #F5F1E5;">
+        
+        <div class="card-body p-5 position-relative">
+            <h3 class="card-title mb-4">¿Cómo nació "Quiero Algo Dulce"?</h3>
+            
+            <p class="card-text text-justify lead">El concepto surge de la <strong> experiencia directa con la industria de la repostería artesanal </strong>. Uno de los miembros del equipo, con un <strong> sólido historial como micro-emprendedor en el sector</strong>, identificó una <strong>brecha clave en el mercado</strong>: la dificultad para los artesanos para lograr una visibilidad efectiva y conectar eficientemente con su clientela potencial.</p>
+
+            <p class="card-text text-justify lead">Por esta razón, desarrollamos este <strong>e-commerce</strong>. Lo visualizamos como una <strong>solución tecnológica esencial</strong> que busca empoderar a todos aquellos que desean emprender en este rubro desde sus hogares, facilitando la <strong>gestión de pedidos, la promoción y la conexión con el cliente final</strong>.</p>
+
+            <p class="card-text text-justify lead"><strong>"Quiero Algo Dulce"</strong> es el resultado de la fusión de <strong>pasión por la repostería artesanal</strong> y un creciente interés y <strong>dominio en la programación y el desarrollo web</strong>. Este proyecto es nuestra apuesta actual de desarrollo que planeamos llevar a producción, convencidos de su valor y necesidad en el mercado.</p>
+            
+            <div class="position-absolute bottom-0 end-0 m-3">
+                <img src="/media/productos/logoTREE.png" alt="Logo de Quiero Algo Dulce" class="img-fluid" style="width: 60px; height: auto; opacity: 0.7;">
+            </div>
+        </div>
+    </section>
+</div>
 </main>
 
 {% endblock content %} 
+
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // ... (Configuración del modal existente)
-      var showModalStr = "{{ show_branch_modal|lower }}";
-      var showModal = showModalStr === 'true';
-      var modalElement = document.getElementById('branchSelectorModal');
-      
-      if (modalElement && showModal) {
-        var modal = new bootstrap.Modal(modalElement, {
-          backdrop: 'static',
-          keyboard: false
-        });
-        modal.show();
-      }
-
-      // Elementos de feedback visual
-      var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-      var errorElement = document.getElementById('branchError');
-      var footer = modalElement ? modalElement.querySelector('.modal-footer') : null;
-      
-      // Función para mostrar el spinner de carga
-      function showLoading(show) {
-          if (footer) {
-              if (show) {
-                  // Agregamos un spinner a la derecha del footer
-                  footer.innerHTML = `
-                    <div class="d-flex align-items-center">
-                        <span class="text-info me-2">Estableciendo sucursal...</span>
-                        <div class="spinner-border spinner-border-sm text-info" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                    </div>
-                  `;
-              } else {
-                  // Restaurar el contenido original del footer (solo el CSRF y el error)
-                  footer.innerHTML = `
-                    <small class="text-danger" id="branchError" style="display:none;">Por favor, selecciona una sucursal.</small>
-                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
-                  `;
-              }
-          }
-      }
-
-      // 2. Conectar el evento CLICK a todas las tarjetas de sucursal
-      document.querySelectorAll('.branch-card').forEach(card => { 
-        card.addEventListener('click', function() {
-          
-          // PASO 1: FEEDBACK VISUAL INMEDIATO
-          document.querySelectorAll('.branch-card').forEach(btn => btn.classList.add('disabled-selection'));
-          showLoading(true);
-
-          var branchId = this.getAttribute('data-branch-id');
-          
-          errorElement.style.display = 'none'; // Ocultar errores previos
-
-          fetch("{% url 'set-branch' %}", {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'X-CSRFToken': csrfToken
-            },
-            body: `branch_id=${branchId}`
-          })
-          .then(response => response.json())
-          .then(data => {
-            // PASO 3: ÉXITO - Ocultar modal y recargar
-            if (data.success) {
-              var modalInstance = bootstrap.Modal.getInstance(modalElement);
-              modalInstance.hide();
-              window.location.reload();
-            } else {
-              throw new Error( data.error || 'Error al establecer la sucursal');
+    // Función para obtener el CSRF token (se mantiene por si acaso)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
-          })
-          .catch(error => {
-            // PASO 4: FALLO - Mostrar error y re-habilitar
-            showLoading(false); // Ocultar spinner
-            
-            errorElement.textContent = 'Error: ' + error.message;
-            errorElement.style.display = 'block';
-            
-            // Re-habilitar las tarjetas (eliminar la clase de deshabilitación)
-            document.querySelectorAll('.branch-card').forEach(btn => btn.classList.remove('disabled-selection'));
-          });
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // 1. Código del modal (existente) - SE MANTIENE
+        var showModalStr = "{{ show_branch_modal|lower }}";
+        var showModal = showModalStr === 'true';
+        var modalElement = document.getElementById('branchSelectorModal');
+        
+        if (modalElement && showModal) {
+            var modal = new bootstrap.Modal(modalElement, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            modal.show();
+        }
+
+        // 2. Inicializar el mapa SOLO para visualización
+        loadLeafletAndInitializeMap();
+        
+        // Tu código existente del modal aquí (se mantiene igual)...
+        var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+        var errorElement = document.getElementById('branchError');
+        var footer = modalElement ? modalElement.querySelector('.modal-footer') : null;
+        
+        // Función para mostrar el spinner de carga (se mantiene)
+        function showLoading(show) {
+            if (footer) {
+                if (show) {
+                    footer.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <span class="text-info me-2">Estableciendo sucursal...</span>
+                            <div class="spinner-border spinner-border-sm text-info" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    footer.innerHTML = `
+                        <small class="text-danger" id="branchError" style="display:none;">Por favor, selecciona una sucursal.</small>
+                        <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                    `;
+                }
+            }
+        }
+
+        // Conectar el evento CLICK a todas las tarjetas de sucursal (MODAL) - SE MANTIENE
+        document.querySelectorAll('.branch-card').forEach(card => { 
+            card.addEventListener('click', function() {
+                
+                document.querySelectorAll('.branch-card').forEach(btn => btn.classList.add('disabled-selection'));
+                showLoading(true);
+
+                var branchId = this.getAttribute('data-branch-id');
+                
+                errorElement.style.display = 'none';
+
+                fetch("{% url 'set-branch' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: `branch_id=${branchId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        var modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        modalInstance.hide();
+                        window.location.reload();
+                    } else {
+                        throw new Error(data.error || 'Error al establecer la sucursal');
+                    }
+                })
+                .catch(error => {
+                    showLoading(false);             
+                    errorElement.textContent = 'Error: ' + error.message;
+                    errorElement.style.display = 'block';
+                    document.querySelectorAll('.branch-card').forEach(btn => btn.classList.remove('disabled-selection'));
+                });
+            });
         });
-      });
     });
+
+    function loadLeafletAndInitializeMap() {
+        
+        // Verificar datos primero
+        const branchesDataElement = document.getElementById('branches-data');
+        if (!branchesDataElement) {
+            console.error('Elemento branches-data no encontrado');
+            return;
+        }
+
+        let branches = [];
+        try {
+            const branchesJson = branchesDataElement.textContent;
+            
+            if (branchesJson && branchesJson.trim() !== '') {
+                const parsedJson = JSON.parse(branchesJson);
+                
+                if (typeof parsedJson === 'string') {
+                    branches = JSON.parse(parsedJson);
+                } else {
+                    branches = parsedJson;
+                }
+            }
+        } catch (e) {
+            console.error("Error al parsear JSON:", e);
+            return;
+        }
+
+        if (!branches || !Array.isArray(branches) || branches.length === 0) {
+            return;
+        }
+
+        // Verificar que las branches tengan coordenadas válidas
+        const validBranches = branches.filter(branch => {
+            return branch.latitude && branch.longitude;
+        });
+
+        if (validBranches.length === 0) {
+            return;
+        }
+
+        // Cargar Leaflet si no está cargado
+        if (typeof L !== 'undefined') {
+            createVisualizationMap(validBranches);
+            return;
+        }
+
+        
+        // Cargar CSS
+        const leafletCSS = document.createElement('link');
+        leafletCSS.rel = 'stylesheet';
+        leafletCSS.href = '{% static "store/leaflet/leaflet.css" %}';
+        document.head.appendChild(leafletCSS);
+        
+        // Cargar JS
+        const leafletJS = document.createElement('script');
+        leafletJS.src = '{% static "store/leaflet/leaflet.js" %}';
+        leafletJS.onload = function() {
+            //console.log('Leaflet cargado correctamente');
+            setTimeout(() => {
+                createVisualizationMap(validBranches);
+            }, 100);
+        };
+        leafletJS.onerror = function() {
+            console.error('Error al cargar Leaflet');
+        };
+        document.head.appendChild(leafletJS);
+    }
+
+    function createVisualizationMap(branches) {
+        
+        const mapContainer = document.getElementById('map-container-index');
+        if (!mapContainer) {
+            console.error('Contenedor del mapa no encontrado');
+            return;
+        }
+
+        try {
+            // Crear el mapa
+            const firstBranch = branches[0];
+            const map = L.map('map-container-index').setView(
+                [firstBranch.latitude, firstBranch.longitude], 
+                13
+            );
+
+            // Capa del mapa
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18
+            }).addTo(map);
+
+            // Agregar marcadores SIMPLES (sin botones de selección)
+            const latLngs = [];
+            const markers = {}; // Para guardar referencia a los marcadores
+
+            branches.forEach(branch => {
+                const marker = L.marker([branch.latitude, branch.longitude]).addTo(map)
+                    .bindPopup(`
+                        <div class="text-center">
+                            <h6 class="text-warning mb-1"><strong>${branch.name}</strong></h6>
+                            <p class="mb-1 small text-dark">${branch.address}</p>
+                            <p class="mb-0 small text-muted">
+                                <i class="fas fa-clock me-1"></i>${branch.opening_hours || ''}
+                            </p>
+                        </div>
+                    `);
+                
+                // Guardar referencia al marcador
+                markers[branch.id] = marker;
+                latLngs.push([branch.latitude, branch.longitude]);
+            });
+
+            // Ajustar vista para mostrar todos los marcadores
+            if (latLngs.length > 0) {
+                const bounds = L.latLngBounds(latLngs);
+                map.fitBounds(bounds, { padding: [20, 20] });
+            }
+
+            // 🔥 FUNCIONALIDAD SIMPLIFICADA: Solo mostrar en mapa al hacer clic en lista
+            const branchItems = document.querySelectorAll('.branch-item');
+            branchItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    const lat = parseFloat(this.dataset.lat);
+                    const lon = parseFloat(this.dataset.lon);
+                    
+                    // Solo animación del mapa - SIN selección/filtrado
+                    map.flyTo([lat, lon], 15, {
+                        duration: 1
+                    });
+
+                    // Abrir el popup del marcador correspondiente
+                    setTimeout(() => {
+                        if (markers[id]) {
+                            markers[id].openPopup();
+                        }
+                    }, 800);
+                    
+                    //console.log('Mostrando sucursal en mapa:', id);
+                    // NO llamamos a selectBranchFromMap - solo es visual
+                });
+            });
+
+
+        } catch (error) {
+            console.error('Error al crear el mapa:', error);
+        }
+    }
 </script>
 {% endblock extra_js %}
 {% block extra_styles %}
@@ -326,16 +547,12 @@
     /* 1. Contenedor Principal (Define el área del "Hero") */
     .hero-section {
         position: relative;
-        min-height: 650px; /* Altura del carrusel */
+        min-height: 650px; 
         width: 100%;
-        
-        /* 💡 SOLUCIÓN: Ajustar el margen superior para eliminar espacios innecesarios. */
-        /* Si tu barra de navegación NO es fija, este ajuste puede ser necesario. */
-        margin-top: 0; /* Asegúrate que no haya margen superior indeseado */
+        margin-top: 0; 
         
         display: flex;
-        align-items: center; /* Centra verticalmente el contenido de bienvenida */
-        justify-content: center;
+        align-items: center;         justify-content: center;
         background-color: #333;
     }
 
@@ -435,6 +652,173 @@
         cursor: not-allowed; /* Muestra el cursor de "prohibido" */
         pointer-events: none; /* Crucial: Deshabilita el clic para evitar doble submit */
     }
+
+    /* =================================================== */
+    /* ESTILOS PARA LAS TARJETAS FLIP (Categorías) */
+    /* =================================================== */
+
+    .flip-card {
+      background-color: transparent;
+      width: 100%;
+      height: 350px; 
+      perspective: 1000px; 
+      font-family: sans-serif;
+    }
+
+    /* El elemento A debe ser un bloque de altura 100% */
+    .row a {
+        width: 100%;
+        display: block; 
+    }
+
+    .title {
+      font-size: 1.5em;
+      font-weight: 900;
+      text-align: center;
+      margin: 0;
+    }
+
+    .slogan {
+      font-size: 1em;
+      font-weight: 400;
+      padding: 0 15px;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.8s;
+      transform-style: preserve-3d; 
+    }
+
+    .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+   .flip-card-front, .flip-card-back {
+      box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+      position: absolute; 
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      top: 0; 
+      left: 0;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden; 
+      border: 1px solid #ffc107;
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+
+    /* ------------------ FRENTE (IMAGEN) ------------------ */
+    .flip-card-front {
+      background-color: #f8f4f5; 
+      position: relative;
+    }
+
+    .flip-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.8);    }
+
+    /* Texto superpuesto en el frente */
+    .overlay-text {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente oscuro */
+        color: white;
+        padding: 10px 0;
+    }
+
+    /* ------------------ REVERSO (FRASE) ------------------ */
+    .flip-card-back {
+      background: #F5F1E5;  
+      color: #ffc107;
+      transform: rotateY(180deg);
+    }
+
+    .back-content {
+        padding: 20px;
+    }
+
+    .flip-card-back .title {
+        color: #ffc107;
+        margin-bottom: 10px;
+    }
+
+    /* Asegura que el botón sea visible */
+    .flip-card-back .btn-light {
+        font-weight: bold;
+        color: #ff9800;
+    }
+
+    /* Deshabilita el texto que aparece al seleccionar */
+    .flip-card-back p:last-child {
+        display: none; 
+    }
+
+    /* Puedes mantener este CSS en tu archivo styles.css */
+    .text-justify {
+        text-align: justify !important; /* Asegura que el texto esté justificado */
+    }
+
+    /* Opcional: Asegura que el color de fondo específico #F5F1E5 siempre se aplique */
+    .card-body {
+        background-color: inherit; 
+    }
+    /* Estilos para el mapa en index */
+    #map-container-index {
+        height: 500px;
+        width: 100%;
+        border-radius: 0.5rem;
+        border: 2px solid #ffc107;
+        z-index: 1;
+    }
+
+    #branch-list-container {
+        height: 500px;
+        overflow-y: auto;
+        border: 1px solid #eee;
+        border-radius: 0.5rem;
+        padding: 0;
+        background: white;
+    }
+
+    .branch-item {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .branch-item:hover {
+        background-color: #fff9e6;
+        transform: translateX(5px);
+    }
+
+    .branch-item:last-child {
+        border-bottom: none;
+    }
+
+    .branch-item h5 {
+        margin-bottom: 0.25rem;
+        color: var(--bs-warning, #ffc107);
+    }
+
+    .branch-item .fa-map-marker-alt {
+        color: #dc3545;
+    }
+
+    .branch-item .fa-clock {
+        color: #0d6efd;
+    }
+
 
 </style>
 {% endblock extra_styles %}

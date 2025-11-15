@@ -936,22 +936,38 @@ class HomeView(View):
     Incluye la lógica para mostrar el modal de selección de sucursal.
     """
     def get(self, request):
+        try: 
         
-        # 1. Obtener la sucursal de la sesión
-        selected_branch_id = request.session.get('selected_branch_id')
-        
-        # 2. Obtener TODAS las sucursales para el modal
-        branches = branch_service.get_all_branches()
+            # 1. Obtener la sucursal de la sesión
+            selected_branch_id = request.session.get('selected_branch_id')
+            
+            # 2. Obtener TODAS las sucursales para el modal
+            branches = branch_service.get_all_branches()
 
-        context = {
-            'branches': branches,
-            # Esta bandera controla si el JavaScript debe abrir el modal
-            'show_branch_modal': selected_branch_id is None, 
-            'titulo': 'Inicio'
-        }
-        
-        # Asumiendo que index.html está en 'store/index.html'
-        return render(request, 'store/index.html', context)
+            # 3. Convertir branches a JSON para el template
+            branches_json = json.dumps(branches) if branches else '[]'
+
+            context = {
+                'branches': branches,
+                'branches_json': branches_json,  # ¡ESTA LÍNEA FALTABA!
+                # Esta bandera controla si el JavaScript debe abrir el modal
+                'show_branch_modal': selected_branch_id is None, 
+                'titulo': 'Inicio'
+            }
+            
+            # Asumiendo que index.html está en 'store/index.html'
+            return render(request, 'store/index.html', context)
+                    
+        except Exception as e:
+            print(f"Error en HomeView: {e}")
+            # Contexto de fallback
+            context = {
+                'branches': [],
+                'branches_json': '[]',
+                'show_branch_modal': True,
+                'titulo': 'Inicio'
+            }
+            return render(request, 'store/index.html', context)
 
 # --- VISTA PARA LIMPIAR LA SUCURSAL SELECCIONADA ---
 class ClearBranchView(View):
