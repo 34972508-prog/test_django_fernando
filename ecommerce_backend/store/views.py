@@ -93,7 +93,7 @@ class ProductDetailAPIView(APIView):
         service = ProductService()
         if service.delete_product(pk):
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_404_NOT_FOUND) # Corregí el typo 44 a 404
 
 # --- VISTAS HTML PARA PRODUCTOS ---
 
@@ -440,7 +440,7 @@ class DeleteCategoryView(AdminRequiredMixin,View):
 
 # --- VISTAS DE CARRITO Y CHECKOUT ---
 
-# --- ¡INICIO DE LA CORRECCIÓN! ---
+# --- ¡INICIO DE LA VERSIÓN CORREGIDA DE CartView! ---
 
 class CartView(View):
     """
@@ -487,12 +487,11 @@ class CartView(View):
         """
         # 1. Verificar si el usuario está logueado
         user_id = request.session.get('user_id')
+        is_ajax = 'HTTP_X_REQUESTED_WITH' in request.META and request.META['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'
+
         if not user_id:
-            # Si es una petición fetch (AJAX) desde la lista de productos
-            # (El JS de list_product.html espera una respuesta 'ok')
-            if 'HTTP_X_REQUESTED_WITH' in request.META and request.META['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest':
+            if is_ajax:
                 return JsonResponse({'success': False, 'error': 'No autenticado'}, status=401)
-            
             messages.error(request, "Debes iniciar sesión para modificar tu carrito.")
             return redirect('login')
 
@@ -500,40 +499,46 @@ class CartView(View):
         product_id_str = request.POST.get('product_id')
 
         if not product_id_str or not product_id_str.isdigit():
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': 'Producto no válido'}, status=400)
             messages.error(request, "Producto no válido")
             return redirect('cart')
         
         product_id = int(product_id_str)
-        
-        # 2. Obtener el carrito del servicio
         cart = cart_service.get_cart(user_id)
 
         if action == 'add':
+            # Esta acción VIENE DE AJAX (list_product.html)
             quantity = int(request.POST.get('quantity', 1))
-            
-            # (Opcional) Verificar stock
             product = product_service.get_product_by_id(product_id)
-            if product and product['stock'] >= quantity:
-                cart.add_item(product_id, quantity)
-                messages.success(request, "Producto agregado al carrito")
-            else:
-               messages.error(request, "No hay suficiente stock")
+
+            if not product:
+                return JsonResponse({'success': False, 'error': 'Producto no encontrado'}, status=404)
             
+            if product['stock'] >= quantity:
+                cart.add_item(product_id, quantity)
+                cart_service.save_cart(cart)
+                # Responde JSON (esto arregla el error de "conexión")
+                return JsonResponse({'success': True})
+            else:
+                # Responde JSON con el error de stock
+                return JsonResponse({'success': False, 'error': 'No hay suficiente stock'})
+
         elif action == 'remove':
+            # Esta acción es un Form POST normal (desde cart.html)
             cart.remove_item(product_id)
+            cart_service.save_cart(cart)
             messages.success(request, "Producto eliminado del carrito")
+            return redirect('cart') # Redirige de vuelta al carrito
         
-        # 3. Guardar el carrito en el JSON
-        cart_service.save_cart(cart)
-        
-        # 4. Responder
-        # Si es AJAX (desde list_product.html), devolvemos JSON
-        if 'HTTP_X_REQUESTED_WITH' in request.META and request.META['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest':
-             return JsonResponse({'success': True})
-        
-        # Si es un POST normal (desde cart.html), redirigimos
+        # Fallback
+        if is_ajax:
+             return JsonResponse({'success': False, 'error': 'Acción desconocida'}, status=400)
+        messages.error(request, "Acción desconocida")
         return redirect('cart')
 
+# --- ¡AQUÍ TERMINA LA ÚNICA CartView! ---
+# (El bloque duplicado ha sido eliminado)
 
 class CheckoutView(View):
     """
@@ -597,8 +602,75 @@ class CheckoutView(View):
             messages.error(request, f"Error al procesar el pago: {str(e)}")
             return redirect('checkout')
 
-# --- FIN DE LA CORRECCIÓN ---
 
+# store/views.py
+# ... (importaciones y vistas existentes) ...
+
+# --- NUEVA VISTA PARA ADMIN CARTS ---
+
+class AdminCartsView(AdminRequiredMixin, View):
+    """
+    Vista de administrador para ver todos los carritos de compras
+    almacenados en carts.json.
+    """
+    def get(self, request):
+        # 1. Cargar todos los carritos
+        # Esto devuelve un dict: {"user_id_1": {...}, "user_id_2": {...}}
+        all_carts_data = cart_service.get_all_carts()
+        
+        processed_carts = []
+        
+        # 2. Enriquecer los datos de cada carrito
+        # Cargar usuarios una sola vez para eficiencia
+        all_users = user_service._load_users()
+        user_map = {str(u.user_id): u.username for u in all_users}
+
+        for user_id_str, cart_data in all_carts_data.items():
+            
+            # Omitir carritos vacíos
+            if not cart_data.get('items'):
+                continue
+
+            # Obtener info del usuario
+            username = user_map.get(user_id_str, f"Usuario ID: {user_id_str} (No encontrado)")
+
+            processed_items = []
+            cart_total = 0
+            
+            # 3. Enriquecer los productos de cada carrito
+            for item_id_str, item_data in cart_data.get('items', {}).items():
+                product_id = item_data.get('product_id')
+                quantity = item_data.get('quantity', 0)
+                
+                product = product_service.get_product_by_id(product_id)
+                
+                if product:
+                    product_name = product.get('title')
+                    product_price = product.get('price', 0)
+                    subtotal = product_price * quantity
+                    cart_total += subtotal
+                else:
+                    product_name = f"Producto ID: {product_id} (No encontrado)"
+                    subtotal = 0
+                
+                processed_items.append({
+                    'product_id': product_id,
+                    'product_name': product_name,
+                    'quantity': quantity,
+                    'subtotal': subtotal
+                })
+            
+            processed_carts.append({
+                'user_id': user_id_str,
+                'username': username,
+                'items': processed_items,
+                'total': cart_total
+            })
+
+        context = {
+            'carts': processed_carts
+        }
+        return render(request, 'store/admin_carts.html', context)
 
 # --- VISTAS DE AUTENTICACIÓN (Simuladas con JSON) ---
 
@@ -862,3 +934,4 @@ class ClearAdminBranchFilterView(AdminRequiredMixin, View):
             del request.session['admin_product_filter_branch_id']
             messages.info(request, "Filtro de sucursal de administración limpiado.")
         return redirect('admin-product-view')
+    

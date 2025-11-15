@@ -29,6 +29,9 @@ urlpatterns = [
     path('admin/users/', views.AdminUserView.as_view(), name='admin-user-view'), 
     path('admin/user/delete/<int:pk>/', views.DeleteUserHTMLView.as_view(), name='admin-user-delete'),
 
+    # --- NUEVA RUTA DE ADMIN CARTS ---
+    path('admin/carts/', views.AdminCartsView.as_view(), name='admin-carts-view'),
+    
     # Administración de Categorías (HTML)
     path('categories/list/', views.AdminCategoryView.as_view(), name='admin-category-view'),
     path('category/new/', views.CategoryFormView.as_view(), name='category-create'),

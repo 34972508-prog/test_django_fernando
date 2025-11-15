@@ -32,11 +32,19 @@
             </a>
         </li>
 
-        {# --- NUEVA OPCIÓN: SUCURSALES --- #}
+        {# Opción 4: Sucursales #}
         <li class="nav-item">
             <a class="nav-link {% if request.resolver_match.url_name == 'admin-branch-view' %}active{% endif %}" 
                href="{% url 'admin-branch-view' %}">
                 Sucursales 📍
+            </a>
+        </li>
+        
+        {# --- NUEVA OPCIÓN: CARRITOS --- #}
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'admin-carts-view' %}active{% endif %}" 
+               href="{% url 'admin-carts-view' %}">
+                Carritos 🛒
             </a>
         </li>
         

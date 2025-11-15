@@ -1,0 +1,54 @@
+{% extends 'store/base.html' %} 
+{% load static %} 
+
+{% block title %}Administrar Carritos{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4">Administración de Carritos 🛒</h1>
+    <p class="text-muted">Lista de carritos activos de los usuarios (datos de <code>carts.json</code>).</p>
+
+    {% if not carts %}
+    <div class="alert alert-info text-center" role="alert">
+        No hay carritos de compras activos o todos están vacíos.
+    </div>
+    {% endif %}
+
+    {% for cart in carts %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                Usuario: <strong class="text-primary">{{ cart.username }}</strong> 
+                <span class="text-muted small">(ID: {{ cart.user_id }})</span>
+            </h5>
+            <h6 class="mb-0 text-success">Total del Carrito: ${{ cart.total|floatformat:2 }}</h6>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark-subtle">
+                        <tr>
+                            <th class="ps-3">Producto</th>
+                            <th class="text-center">ID Producto</th>
+                            <th class="text-center">Cantidad</th>
+                            <th class="text-end pe-3">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cart.items %}
+                        <tr class="align-middle">
+                            <td class="ps-3">{{ item.product_name }}</td>
+                            <td class="text-center">{{ item.product_id }}</td>
+                            <td class="text-center">{{ item.quantity }}</td>
+                            <td class="text-end pe-3">${{ item.subtotal|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock content %}
