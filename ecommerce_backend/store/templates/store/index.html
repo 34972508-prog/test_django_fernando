@@ -1,5 +1,5 @@
 {% extends 'store/base.html' %} {% load static %} {% block title %}Inicio{%endblock title %} {% block content %}
-
+{{ branches_json|json_script:"branches-data" }}
 <div class="modal fade" id="branchSelectorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="branchSelectorModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl"> {# Cambiado a modal-xl para pantallas grandes #}
             <div class="modal-content">
@@ -224,13 +224,47 @@
     </div>
 
 
-  </div>
-  <!-- Sección sucursales ubicacíon -->
-  <div>
-    <h3 class="text-center mt-2 mb-4 text-warning">
-    Sucursales que puedes visitar
-    </h3>
-  </div>
+<!-- Sección Mapa Interactivo -->
+<div class="container mt-5 mb-5">
+    <h3 class="text-center mb-4 text-warning">Encuentra Tu Sucursal Más Cercana</h3>
+    <p class="text-center text-muted mb-4">Haz clic en cualquier sucursal para establecerla como tu ubicación preferida</p>
+    
+    <div class="row g-4">
+        <!-- Lista de Sucursales -->
+        <div class="col-lg-4">
+            <div id="branch-list-container" class="shadow-sm">
+                {% for branch in branches %}           
+                    <div class="branch-item" 
+                        data-id="{{ branch.id }}" 
+                        data-lat="{{ branch.latitude }}" 
+                        data-lon="{{ branch.longitude }}">
+                        
+                        <h5 class="card-title mb-1">{{ branch.name }}</h5>
+                        <p class="card-text text-muted mb-1 small">
+                            <i class="fas fa-map-marker-alt"></i> {{ branch.address }}
+                        </p>
+                        <p class="card-text text-muted mb-0 small">
+                            <i class="fas fa-clock"></i> {{ branch.opening_hours }}
+                        </p>
+                        <span class="filter-status badge bg-success mt-1" data-id="{{ branch.id }}" style="display:none;">
+                            <i class="fas fa-check"></i> Seleccionada
+                        </span>
+                    </div>
+                {% empty %}
+                    <p class="p-3 text-center text-muted">No hay sucursales registradas.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Mapa -->
+        <div class="col-lg-8">
+            <div id="map-container-index" class="shadow-lg rounded">
+                <!-- Mapa se carga aquí -->
+            </div>
+        </div>
+    </div>
+</div>
+
   <!-- Sección Acerca del Proyecto -->
   <div class="container mt-3 mb-5">
     <h3 class="text-center mt-2 mb-4 text-warning">
@@ -258,6 +292,23 @@
 {% endblock content %} 
 {% block extra_js %}
 <script>
+    // Función para obtener el CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
     document.addEventListener('DOMContentLoaded', function() {
       // ... (Configuración del modal existente)
       var showModalStr = "{{ show_branch_modal|lower }}";
@@ -342,7 +393,233 @@
           });
         });
       });
+
+      // ===================================================
+      // MAPA INTERACTIVO DE SUCURSALES
+      // ===================================================
+      initializeMap();
     });
+
+    function initializeMap() {
+        // Verificar si el contenedor del mapa existe
+        const mapContainer = document.getElementById('map-container-index');
+        if (!mapContainer) {
+            console.error('Contenedor del mapa no encontrado');
+            return;
+        }
+
+        let branches;
+        try {
+            branches = JSON.parse(document.getElementById('branches-data').textContent);
+        } catch (e) {
+            console.error("Error al parsear datos JSON de sucursales:", e);
+            branches = [];
+        }
+
+        if (branches.length === 0) {
+            mapContainer.innerHTML = 
+                '<div class="alert alert-warning text-center m-3">No hay sucursales para mostrar en el mapa.</div>';
+            return;
+        }
+
+        // Configuración inicial del mapa
+        const initialLat = branches[0].latitude;
+        const initialLon = branches[0].longitude;
+        
+        // Crear el mapa
+        const map = L.map('map-container-index').setView([initialLat, initialLon], 13);
+
+        // Capa del mapa
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Marcadores y funcionalidad
+        const markers = {};
+        const latLngs = [];
+
+        branches.forEach(branch => {
+            const lat = parseFloat(branch.latitude);
+            const lon = parseFloat(branch.longitude);
+            const id = branch.id;
+
+            // Verificar coordenadas válidas
+            if (isNaN(lat) || isNaN(lon)) {
+                console.warn(`Coordenadas inválidas para sucursal ${branch.name}`);
+                return;
+            }
+
+            // Crear marcador personalizado
+            const customIcon = L.divIcon({
+                html: `<div style="background-color: #ffc107; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">${branch.name.charAt(0)}</div>`,
+                className: 'custom-marker',
+                iconSize: [40, 40],
+                iconAnchor: [20, 40]
+            });
+
+            const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map)
+                .bindPopup(`
+                    <div class="text-center">
+                        <h6 class="text-warning"><strong>${branch.name}</strong></h6>
+                        <p class="mb-1 small">${branch.address}</p>
+                        <p class="mb-1 small text-muted"><i class="fas fa-clock"></i> ${branch.opening_hours}</p>
+                        <button class="btn btn-warning btn-sm mt-1 select-branch-btn" data-id="${id}">
+                            <i class="fas fa-check"></i> Seleccionar
+                        </button>
+                    </div>
+                `);
+
+            markers[id] = marker;
+            latLngs.push([lat, lon]);
+        });
+
+        // Ajustar vista del mapa para mostrar todos los marcadores
+        if (latLngs.length > 0) {
+            const bounds = L.latLngBounds(latLngs);
+            map.fitBounds(bounds, { padding: [20, 20] });
+        }
+
+        // Funcionalidad de selección desde lista y mapa
+        const branchItems = document.querySelectorAll('.branch-item');
+        const filterStatusIndicators = document.querySelectorAll('.filter-status');
+
+        function selectBranch(id, lat, lon, branchName) {
+            // Animación del mapa
+            map.flyTo([lat, lon], 15, {
+                duration: 1
+            });
+
+            // Abrir popup del marcador
+            if (markers[id]) {
+                setTimeout(() => {
+                    markers[id].openPopup();
+                }, 800);
+            }
+
+            // Guardar en sesión via AJAX - URL CORREGIDA
+            const formData = new FormData();
+            formData.append('branch_id', id);
+
+            // Usar la misma URL que el modal para consistencia
+            fetch("{% url 'set-branch' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mostrar feedback visual
+                    showSelectionFeedback(id, branchName);
+                    
+                    // Opcional: Recargar la página para aplicar el filtro globalmente
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                    
+                } else {
+                    showError('Error al establecer el filtro: ' + (data.error || ''));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Error de conexión');
+            });
+        }
+
+        function showSelectionFeedback(branchId, branchName) {
+            // Ocultar todos los indicadores
+            filterStatusIndicators.forEach(indicator => {
+                indicator.style.display = 'none';
+            });
+            
+            // Mostrar indicador de la sucursal seleccionada
+            const selectedIndicator = document.querySelector(`.filter-status[data-id="${branchId}"]`);
+            if (selectedIndicator) {
+                selectedIndicator.style.display = 'inline-block';
+            }
+
+            // Feedback visual temporal
+            const toast = document.createElement('div');
+            toast.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+            toast.innerHTML = `
+                <strong>¡Sucursal seleccionada!</strong><br>
+                Filtro establecido para: ${branchName}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(toast);
+
+            // Auto-remover después de 4 segundos
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 4000);
+        }
+
+        function showError(message) {
+            const errorToast = document.createElement('div');
+            errorToast.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+            errorToast.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+            errorToast.innerHTML = `
+                <strong>Error:</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(errorToast);
+        }
+
+        // Event listeners para lista
+        branchItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const lat = parseFloat(this.dataset.lat);
+                const lon = parseFloat(this.dataset.lon);
+                const branchName = this.querySelector('h5').textContent;
+                
+                selectBranch(id, lat, lon, branchName);
+            });
+        });
+
+        // Event listener para botones en popups del mapa
+        map.on('popupopen', function(e) {
+            const popup = e.popup;
+            const selectBtn = popup._contentNode.querySelector('.select-branch-btn');
+            if (selectBtn) {
+                selectBtn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const lat = e.latlng.lat;
+                    const lon = e.latlng.lng;
+                    const branchName = popup._contentNode.querySelector('h6').textContent;
+                    
+                    selectBranch(id, lat, lon, branchName);
+                    map.closePopup();
+                });
+            }
+        });
+    }
+
+    // Cargar Leaflet si no está cargado
+    if (typeof L === 'undefined') {
+        console.log('Cargando Leaflet...');
+        const leafletCSS = document.createElement('link');
+        leafletCSS.rel = 'stylesheet';
+        leafletCSS.href = '{% static "store/leaflet/leaflet.css" %}';
+        document.head.appendChild(leafletCSS);
+        
+        const leafletJS = document.createElement('script');
+        leafletJS.src = '{% static "store/leaflet/leaflet.js" %}';
+        leafletJS.onload = function() {
+            console.log('Leaflet cargado correctamente');
+            // El mapa se inicializa en DOMContentLoaded
+        };
+        document.head.appendChild(leafletJS);
+    } else {
+        console.log('Leaflet ya está cargado');
+    }
 </script>
 {% endblock extra_js %}
 {% block extra_styles %}
@@ -575,6 +852,53 @@
     .card-body {
         background-color: inherit; 
     }
+    /* Estilos para el mapa en index */
+    #map-container-index {
+        height: 500px;
+        width: 100%;
+        border-radius: 0.5rem;
+        border: 2px solid #ffc107;
+        z-index: 1;
+    }
+
+    #branch-list-container {
+        height: 500px;
+        overflow-y: auto;
+        border: 1px solid #eee;
+        border-radius: 0.5rem;
+        padding: 0;
+        background: white;
+    }
+
+    .branch-item {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .branch-item:hover {
+        background-color: #fff9e6;
+        transform: translateX(5px);
+    }
+
+    .branch-item:last-child {
+        border-bottom: none;
+    }
+
+    .branch-item h5 {
+        margin-bottom: 0.25rem;
+        color: var(--bs-warning, #ffc107);
+    }
+
+    .branch-item .fa-map-marker-alt {
+        color: #dc3545;
+    }
+
+    .branch-item .fa-clock {
+        color: #0d6efd;
+    }
+
 
 </style>
 {% endblock extra_styles %}
