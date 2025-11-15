@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .product_service import ProductService
 from .decorators import admin_required
 from .cart_service import CartService # <-- Importado
+from .order_service import OrderService # <-- AÑADIDO
 
 
 from django.shortcuts import render, redirect
@@ -35,7 +36,8 @@ import json
 user_service = UserService()
 product_service = ProductService()
 branch_service = BranchService() 
-cart_service = CartService() # <-- Instancia del servicio de carrito
+cart_service = CartService() 
+order_service = OrderService() # <-- AÑADIDO
 
 class ProductListCreateAPIView(APIView):
     """
@@ -440,8 +442,6 @@ class DeleteCategoryView(AdminRequiredMixin,View):
 
 # --- VISTAS DE CARRITO Y CHECKOUT ---
 
-# --- ¡INICIO DE LA VERSIÓN CORREGIDA DE CartView! ---
-
 class CartView(View):
     """
     Vista para mostrar y gestionar el carrito de un usuario.
@@ -537,9 +537,6 @@ class CartView(View):
         messages.error(request, "Acción desconocida")
         return redirect('cart')
 
-# --- ¡AQUÍ TERMINA LA ÚNICA CartView! ---
-# (El bloque duplicado ha sido eliminado)
-
 class CheckoutView(View):
     """
     Vista para el checkout. Muestra el resumen y procesa el pago.
@@ -579,6 +576,8 @@ class CheckoutView(View):
         }
         return render(request, 'store/checkout.html', context)
 
+
+    # --- MÉTODO POST DE CHECKOUT ACTUALIZADO ---
     def post(self, request):
         # 1. Verificar si el usuario está logueado
         user_id = request.session.get('user_id')
@@ -586,28 +585,64 @@ class CheckoutView(View):
             messages.error(request, "Tu sesión ha expirado.")
             return redirect('login')
             
+        # 2. Obtener carrito del servicio
+        cart = cart_service.get_cart(user_id)
+        if not cart.items:
+            messages.warning(request, "Tu carrito está vacío")
+            return redirect('cart')
+
+        # 3. Verificar stock ANTES de procesar
+        items_con_detalles = []
+        total_verificado = 0 # Recalculamos el total por seguridad
+        
+        for item in cart.items.values():
+            product = product_service.get_product_by_id(item.product_id)
+            if not product:
+                messages.error(request, f"El producto ID {item.product_id} ya no existe.")
+                return redirect('cart')
+            
+            if product['stock'] < item.quantity:
+                messages.error(request, f"¡Stock insuficiente para '{product['title']}'! Disponible: {product['stock']}.")
+                return redirect('cart') # Vuelve al carrito
+            
+            items_con_detalles.append({'product': product, 'quantity': item.quantity})
+            total_verificado += product['price'] * item.quantity
+
+        # 4. Descontar el stock (El paso CRUCIAL)
         try:
-            # 2. Obtener carrito para asegurarse de que no esté vacío
-            cart = cart_service.get_cart(user_id)
-            if not cart.items:
-                raise ValueError("Carrito vacío")
-            
-            # 3. ¡CORREGIDO! Limpiar el carrito del JSON
-            cart_service.remove_cart(user_id)
-            
-            messages.success(request, "¡Pago procesado con éxito! Gracias por tu compra.")
-            return redirect('order-confirmation')
-            
+            for item_detail in items_con_detalles:
+                product = item_detail['product']
+                product['stock'] -= item_detail['quantity']
+                # Usamos el product_service para guardar el cambio en products.json
+                product_service.update_product(product['id'], product) 
+        
         except Exception as e:
-            messages.error(request, f"Error al procesar el pago: {str(e)}")
+            messages.error(request, f"Hubo un error al actualizar el stock: {e}")
             return redirect('checkout')
 
+        # 5. Crear la Orden (Guardar el registro permanente)
+        try:
+            # Asumimos que todos los productos son de la misma sucursal
+            branch_id = items_con_detalles[0]['product']['branch_id'] if items_con_detalles else None
+            
+            order_service.create_order(
+                user_id=user_id,
+                branch_id=branch_id,
+                items_list=items_con_detalles,
+                total_amount=total_verificado
+            )
+        except Exception as e:
+            messages.error(request, f"¡Error Crítico! El stock fue descontado pero la orden no pudo guardarse: {e}")
+            return redirect('checkout')
 
-# store/views.py
-# ... (importaciones y vistas existentes) ...
+        # 6. Limpiar el carrito (ahora es el último paso)
+        cart_service.remove_cart(user_id)
+        
+        messages.success(request, "¡Pago procesado con éxito! Gracias por tu compra.")
+        return redirect('order-confirmation')
 
-# --- NUEVA VISTA PARA ADMIN CARTS ---
 
+# --- VISTA ADMIN CARTS (EXISTENTE) ---
 class AdminCartsView(AdminRequiredMixin, View):
     """
     Vista de administrador para ver todos los carritos de compras
@@ -671,6 +706,31 @@ class AdminCartsView(AdminRequiredMixin, View):
             'carts': processed_carts
         }
         return render(request, 'store/admin_carts.html', context)
+
+
+# --- NUEVA VISTA PARA ADMIN ORDERS ---
+class AdminOrdersView(AdminRequiredMixin, View):
+    """
+    Vista de administrador para ver el historial de todas las
+    órdenes (compras) guardadas en orders.json.
+    """
+    def get(self, request):
+        all_orders = order_service.get_all_orders()
+        
+        # Cargar mapas de usuarios y sucursales para enriquecer los datos
+        user_map = {str(u.user_id): u.username for u in user_service._load_users()}
+        branch_map = {b['id']: b['name'] for b in branch_service.get_all_branches()}
+        
+        # Enriquecer la info de la orden
+        for order in all_orders:
+            order['username'] = user_map.get(str(order['user_id']), f"ID {order['user_id']}")
+            order['branch_name'] = branch_map.get(order['branch_id'], f"ID {order['branch_id']}")
+        
+        context = {
+            'orders': all_orders
+        }
+        return render(request, 'store/admin_orders.html', context)
+
 
 # --- VISTAS DE AUTENTICACIÓN (Simuladas con JSON) ---
 
@@ -934,4 +994,3 @@ class ClearAdminBranchFilterView(AdminRequiredMixin, View):
             del request.session['admin_product_filter_branch_id']
             messages.info(request, "Filtro de sucursal de administración limpiado.")
         return redirect('admin-product-view')
-    

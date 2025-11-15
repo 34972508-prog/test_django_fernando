@@ -47,6 +47,14 @@
                 Carritos 🛒
             </a>
         </li>
+
+        {# --- NUEVA OPCIÓN: PEDIDOS --- #}
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'admin-orders-view' %}active{% endif %}" 
+               href="{% url 'admin-orders-view' %}">
+                Pedidos 🧾
+            </a>
+        </li>
         
     </ul>
 </div>
