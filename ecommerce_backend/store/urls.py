@@ -61,7 +61,14 @@ urlpatterns = [
     path('checkout/', views.CheckoutView.as_view(), name='checkout'),
     path('order-confirmation/', TemplateView.as_view(template_name='store/confirmacion_pago.html'), name='order-confirmation'),
     #path('cart/', views.cart_view, name='cart'),
+    path('orders/', views.OrderHistoryView.as_view(), name='order-history'),
+    path('orders/<int:order_id>/', views.OrderDetailView.as_view(), name='order-detail'),
+
+     # URLs de administración para órdenes
+    path('admin/orders/', views.AdminOrdersView.as_view(), name='admin-orders'),
+    path('admin/orders/<int:order_id>/', views.AdminOrderDetailView.as_view(), name='admin-order-detail'),
 ]
+
 
 # Configuración para archivos estáticos y media en DEBUG
 if settings.DEBUG:

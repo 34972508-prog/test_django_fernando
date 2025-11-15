@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .product_service import ProductService
 from .decorators import admin_required
 from .cart_service import CartService # <-- Importado
+from .order_service import OrderService
 
 
 from django.shortcuts import render, redirect
@@ -17,7 +18,7 @@ from django.contrib import messages
 
 from .user_service import UserService 
 from django.contrib import messages 
-
+from django.views.generic import TemplateView
 from uuid import uuid4
 import os
 from django.core.files.storage import default_storage
@@ -36,6 +37,7 @@ user_service = UserService()
 product_service = ProductService()
 branch_service = BranchService() 
 cart_service = CartService() # <-- Instancia del servicio de carrito
+order_service = OrderService()
 
 class ProductListCreateAPIView(APIView):
     """
@@ -543,7 +545,7 @@ class CartView(View):
 class CheckoutView(View):
     """
     Vista para el checkout. Muestra el resumen y procesa el pago.
-    Utiliza CartService.
+    Utiliza CartService y OrderService.
     """
     
     def get(self, request):
@@ -572,6 +574,8 @@ class CheckoutView(View):
                     'total': item_total
                 })
                 total += item_total
+        
+        print(f"DEBUG GET - User ID: {user_id}, Cart items: {len(cart.items)}, Total: {total}")
                 
         context = {
             'cart_items': cart_items,
@@ -580,29 +584,123 @@ class CheckoutView(View):
         return render(request, 'store/checkout.html', context)
 
     def post(self, request):
-        # 1. Verificar si el usuario está logueado
+        print("DEBUG POST - Iniciando procesamiento de checkout")
+        
         user_id = request.session.get('user_id')
         if not user_id:
             messages.error(request, "Tu sesión ha expirado.")
             return redirect('login')
             
         try:
-            # 2. Obtener carrito para asegurarse de que no esté vacío
             cart = cart_service.get_cart(user_id)
             if not cart.items:
-                raise ValueError("Carrito vacío")
+                messages.error(request, "Tu carrito está vacío.")
+                return redirect('cart')
             
-            # 3. ¡CORREGIDO! Limpiar el carrito del JSON
+            # Datos del formulario
+            nombre = request.POST.get('nombre', '').strip()
+            email = request.POST.get('email', '').strip()
+            delivery_type = request.POST.get('delivery_type', 'pickup')
+            direccion = request.POST.get('direccion', '')
+            payment_method = request.POST.get('payment_method', 'cash')
+            
+            print(f"DEBUG POST - Datos del formulario:")
+            print(f"  Nombre: {nombre}")
+            print(f"  Email: {email}")
+            print(f"  Delivery type: {delivery_type}")
+            print(f"  Dirección: {direccion}")
+            print(f"  Payment method: {payment_method}")
+            
+            # Validar datos obligatorios
+            if not nombre or not email:
+                messages.error(request, "Por favor completa tu nombre y email.")
+                return redirect('checkout')
+            
+            if delivery_type == 'delivery' and not direccion:
+                messages.error(request, "Por favor ingresa tu dirección de envío.")
+                return redirect('checkout')
+            
+            # Obtener información del usuario
+            user = user_service.get_user_by_id(user_id)
+            print(f"DEBUG POST - Usuario encontrado: {user.username if user else 'None'}")
+            
+            # Crear user_data
+            user_data = {
+                "username": user.username if user else f"user_{user_id}",
+                "email": email,
+                "full_name": nombre,
+                "delivery_type": delivery_type,
+                "address": direccion if delivery_type == 'delivery' else "Retiro en local",
+                "payment_method": payment_method
+            }
+            
+            # Crear orden
+            print("DEBUG POST - Creando orden...")
+            order_service = OrderService()
+            order = order_service.create_order(
+                user_id=user_id,
+                cart_data=cart.to_dict(),
+                user_data=user_data
+            )
+            print(f"DEBUG POST - Orden creada: #{order['id']}")
+            
+            # Limpiar carrito
+            print("DEBUG POST - Limpiando carrito...")
             cart_service.remove_cart(user_id)
             
-            messages.success(request, "¡Pago procesado con éxito! Gracias por tu compra.")
+            request.session['last_order_id'] = order['id']
+            print(f"DEBUG POST - Redirigiendo a confirmación, orden: #{order['id']}")
+            
+            messages.success(request, f"¡Pago procesado con éxito! Número de orden: #{order['id']}")
             return redirect('order-confirmation')
             
         except Exception as e:
+            print(f"DEBUG POST - ERROR: {str(e)}")
+            import traceback
+            traceback.print_exc()
             messages.error(request, f"Error al procesar el pago: {str(e)}")
             return redirect('checkout')
+        
+class OrderHistoryView(View):
+    """
+    Vista para mostrar el historial de órdenes del usuario
+    """
+    def get(self, request):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            messages.error(request, "Debes iniciar sesión para ver tu historial.")
+            return redirect('login')
+        
+        order_service = OrderService()
+        orders = order_service.get_orders_by_user(user_id)
+        
+        context = {
+            'orders': orders
+        }
+        return render(request, 'store/order_history.html', context)
 
-
+class OrderDetailView(View):
+    """
+    Vista para mostrar detalles de una orden específica
+    """
+    def get(self, request, order_id):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            messages.error(request, "Debes iniciar sesión para ver los detalles de la orden.")
+            return redirect('login')
+        
+        order_service = OrderService()
+        order = order_service.get_order_by_id(order_id)
+        
+        # Verificar que la orden pertenece al usuario
+        if not order or order['user_id'] != user_id:
+            messages.error(request, "Orden no encontrada.")
+            return redirect('order-history')
+        
+        context = {
+            'order': order
+        }
+        return render(request, 'store/order_detail.html', context)
 # store/views.py
 # ... (importaciones y vistas existentes) ...
 
@@ -672,6 +770,57 @@ class AdminCartsView(AdminRequiredMixin, View):
         }
         return render(request, 'store/admin_carts.html', context)
 
+class AdminOrdersView(AdminRequiredMixin, View):
+    """
+    Vista de administrador para ver todas las órdenes
+    """
+    def get(self, request):
+        order_service = OrderService()
+        orders = order_service.get_all_orders()
+        
+        # Ordenar por fecha más reciente primero
+        orders.sort(key=lambda x: x['created_at'], reverse=True)
+
+         # Calcular estadísticas
+        status_counts = {}
+        for order in orders:
+            status = order['status']
+            status_counts[status] = status_counts.get(status, 0) + 1
+        
+        context = {
+            'orders': orders,
+            'status_counts': status_counts
+        }
+        return render(request, 'store/admin_orders.html', context)
+
+class AdminOrderDetailView(AdminRequiredMixin, View):
+    """
+    Vista de administrador para ver y gestionar una orden específica
+    """
+    def get(self, request, order_id):
+        order_service = OrderService()
+        order = order_service.get_order_by_id(order_id)
+        
+        if not order:
+            messages.error(request, "Orden no encontrada.")
+            return redirect('admin-orders')
+        
+        context = {
+            'order': order
+        }
+        return render(request, 'store/admin_order_detail.html', context)
+    
+    def post(self, request, order_id):
+        order_service = OrderService()
+        new_status = request.POST.get('status')
+        
+        order = order_service.update_order_status(order_id, new_status)
+        if order:
+            messages.success(request, f"Orden #{order_id} actualizada a: {new_status}")
+        else:
+            messages.error(request, "Error al actualizar la orden.")
+        
+        return redirect('admin-order-detail', order_id=order_id)
 # --- VISTAS DE AUTENTICACIÓN (Simuladas con JSON) ---
 
 class LoginView(View):

@@ -1,0 +1,334 @@
+{
+    "orders": [
+        {
+            "id": 1001,
+            "user_id": 3,
+            "customer_info": {
+                "username": "Alice",
+                "email": "ayelen220595@gmail.com",
+                "full_name": "Leo",
+                "delivery_type": "pickup",
+                "address": "Retiro en local",
+                "payment_method": "cash"
+            },
+            "items": [
+                {
+                    "product_id": 102,
+                    "product_title": "Cheesecake de Frutos Rojos",
+                    "quantity": 1,
+                    "unit_price": 28500.0,
+                    "total_price": 28500.0
+                },
+                {
+                    "product_id": 103,
+                    "product_title": "Torta Red Velvet",
+                    "quantity": 1,
+                    "unit_price": 32000.0,
+                    "total_price": 32000.0
+                },
+                {
+                    "product_id": 104,
+                    "product_title": "Lemon Pie Desestructurado",
+                    "quantity": 1,
+                    "unit_price": 25000,
+                    "total_price": 25000
+                },
+                {
+                    "product_id": 105,
+                    "product_title": "Torta Hojaldre Milhojas",
+                    "quantity": 1,
+                    "unit_price": 38000,
+                    "total_price": 38000
+                }
+            ],
+            "total_amount": 123500.0,
+            "status": "completed",
+            "branch_id": 1,
+            "order_type": "pickup",
+            "created_at": "2025-11-15T09:05:07.239427",
+            "updated_at": "2025-11-15T09:05:07.239444"
+        },
+        {
+            "id": 1002,
+            "user_id": 4,
+            "customer_info": {
+                "username": "Augusto",
+                "email": "leoYuste@gmail.com",
+                "full_name": "Leonardo Yuste",
+                "delivery_type": "pickup",
+                "address": "Retiro en local",
+                "payment_method": "credit"
+            },
+            "items": [
+                {
+                    "product_id": 102,
+                    "product_title": "Cheesecake de Frutos Rojos",
+                    "quantity": 1,
+                    "unit_price": 28500.0,
+                    "total_price": 28500.0
+                },
+                {
+                    "product_id": 103,
+                    "product_title": "Torta Red Velvet",
+                    "quantity": 1,
+                    "unit_price": 32000.0,
+                    "total_price": 32000.0
+                },
+                {
+                    "product_id": 107,
+                    "product_title": "Mousse de Maracuyá",
+                    "quantity": 1,
+                    "unit_price": 29500.0,
+                    "total_price": 29500.0
+                },
+                {
+                    "product_id": 105,
+                    "product_title": "Torta Hojaldre Milhojas",
+                    "quantity": 1,
+                    "unit_price": 38000,
+                    "total_price": 38000
+                },
+                {
+                    "product_id": 104,
+                    "product_title": "Lemon Pie Desestructurado",
+                    "quantity": 1,
+                    "unit_price": 25000,
+                    "total_price": 25000
+                }
+            ],
+            "total_amount": 153000.0,
+            "status": "completed",
+            "branch_id": 1,
+            "order_type": "pickup",
+            "created_at": "2025-11-15T22:17:00.820912",
+            "updated_at": "2025-11-15T22:17:00.820925"
+        },
+        {
+            "id": 1003,
+            "user_id": 3,
+            "customer_info": {
+                "username": "Alice",
+                "email": "alicewornderfull@gmail.com",
+                "full_name": "Alice Wonderfull",
+                "delivery_type": "delivery",
+                "address": "Sargento Cabral 126",
+                "payment_method": "debit"
+            },
+            "items": [
+                {
+                    "product_id": 107,
+                    "product_title": "Mousse de Maracuyá",
+                    "quantity": 1,
+                    "unit_price": 29500.0,
+                    "total_price": 29500.0
+                },
+                {
+                    "product_id": 105,
+                    "product_title": "Torta Hojaldre Milhojas",
+                    "quantity": 2,
+                    "unit_price": 38000,
+                    "total_price": 76000
+                },
+                {
+                    "product_id": 104,
+                    "product_title": "Lemon Pie Desestructurado",
+                    "quantity": 1,
+                    "unit_price": 25000,
+                    "total_price": 25000
+                },
+                {
+                    "product_id": 110,
+                    "product_title": "prueba",
+                    "quantity": 1,
+                    "unit_price": 35555.0,
+                    "total_price": 35555.0
+                }
+            ],
+            "total_amount": 166055.0,
+            "status": "cancelled",
+            "branch_id": 1,
+            "order_type": "pickup",
+            "created_at": "2025-11-15T22:20:56.215679",
+            "updated_at": "2025-11-15T23:27:33.333125"
+        },
+        {
+            "id": 1004,
+            "user_id": 3,
+            "customer_info": {
+                "username": "Alice",
+                "email": "aleW@gmai.com",
+                "full_name": "ALice",
+                "delivery_type": "pickup",
+                "address": "Retiro en local",
+                "payment_method": "transfer"
+            },
+            "items": [
+                {
+                    "product_id": 107,
+                    "product_title": "Mousse de Maracuyá",
+                    "quantity": 1,
+                    "unit_price": 29500.0,
+                    "total_price": 29500.0
+                },
+                {
+                    "product_id": 105,
+                    "product_title": "Torta Hojaldre Milhojas",
+                    "quantity": 1,
+                    "unit_price": 38000,
+                    "total_price": 38000
+                },
+                {
+                    "product_id": 104,
+                    "product_title": "Lemon Pie Desestructurado",
+                    "quantity": 1,
+                    "unit_price": 25000,
+                    "total_price": 25000
+                }
+            ],
+            "total_amount": 92500.0,
+            "status": "preparing",
+            "branch_id": 1,
+            "order_type": "pickup",
+            "created_at": "2025-11-15T22:36:33.137692",
+            "updated_at": "2025-11-15T23:23:35.100833"
+        },
+        {
+            "id": 1005,
+            "user_id": 3,
+            "customer_info": {
+                "username": "Alice",
+                "email": "paisdelasmaravillas@gmail.com",
+                "full_name": "Alice Wonderfull",
+                "delivery_type": "pickup",
+                "address": "Retiro en local",
+                "payment_method": "cash"
+            },
+            "items": [
+                {
+                    "product_id": 102,
+                    "product_title": "Cheesecake de Frutos Rojos",
+                    "quantity": 1,
+                    "unit_price": 28500.0,
+                    "total_price": 28500.0
+                },
+                {
+                    "product_id": 103,
+                    "product_title": "Torta Red Velvet",
+                    "quantity": 1,
+                    "unit_price": 32000.0,
+                    "total_price": 32000.0
+                },
+                {
+                    "product_id": 107,
+                    "product_title": "Mousse de Maracuyá",
+                    "quantity": 1,
+                    "unit_price": 29500.0,
+                    "total_price": 29500.0
+                },
+                {
+                    "product_id": 105,
+                    "product_title": "Torta Hojaldre Milhojas",
+                    "quantity": 1,
+                    "unit_price": 38000,
+                    "total_price": 38000
+                }
+            ],
+            "total_amount": 128000.0,
+            "status": "completed",
+            "branch_id": 1,
+            "order_type": "pickup",
+            "created_at": "2025-11-15T22:59:39.869733",
+            "updated_at": "2025-11-15T22:59:39.869748"
+        },
+        {
+            "id": 1006,
+            "user_id": 3,
+            "customer_info": {
+                "username": "Alice",
+                "email": "alicewornderfull@gmail.com",
+                "full_name": "Alice Wonderfull",
+                "delivery_type": "delivery",
+                "address": "Siempre viva 123",
+                "payment_method": "cash"
+            },
+            "items": [
+                {
+                    "product_id": 103,
+                    "product_title": "Torta Red Velvet",
+                    "quantity": 1,
+                    "unit_price": 32000.0,
+                    "total_price": 32000.0
+                }
+            ],
+            "total_amount": 32000.0,
+            "status": "completed",
+            "branch_id": 1,
+            "order_type": "pickup",
+            "created_at": "2025-11-15T23:00:51.297659",
+            "updated_at": "2025-11-15T23:00:51.297674"
+        },
+        {
+            "id": 1007,
+            "user_id": 4,
+            "customer_info": {
+                "username": "Augusto",
+                "email": "agus@gmail.com",
+                "full_name": "Agusto",
+                "delivery_type": "pickup",
+                "address": "Retiro en local",
+                "payment_method": "cash"
+            },
+            "items": [
+                {
+                    "product_id": 102,
+                    "product_title": "Cheesecake de Frutos Rojos",
+                    "quantity": 1,
+                    "unit_price": 28500.0,
+                    "total_price": 28500.0
+                },
+                {
+                    "product_id": 103,
+                    "product_title": "Torta Red Velvet",
+                    "quantity": 1,
+                    "unit_price": 32000.0,
+                    "total_price": 32000.0
+                },
+                {
+                    "product_id": 107,
+                    "product_title": "Mousse de Maracuyá",
+                    "quantity": 1,
+                    "unit_price": 29500.0,
+                    "total_price": 29500.0
+                },
+                {
+                    "product_id": 105,
+                    "product_title": "Torta Hojaldre Milhojas",
+                    "quantity": 1,
+                    "unit_price": 38000,
+                    "total_price": 38000
+                },
+                {
+                    "product_id": 109,
+                    "product_title": "Tarta de Manzana y Canela",
+                    "quantity": 1,
+                    "unit_price": 27000,
+                    "total_price": 27000
+                },
+                {
+                    "product_id": 110,
+                    "product_title": "prueba",
+                    "quantity": 1,
+                    "unit_price": 35555.0,
+                    "total_price": 35555.0
+                }
+            ],
+            "total_amount": 190555.0,
+            "status": "pending",
+            "branch_id": 1,
+            "order_type": "pickup",
+            "created_at": "2025-11-15T23:21:31.459839",
+            "updated_at": "2025-11-15T23:23:12.897830"
+        }
+    ],
+    "next_order_id": 1008
+}
