@@ -290,9 +290,10 @@
 </main>
 
 {% endblock content %} 
+
 {% block extra_js %}
 <script>
-    // Función para obtener el CSRF token
+    // Función para obtener el CSRF token (se mantiene por si acaso)
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -310,315 +311,234 @@
     const csrftoken = getCookie('csrftoken');
 
     document.addEventListener('DOMContentLoaded', function() {
-      // ... (Configuración del modal existente)
-      var showModalStr = "{{ show_branch_modal|lower }}";
-      var showModal = showModalStr === 'true';
-      var modalElement = document.getElementById('branchSelectorModal');
-      
-      if (modalElement && showModal) {
-        var modal = new bootstrap.Modal(modalElement, {
-          backdrop: 'static',
-          keyboard: false
-        });
-        modal.show();
-      }
+        
+        // 1. Código del modal (existente) - SE MANTIENE
+        var showModalStr = "{{ show_branch_modal|lower }}";
+        var showModal = showModalStr === 'true';
+        var modalElement = document.getElementById('branchSelectorModal');
+        
+        if (modalElement && showModal) {
+            var modal = new bootstrap.Modal(modalElement, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            modal.show();
+        }
 
-      // Elementos de feedback visual
-      var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-      var errorElement = document.getElementById('branchError');
-      var footer = modalElement ? modalElement.querySelector('.modal-footer') : null;
-      
-      // Función para mostrar el spinner de carga
-      function showLoading(show) {
-          if (footer) {
-              if (show) {
-                  // Agregamos un spinner a la derecha del footer
-                  footer.innerHTML = `
-                    <div class="d-flex align-items-center">
-                        <span class="text-info me-2">Estableciendo sucursal...</span>
-                        <div class="spinner-border spinner-border-sm text-info" role="status">
-                            <span class="visually-hidden">Cargando...</span>
+        // 2. Inicializar el mapa SOLO para visualización
+        loadLeafletAndInitializeMap();
+        
+        // Tu código existente del modal aquí (se mantiene igual)...
+        var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+        var errorElement = document.getElementById('branchError');
+        var footer = modalElement ? modalElement.querySelector('.modal-footer') : null;
+        
+        // Función para mostrar el spinner de carga (se mantiene)
+        function showLoading(show) {
+            if (footer) {
+                if (show) {
+                    footer.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <span class="text-info me-2">Estableciendo sucursal...</span>
+                            <div class="spinner-border spinner-border-sm text-info" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
                         </div>
-                    </div>
-                  `;
-              } else {
-                  // Restaurar el contenido original del footer (solo el CSRF y el error)
-                  footer.innerHTML = `
-                    <small class="text-danger" id="branchError" style="display:none;">Por favor, selecciona una sucursal.</small>
-                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
-                  `;
-              }
-          }
-      }
-
-      // Conectar el evento CLICK a todas las tarjetas de sucursal
-      document.querySelectorAll('.branch-card').forEach(card => { 
-        card.addEventListener('click', function() {
-          
-          // VISUAL INMEDIATO
-          document.querySelectorAll('.branch-card').forEach(btn => btn.classList.add('disabled-selection'));
-          showLoading(true);
-
-          var branchId = this.getAttribute('data-branch-id');
-          
-          errorElement.style.display = 'none'; // Ocultar errores previos
-
-          fetch("{% url 'set-branch' %}", {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'X-CSRFToken': csrfToken
-            },
-            body: `branch_id=${branchId}`
-          })
-          .then(response => response.json())
-          .then(data => {
-            // PASO 3: ÉXITO - Ocultar modal y recargar
-            if (data.success) {
-              var modalInstance = bootstrap.Modal.getInstance(modalElement);
-              modalInstance.hide();
-              window.location.reload();
-            } else {
-              throw new Error( data.error || 'Error al establecer la sucursal');
+                    `;
+                } else {
+                    footer.innerHTML = `
+                        <small class="text-danger" id="branchError" style="display:none;">Por favor, selecciona una sucursal.</small>
+                        <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                    `;
+                }
             }
-          })
-          .catch(error => {
-            // FALLO - Mostrar error y re-habilitar
-            showLoading(false);             
-            errorElement.textContent = 'Error: ' + error.message;
-            errorElement.style.display = 'block';
-            
-            // Re-habilitar las tarjetas (eliminar la clase de deshabilitación)
-            document.querySelectorAll('.branch-card').forEach(btn => btn.classList.remove('disabled-selection'));
-          });
-        });
-      });
+        }
 
-      // ===================================================
-      // MAPA INTERACTIVO DE SUCURSALES
-      // ===================================================
-      initializeMap();
+        // Conectar el evento CLICK a todas las tarjetas de sucursal (MODAL) - SE MANTIENE
+        document.querySelectorAll('.branch-card').forEach(card => { 
+            card.addEventListener('click', function() {
+                
+                document.querySelectorAll('.branch-card').forEach(btn => btn.classList.add('disabled-selection'));
+                showLoading(true);
+
+                var branchId = this.getAttribute('data-branch-id');
+                
+                errorElement.style.display = 'none';
+
+                fetch("{% url 'set-branch' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: `branch_id=${branchId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        var modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        modalInstance.hide();
+                        window.location.reload();
+                    } else {
+                        throw new Error(data.error || 'Error al establecer la sucursal');
+                    }
+                })
+                .catch(error => {
+                    showLoading(false);             
+                    errorElement.textContent = 'Error: ' + error.message;
+                    errorElement.style.display = 'block';
+                    document.querySelectorAll('.branch-card').forEach(btn => btn.classList.remove('disabled-selection'));
+                });
+            });
+        });
     });
 
-    function initializeMap() {
-        // Verificar si el contenedor del mapa existe
+    function loadLeafletAndInitializeMap() {
+        
+        // Verificar datos primero
+        const branchesDataElement = document.getElementById('branches-data');
+        if (!branchesDataElement) {
+            console.error('Elemento branches-data no encontrado');
+            return;
+        }
+
+        let branches = [];
+        try {
+            const branchesJson = branchesDataElement.textContent;
+            
+            if (branchesJson && branchesJson.trim() !== '') {
+                const parsedJson = JSON.parse(branchesJson);
+                
+                if (typeof parsedJson === 'string') {
+                    branches = JSON.parse(parsedJson);
+                } else {
+                    branches = parsedJson;
+                }
+            }
+        } catch (e) {
+            console.error("Error al parsear JSON:", e);
+            return;
+        }
+
+        if (!branches || !Array.isArray(branches) || branches.length === 0) {
+            return;
+        }
+
+        // Verificar que las branches tengan coordenadas válidas
+        const validBranches = branches.filter(branch => {
+            return branch.latitude && branch.longitude;
+        });
+
+        if (validBranches.length === 0) {
+            return;
+        }
+
+        // Cargar Leaflet si no está cargado
+        if (typeof L !== 'undefined') {
+            createVisualizationMap(validBranches);
+            return;
+        }
+
+        
+        // Cargar CSS
+        const leafletCSS = document.createElement('link');
+        leafletCSS.rel = 'stylesheet';
+        leafletCSS.href = '{% static "store/leaflet/leaflet.css" %}';
+        document.head.appendChild(leafletCSS);
+        
+        // Cargar JS
+        const leafletJS = document.createElement('script');
+        leafletJS.src = '{% static "store/leaflet/leaflet.js" %}';
+        leafletJS.onload = function() {
+            //console.log('Leaflet cargado correctamente');
+            setTimeout(() => {
+                createVisualizationMap(validBranches);
+            }, 100);
+        };
+        leafletJS.onerror = function() {
+            console.error('Error al cargar Leaflet');
+        };
+        document.head.appendChild(leafletJS);
+    }
+
+    function createVisualizationMap(branches) {
+        
         const mapContainer = document.getElementById('map-container-index');
         if (!mapContainer) {
             console.error('Contenedor del mapa no encontrado');
             return;
         }
 
-        let branches;
         try {
-            branches = JSON.parse(document.getElementById('branches-data').textContent);
-        } catch (e) {
-            console.error("Error al parsear datos JSON de sucursales:", e);
-            branches = [];
-        }
+            // Crear el mapa
+            const firstBranch = branches[0];
+            const map = L.map('map-container-index').setView(
+                [firstBranch.latitude, firstBranch.longitude], 
+                13
+            );
 
-        if (branches.length === 0) {
-            mapContainer.innerHTML = 
-                '<div class="alert alert-warning text-center m-3">No hay sucursales para mostrar en el mapa.</div>';
-            return;
-        }
+            // Capa del mapa
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18
+            }).addTo(map);
 
-        // Configuración inicial del mapa
-        const initialLat = branches[0].latitude;
-        const initialLon = branches[0].longitude;
-        
-        // Crear el mapa
-        const map = L.map('map-container-index').setView([initialLat, initialLon], 13);
+            // Agregar marcadores SIMPLES (sin botones de selección)
+            const latLngs = [];
+            const markers = {}; // Para guardar referencia a los marcadores
 
-        // Capa del mapa
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 18
-        }).addTo(map);
-
-        // Marcadores y funcionalidad
-        const markers = {};
-        const latLngs = [];
-
-        branches.forEach(branch => {
-            const lat = parseFloat(branch.latitude);
-            const lon = parseFloat(branch.longitude);
-            const id = branch.id;
-
-            // Verificar coordenadas válidas
-            if (isNaN(lat) || isNaN(lon)) {
-                console.warn(`Coordenadas inválidas para sucursal ${branch.name}`);
-                return;
-            }
-
-            // Crear marcador personalizado
-            const customIcon = L.divIcon({
-                html: `<div style="background-color: #ffc107; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">${branch.name.charAt(0)}</div>`,
-                className: 'custom-marker',
-                iconSize: [40, 40],
-                iconAnchor: [20, 40]
-            });
-
-            const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map)
-                .bindPopup(`
-                    <div class="text-center">
-                        <h6 class="text-warning"><strong>${branch.name}</strong></h6>
-                        <p class="mb-1 small">${branch.address}</p>
-                        <p class="mb-1 small text-muted"><i class="fas fa-clock"></i> ${branch.opening_hours}</p>
-                        <button class="btn btn-warning btn-sm mt-1 select-branch-btn" data-id="${id}">
-                            <i class="fas fa-check"></i> Seleccionar
-                        </button>
-                    </div>
-                `);
-
-            markers[id] = marker;
-            latLngs.push([lat, lon]);
-        });
-
-        // Ajustar vista del mapa para mostrar todos los marcadores
-        if (latLngs.length > 0) {
-            const bounds = L.latLngBounds(latLngs);
-            map.fitBounds(bounds, { padding: [20, 20] });
-        }
-
-        // Funcionalidad de selección desde lista y mapa
-        const branchItems = document.querySelectorAll('.branch-item');
-        const filterStatusIndicators = document.querySelectorAll('.filter-status');
-
-        function selectBranch(id, lat, lon, branchName) {
-            // Animación del mapa
-            map.flyTo([lat, lon], 15, {
-                duration: 1
-            });
-
-            // Abrir popup del marcador
-            if (markers[id]) {
-                setTimeout(() => {
-                    markers[id].openPopup();
-                }, 800);
-            }
-
-            // Guardar en sesión via AJAX - URL CORREGIDA
-            const formData = new FormData();
-            formData.append('branch_id', id);
-
-            // Usar la misma URL que el modal para consistencia
-            fetch("{% url 'set-branch' %}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Mostrar feedback visual
-                    showSelectionFeedback(id, branchName);
-                    
-                    // Opcional: Recargar la página para aplicar el filtro globalmente
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1500);
-                    
-                } else {
-                    showError('Error al establecer el filtro: ' + (data.error || ''));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showError('Error de conexión');
-            });
-        }
-
-        function showSelectionFeedback(branchId, branchName) {
-            // Ocultar todos los indicadores
-            filterStatusIndicators.forEach(indicator => {
-                indicator.style.display = 'none';
-            });
-            
-            // Mostrar indicador de la sucursal seleccionada
-            const selectedIndicator = document.querySelector(`.filter-status[data-id="${branchId}"]`);
-            if (selectedIndicator) {
-                selectedIndicator.style.display = 'inline-block';
-            }
-
-            // Feedback visual temporal
-            const toast = document.createElement('div');
-            toast.className = 'alert alert-success alert-dismissible fade show position-fixed';
-            toast.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
-            toast.innerHTML = `
-                <strong>¡Sucursal seleccionada!</strong><br>
-                Filtro establecido para: ${branchName}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            document.body.appendChild(toast);
-
-            // Auto-remover después de 4 segundos
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
-            }, 4000);
-        }
-
-        function showError(message) {
-            const errorToast = document.createElement('div');
-            errorToast.className = 'alert alert-danger alert-dismissible fade show position-fixed';
-            errorToast.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
-            errorToast.innerHTML = `
-                <strong>Error:</strong> ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            document.body.appendChild(errorToast);
-        }
-
-        // Event listeners para lista
-        branchItems.forEach(item => {
-            item.addEventListener('click', function() {
-                const id = this.dataset.id;
-                const lat = parseFloat(this.dataset.lat);
-                const lon = parseFloat(this.dataset.lon);
-                const branchName = this.querySelector('h5').textContent;
+            branches.forEach(branch => {
+                const marker = L.marker([branch.latitude, branch.longitude]).addTo(map)
+                    .bindPopup(`
+                        <div class="text-center">
+                            <h6 class="text-warning mb-1"><strong>${branch.name}</strong></h6>
+                            <p class="mb-1 small text-dark">${branch.address}</p>
+                            <p class="mb-0 small text-muted">
+                                <i class="fas fa-clock me-1"></i>${branch.opening_hours || ''}
+                            </p>
+                        </div>
+                    `);
                 
-                selectBranch(id, lat, lon, branchName);
+                // Guardar referencia al marcador
+                markers[branch.id] = marker;
+                latLngs.push([branch.latitude, branch.longitude]);
             });
-        });
 
-        // Event listener para botones en popups del mapa
-        map.on('popupopen', function(e) {
-            const popup = e.popup;
-            const selectBtn = popup._contentNode.querySelector('.select-branch-btn');
-            if (selectBtn) {
-                selectBtn.addEventListener('click', function() {
-                    const id = this.dataset.id;
-                    const lat = e.latlng.lat;
-                    const lon = e.latlng.lng;
-                    const branchName = popup._contentNode.querySelector('h6').textContent;
-                    
-                    selectBranch(id, lat, lon, branchName);
-                    map.closePopup();
-                });
+            // Ajustar vista para mostrar todos los marcadores
+            if (latLngs.length > 0) {
+                const bounds = L.latLngBounds(latLngs);
+                map.fitBounds(bounds, { padding: [20, 20] });
             }
-        });
-    }
 
-    // Cargar Leaflet si no está cargado
-    if (typeof L === 'undefined') {
-        console.log('Cargando Leaflet...');
-        const leafletCSS = document.createElement('link');
-        leafletCSS.rel = 'stylesheet';
-        leafletCSS.href = '{% static "store/leaflet/leaflet.css" %}';
-        document.head.appendChild(leafletCSS);
-        
-        const leafletJS = document.createElement('script');
-        leafletJS.src = '{% static "store/leaflet/leaflet.js" %}';
-        leafletJS.onload = function() {
-            console.log('Leaflet cargado correctamente');
-            // El mapa se inicializa en DOMContentLoaded
-        };
-        document.head.appendChild(leafletJS);
-    } else {
-        console.log('Leaflet ya está cargado');
+            // 🔥 FUNCIONALIDAD SIMPLIFICADA: Solo mostrar en mapa al hacer clic en lista
+            const branchItems = document.querySelectorAll('.branch-item');
+            branchItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    const lat = parseFloat(this.dataset.lat);
+                    const lon = parseFloat(this.dataset.lon);
+                    
+                    // Solo animación del mapa - SIN selección/filtrado
+                    map.flyTo([lat, lon], 15, {
+                        duration: 1
+                    });
+
+                    // Abrir el popup del marcador correspondiente
+                    setTimeout(() => {
+                        if (markers[id]) {
+                            markers[id].openPopup();
+                        }
+                    }, 800);
+                    
+                    //console.log('Mostrando sucursal en mapa:', id);
+                    // NO llamamos a selectBranchFromMap - solo es visual
+                });
+            });
+
+
+        } catch (error) {
+            console.error('Error al crear el mapa:', error);
+        }
     }
 </script>
 {% endblock extra_js %}
