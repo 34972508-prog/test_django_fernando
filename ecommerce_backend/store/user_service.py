@@ -67,6 +67,25 @@ class UserService:
             return None
         # Ahora busca en la propiedad .username del objeto
         return next((u for u in self._users if u.username.lower() == username.lower()), None)
+    
+    def get_user_by_id(self, user_id):
+        """
+        Busca un usuario por su ID.
+        Devuelve el OBJETO de usuario o None.
+        """
+        print(f"DEBUG UserService - Buscando usuario con ID: {user_id}")
+        if not user_id:
+            return None
+        
+        # Busca en la lista de objetos de usuario
+        user = next((u for u in self._users if u.user_id == user_id), None)
+        
+        if user:
+            print(f"DEBUG UserService - Usuario encontrado: {user.username}")
+        else:
+            print(f"DEBUG UserService - Usuario con ID {user_id} no encontrado")
+        
+        return user
 
     def create_user(self, username, password, email= None, address=None):
         """

@@ -1,0 +1,138 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Header de la orden -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-receipt"></i>
+                        Detalle de Orden #{{ order.id }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Información de la Orden</h6>
+                            <p class="mb-1"><strong>Fecha:</strong> {{ order.created_at|slice:":10" }}</p>
+                            <p class="mb-1"><strong>Estado:</strong> 
+                                <span class="badge 
+                                    {% if order.status == 'completed' %}bg-success
+                                    {% elif order.status == 'pending' %}bg-warning
+                                    {% elif order.status == 'cancelled' %}bg-danger
+                                    {% else %}bg-info{% endif %}">
+                                    {{ order.status|title }}
+                                </span>
+                            </p>
+                            <p class="mb-1"><strong>Total:</strong> ${{ order.total_amount|floatformat:0 }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Información de Entrega</h6>
+                            <p class="mb-1"><strong>Tipo:</strong> 
+                                {% if order.order_type == 'delivery' %}Entrega a domicilio{% else %}Retiro en local{% endif %}
+                            </p>
+                            <p class="mb-1"><strong>Sucursal:</strong> Sucursal #{{ order.branch_id }}</p>
+                            {% if order.order_type == 'delivery' %}
+                            <p class="mb-1"><strong>Dirección:</strong> {{ order.customer_info.address }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del Cliente -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Información del Cliente</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Nombre:</strong> {{ order.customer_info.full_name }}</p>
+                            <p class="mb-1"><strong>Email:</strong> {{ order.customer_info.email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Usuario:</strong> {{ order.customer_info.username }}</p>
+                            <p class="mb-1"><strong>Método de pago:</strong> 
+                                {% if order.customer_info.payment_method == 'cash' %}Efectivo
+                                {% elif order.customer_info.payment_method == 'credit' %}Tarjeta de Crédito
+                                {% elif order.customer_info.payment_method == 'debit' %}Tarjeta de Débito
+                                {% elif order.customer_info.payment_method == 'transfer' %}Transferencia
+                                {% else %}{{ order.customer_info.payment_method|title }}{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos de la orden -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Productos Pedidos</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Precio Unitario</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.product_title }}</strong>
+                                        <br>
+                                        <small class="text-muted">ID: {{ item.product_id }}</small>
+                                    </td>
+                                    <td class="text-center">{{ item.quantity }}</td>
+                                    <td class="text-end">${{ item.unit_price|floatformat:0 }}</td>
+                                    <td class="text-end">${{ item.total_price|floatformat:0 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                    <td class="text-end"><strong>${{ order.total_amount|floatformat:0 }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="text-center">
+                <a href="{% url 'order-history' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver al Historial
+                </a>
+                <button onclick="window.print()" class="btn btn-outline-primary ms-2">
+                    <i class="fas fa-print"></i> Imprimir Comprobante
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+@media print {
+    .btn, .card-header, .navbar {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+{% endblock %}

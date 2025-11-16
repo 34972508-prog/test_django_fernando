@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',  # Añadir Django REST Framework
     'store',           # Añadir nuestra app 'store'
+    'django.contrib.humanize',  # Para humanizar números en plantillas
 ]
 
 MIDDLEWARE = [

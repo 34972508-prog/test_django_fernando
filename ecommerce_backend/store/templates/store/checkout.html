@@ -10,32 +10,48 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Información de Pago</h5>
-                    <form method="post">
+                    <form method="post" id="checkoutForm">
                         {% csrf_token %}
+                        
+                        <!-- Información del cliente -->
                         <div class="mb-3">
                             <label for="nombre" class="form-label">Nombre completo</label>
-                            <input type="text" class="form-control" id="nombre" required>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" required>
+                            <input type="email" class="form-control" id="email" name="email" required>
                         </div>
-                        <div class="form-check mb-3">
-                            <input type="radio" class="btn-check" name="options" id="option1" autocomplete="off" >
-                            <label class="btn btn-primary" for="option1">Retiro en Local</label>
-
-                            <input type="radio" class="btn-check" name="options" id="option2" autocomplete="off" >
-                            <label class="btn btn-primary" for="option2">Llega a casa</label>
-
+                        
+                        <!-- Tipo de entrega -->
+                        <div class="mb-3">
+                            <label class="form-label d-block mb-2">Tipo de entrega</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="delivery_type" id="option1" value="pickup" autocomplete="off" checked>
+                                    <label class="btn btn-outline-primary w-100" for="option1">
+                                        Retiro en Local
+                                    </label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="delivery_type" id="option2" value="delivery" autocomplete="off">
+                                    <label class="btn btn-outline-primary w-100" for="option2">
+                                        Llega a casa
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div id="pickupInfo" class="mb-3" style="display:block;">
-                            <label class="form-label text-muted">Retiro en Local: Av. Principal 123, horario 9-18</label>
+
+                        <div id="pickupInfo" class="mb-3 alert alert-info">
+                            <strong>Retiro en Local:</strong> Av. Principal 123, horario 9-18
                         </div>
 
                         <div id="homeAddressLabel" class="mb-3" style="display:none;">
-                            <label for="direccion" class="form-label">Ingrese la dirección de envío</label>
-                            <textarea class="form-control" id="direccion" name="direccion" rows="3"></textarea>
+                            <label for="direccion" class="form-label">Dirección de envío</label>
+                            <textarea class="form-control" id="direccion" name="direccion" rows="3" placeholder="Ingresa tu dirección completa"></textarea>
                         </div>
+
+                        <!-- Método de pago -->
                         <div class="mb-3">
                             <label class="form-label d-block mb-2">Método de pago</label>
                             <div class="row g-2 mb-2">
@@ -66,28 +82,44 @@
                             </div>
                             <div id="paymentDetails" class="mb-3"></div>
                         </div>
-                        <button type="submit" class="btn btn-success" method="">Confirmar Pago</button>
-                        <a href="{% url 'cart' %}" class="btn btn-danger ms-2">Cancelar Pago</a>
+
+                        <!-- Botón de confirmación -->
+                        <button type="submit" class="btn btn-success btn-lg w-100">Confirmar y Pagar</button>
+                        <a href="{% url 'cart' %}" class="btn btn-outline-secondary w-100 mt-2">Volver al Carrito</a>
                     </form>
                 </div>
             </div>
         </div>
         
+        <!-- Resumen del pedido -->
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Resumen del Pedido</h5>
                     {% for item in cart_items %}
                     <div class="d-flex justify-content-between mb-2">
-                        <span>{{ item.product.title }} x {{ item.quantity }}</span>
-                        <span>${{ item.total }}</span>
+                        <div>
+                            <span class="fw-bold">{{ item.product.title }}</span>
+                            <br>
+                            <small class="text-muted">x {{ item.quantity }}</small>
+                        </div>
+                        <span>${{ item.total|floatformat:0 }}</span>
                     </div>
                     {% endfor %}
                     <hr>
                     <div class="d-flex justify-content-between">
                         <strong>Total:</strong>
-                        <strong>${{ total }}</strong>
+                        <strong>${{ total|floatformat:0 }}</strong>
                     </div>
+                    
+                    {% if cart_items %}
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            {{ cart_items|length }} producto{{ cart_items|length|pluralize }} en tu pedido
+                        </small>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -96,106 +128,185 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const pickupRadio = document.getElementById('option1');
-  const homeRadio = document.getElementById('option2');
-  const pickupInfo = document.getElementById('pickupInfo');
-  const homeAddress = document.getElementById('homeAddressLabel');
+    // Elementos del DOM
+    const pickupRadio = document.getElementById('option1');
+    const homeRadio = document.getElementById('option2');
+    const pickupInfo = document.getElementById('pickupInfo');
+    const homeAddress = document.getElementById('homeAddressLabel');
+    const paymentDetails = document.getElementById('paymentDetails');
+    const checkoutForm = document.getElementById('checkoutForm');
 
-  function toggleDelivery() {
-    if (homeRadio.checked) {
-      homeAddress.style.display = 'block';
-      pickupInfo.style.display = 'none';
-      // hacer required el textarea si llega a casa
-      document.getElementById('direccion').setAttribute('required', 'required');
-    } else {
-      homeAddress.style.display = 'none';
-      pickupInfo.style.display = 'block';
-      document.getElementById('direccion').removeAttribute('required');
-    }
-  }
-
-  pickupRadio.addEventListener('change', toggleDelivery);
-  homeRadio.addEventListener('change', toggleDelivery);
-
-  // estado inicial
-  toggleDelivery();
-  const paymentDetails = document.getElementById('paymentDetails');
-
-  function renderPaymentFields(method) {
-    if (!paymentDetails) return;
-    let html = '';
-    if (method === 'credit' || method === 'debit') {
-      html = `
-        <div class="mb-2">
-          <label for="card_number" class="form-label">Número de tarjeta</label>
-          <input type="text" class="form-control" id="card_number" name="card_number" inputmode="numeric" placeholder="1234 5678 9012 3456" required>
-        </div>
-        <div class="row g-2">
-          <div class="col-6">
-            <label for="card_exp" class="form-label">Expiración (MM/AA)</label>
-            <input type="text" class="form-control" id="card_exp" name="card_exp" placeholder="MM/AA" required>
-          </div>
-          <div class="col-6">
-            <label for="card_cvc" class="form-label">CVC</label>
-            <input type="text" class="form-control" id="card_cvc" name="card_cvc" inputmode="numeric" placeholder="CVC" required>
-          </div>
-        </div>`;
-    } else if (method === 'transfer') {
-      html = `
-        <div class="mb-2">
-          <label class="form-label">Instrucciones de transferencia</label>
-          <div class="border rounded p-2">
-            <p class="mb-1"><strong>CBU:</strong> 0000000000000000000000</p>
-            <p class="mb-1"><strong>Titular:</strong> Mi Tienda SRL</p>
-            <small class="text-muted">Una vez realizada la transferencia, indica el número de operación.</small>
-          </div>
-          <label for="transfer_ref" class="form-label mt-2">Número de operación (opcional)</label>
-          <input type="text" class="form-control" id="transfer_ref" name="transfer_ref">
-        </div>`;
-    } else { // cash
-      html = `
-        <div class="mb-2">
-          <label class="form-label">Pago en efectivo</label>
-          <p class="small text-muted mb-0">Pagarás en efectivo al momento del retiro o entrega.</p>
-        </div>`;
-    }
-    paymentDetails.innerHTML = html;
-  }
-
-  // attach listeners
-  document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
-    radio.addEventListener('change', (e) => renderPaymentFields(e.target.value));
-  });
-
-  // initial render (pick checked or default to cash)
-  const checked = document.querySelector('input[name="payment_method"]:checked');
-  if (checked) renderPaymentFields(checked.value);
-  else renderPaymentFields('cash');
-
-  // basic client-side validation for card fields
-  const form = document.getElementById('checkoutForm');
-  if (form) {
-    form.addEventListener('submit', function (ev) {
-      const pm = document.querySelector('input[name="payment_method"]:checked');
-      if (!pm) {
-        ev.preventDefault();
-        alert('Selecciona un método de pago.');
-        return;
-      }
-      if ((pm.value === 'credit' || pm.value === 'debit')) {
-        const card = document.getElementById('card_number');
-        const exp = document.getElementById('card_exp');
-        const cvc = document.getElementById('card_cvc');
-        if (!card || !exp || !cvc || !card.value.trim() || !exp.value.trim() || !cvc.value.trim()) {
-          ev.preventDefault();
-          alert('Completa los datos de la tarjeta.');
+    // Toggle entre retiro y delivery
+    function toggleDelivery() {
+        if (homeRadio.checked) {
+            homeAddress.style.display = 'block';
+            pickupInfo.style.display = 'none';
+            document.getElementById('direccion').setAttribute('required', 'required');
+        } else {
+            homeAddress.style.display = 'none';
+            pickupInfo.style.display = 'block';
+            document.getElementById('direccion').removeAttribute('required');
         }
-      }
-      // si se requiere, se puede añadir lógica para validar dirección cuando delivery = home
-    });
-  }
+    }
 
-  
+    // Renderizar campos de pago según método seleccionado
+    function renderPaymentFields(method) {
+        let html = '';
+        if (method === 'credit' || method === 'debit') {
+            html = `
+                <div class="border rounded p-3 bg-light">
+                    <div class="mb-2">
+                        <label for="card_number" class="form-label">Número de tarjeta</label>
+                        <input type="text" class="form-control" id="card_number" name="card_number" 
+                               inputmode="numeric" placeholder="1234 5678 9012 3456" maxlength="16" required>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label for="card_exp" class="form-label">Expiración (MM/AA)</label>
+                            <input type="text" class="form-control" id="card_exp" name="card_exp" 
+                                   placeholder="MM/AA" maxlength="5" required>
+                        </div>
+                        <div class="col-6">
+                            <label for="card_cvc" class="form-label">CVC</label>
+                            <input type="text" class="form-control" id="card_cvc" name="card_cvc" 
+                                   inputmode="numeric" placeholder="CVC" maxlength="3" required>
+                        </div>
+                    </div>
+                </div>`;
+        } else if (method === 'transfer') {
+            html = `
+                <div class="border rounded p-3 bg-light">
+                    <div class="mb-2">
+                        <label class="form-label">Instrucciones de transferencia</label>
+                        <div class="border rounded p-2 bg-white">
+                            <p class="mb-1"><strong>CBU:</strong> 0000000000000000000000</p>
+                            <p class="mb-1"><strong>Titular:</strong> Mi Tienda SRL</p>
+                            <p class="mb-1"><strong>Alias:</strong> MI.TIENDA.SRL</p>
+                            <small class="text-muted">Una vez realizada la transferencia, indica el número de operación.</small>
+                        </div>
+                        <label for="transfer_ref" class="form-label mt-2">Número de operación (opcional)</label>
+                        <input type="text" class="form-control" id="transfer_ref" name="transfer_ref" 
+                               placeholder="Número de operación bancaria">
+                    </div>
+                </div>`;
+        } else { // cash
+            html = `
+                <div class="border rounded p-3 bg-light">
+                    <div class="mb-2">
+                        <label class="form-label">Pago en efectivo</label>
+                        <p class="small text-muted mb-0">
+                            <i class="fas fa-info-circle"></i>
+                            Pagarás en efectivo al momento del retiro o entrega. 
+                            Ten el monto exacto preparado.
+                        </p>
+                    </div>
+                </div>`;
+        }
+        paymentDetails.innerHTML = html;
+    }
+
+    // Validación del formulario antes de enviar
+    function validateForm() {
+        const deliveryType = document.querySelector('input[name="delivery_type"]:checked');
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+        const nombre = document.getElementById('nombre').value.trim();
+        const email = document.getElementById('email').value.trim();
+
+        // Validar campos básicos
+        if (!nombre || !email) {
+            alert('Por favor completa tu nombre y email.');
+            return false;
+        }
+
+        // Validar dirección si es delivery
+        if (deliveryType.value === 'delivery') {
+            const direccion = document.getElementById('direccion').value.trim();
+            if (!direccion) {
+                alert('Por favor ingresa tu dirección de envío.');
+                return false;
+            }
+        }
+
+        // Validar método de pago
+        if (!paymentMethod) {
+            alert('Por favor selecciona un método de pago.');
+            return false;
+        }
+
+        // Validar campos de tarjeta si es necesario
+        if (paymentMethod.value === 'credit' || paymentMethod.value === 'debit') {
+            const cardNumber = document.getElementById('card_number').value.trim();
+            const cardExp = document.getElementById('card_exp').value.trim();
+            const cardCvc = document.getElementById('card_cvc').value.trim();
+            
+            if (!cardNumber || !cardExp || !cardCvc) {
+                alert('Por favor completa todos los datos de la tarjeta.');
+                return false;
+            }
+            
+            // Validación básica de formato
+            if (cardNumber.length !== 16) {
+                alert('El número de tarjeta debe tener 16 dígitos.');
+                return false;
+            }
+            if (cardExp.length !== 5 || !cardExp.includes('/')) {
+                alert('Formato de expiración inválido. Usa MM/AA.');
+                return false;
+            }
+            if (cardCvc.length !== 3) {
+                alert('El CVC debe tener 3 dígitos.');
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Event Listeners
+    pickupRadio.addEventListener('change', toggleDelivery);
+    homeRadio.addEventListener('change', toggleDelivery);
+
+    document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+        radio.addEventListener('change', (e) => renderPaymentFields(e.target.value));
+    });
+
+    checkoutForm.addEventListener('submit', function (e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Mostrar loading
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        submitBtn.disabled = true;
+        
+        // El formulario se enviará normalmente
+        return true;
+    });
+
+    // Estado inicial
+    toggleDelivery();
+    const checkedPayment = document.querySelector('input[name="payment_method"]:checked');
+    if (checkedPayment) renderPaymentFields(checkedPayment.value);
 });
 </script>
+
+<style>
+.btn-check:checked + .btn-outline-primary {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+.card {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+</style>
 {% endblock %}

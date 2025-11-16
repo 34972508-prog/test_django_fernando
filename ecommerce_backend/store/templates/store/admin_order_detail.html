@@ -1,0 +1,154 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <!-- Header de la orden -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-receipt"></i>
+                        Orden #{{ order.id }} - Administración
+                    </h4>
+                    <span class="badge bg-light text-dark">
+                        User ID: {{ order.user_id }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Información General</h6>
+                            <p class="mb-1"><strong>Fecha creación:</strong> {{ order.created_at }}</p>
+                            <p class="mb-1"><strong>Última actualización:</strong> {{ order.updated_at }}</p>
+                            <p class="mb-1"><strong>ID Usuario:</strong> {{ order.user_id }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Estado y Tipo</h6>
+                            <form method="post" class="mb-3">
+                                {% csrf_token %}
+                                <div class="input-group input-group-sm">
+                                    <select name="status" class="form-select">
+                                        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pendiente</option>
+                                        <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>Confirmada</option>
+                                        <option value="preparing" {% if order.status == 'preparing' %}selected{% endif %}>En Preparación</option>
+                                        <option value="ready" {% if order.status == 'ready' %}selected{% endif %}>Lista para Retirar</option>
+                                        <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Completada</option>
+                                        <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelada</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-success btn-sm">Actualizar</button>
+                                </div>
+                            </form>
+                            <p class="mb-1"><strong>Tipo:</strong> {{ order.order_type|title }}</p>
+                            <p class="mb-1"><strong>Sucursal:</strong> #{{ order.branch_id }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Resumen Financiero</h6>
+                            <p class="mb-1"><strong>Subtotal:</strong> ${{ order.total_amount|floatformat:0 }}</p>
+                            <p class="mb-1"><strong>Total:</strong> ${{ order.total_amount|floatformat:0 }}</p>
+                            <p class="mb-1"><strong>Productos:</strong> {{ order.items|length }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del Cliente -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Información del Cliente</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Nombre completo:</strong> {{ order.customer_info.full_name }}</p>
+                            <p class="mb-1"><strong>Email:</strong> {{ order.customer_info.email }}</p>
+                            <p class="mb-1"><strong>Usuario:</strong> {{ order.customer_info.username }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Método de pago:</strong> {{ order.customer_info.payment_method|title }}</p>
+                            <p class="mb-1"><strong>Tipo de entrega:</strong> {{ order.customer_info.delivery_type|title }}</p>
+                            {% if order.customer_info.delivery_type == 'delivery' %}
+                            <p class="mb-1"><strong>Dirección:</strong> {{ order.customer_info.address }}</p>
+                            {% else %}
+                            <p class="mb-1"><strong>Retiro en:</strong> Sucursal #{{ order.branch_id }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detalle de Productos -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Detalle de Productos</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Precio Unitario</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>{{ item.product_id }}</td>
+                                    <td>
+                                        <strong>{{ item.product_title }}</strong>
+                                    </td>
+                                    <td class="text-center">{{ item.quantity }}</td>
+                                    <td class="text-end">${{ item.unit_price|floatformat:0 }}</td>
+                                    <td class="text-end">${{ item.total_price|floatformat:0 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Total General:</strong></td>
+                                    <td class="text-end"><strong>${{ order.total_amount|floatformat:0 }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones de Administrador -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Acciones de Administración</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{% url 'admin-orders' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver a Órdenes
+                        </a>
+                        <button onclick="window.print()" class="btn btn-outline-primary">
+                            <i class="fas fa-print"></i> Imprimir
+                        </button>
+                        <a href="#" class="btn btn-outline-info">
+                            <i class="fas fa-envelope"></i> Contactar Cliente
+                        </a>
+                        {% if order.status != 'cancelled' and order.status != 'completed' %}
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="cancelled">
+                            <button type="submit" class="btn btn-outline-danger" 
+                                    onclick="return confirm('¿Estás seguro de que quieres cancelar esta orden?')">
+                                <i class="fas fa-times"></i> Cancelar Orden
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
