@@ -1,1 +1,15 @@
-{}
+{
+    "3": {
+        "user_id": 3,
+        "items": {
+            "103": {
+                "product_id": 103,
+                "quantity": 1
+            },
+            "105": {
+                "product_id": 105,
+                "quantity": 1
+            }
+        }
+    }
+}
