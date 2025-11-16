@@ -317,7 +317,8 @@ class List_productView(View):
             'productos': productos,
             'titulo': f'Catálogo de Productos - Sucursal {branch_name}',
             # Flag para JS: muestra el modal si la sucursal no está seleccionada
-            'show_branch_modal': selected_branch_id is None
+            'show_branch_modal': selected_branch_id is None,
+            'user_role': request.session.get('user_role') # ¡Asegúrate de pasarla!
         }
         return render(request, 'store/list_product.html', context)
 
@@ -569,7 +570,7 @@ class CheckoutView(View):
                 })
                 total += item_total
         
-        print(f"DEBUG GET - User ID: {user_id}, Cart items: {len(cart.items)}, Total: {total}")
+        #print(f"DEBUG GET - User ID: {user_id}, Cart items: {len(cart.items)}, Total: {total}")
                 
         context = {
             'cart_items': cart_items,
@@ -580,7 +581,7 @@ class CheckoutView(View):
 
     # --- MÉTODO POST DE CHECKOUT ACTUALIZADO ---
     def post(self, request):
-        print("DEBUG POST - Iniciando procesamiento de checkout")
+        #print("DEBUG POST - Iniciando procesamiento de checkout")
         
         user_id = request.session.get('user_id')
         if not user_id:
@@ -592,6 +593,28 @@ class CheckoutView(View):
             if not cart.items:
                 messages.error(request, "Tu carrito está vacío.")
                 return redirect('cart')
+
+            
+            # 1. VERIFICAR STOCK ANTES DE PROCESAR
+            #print("DEBUG POST - Verificando stock...")
+            items_con_detalles = []
+            total_verificado = 0
+            
+            for item in cart.items.values():
+                product = product_service.get_product_by_id(item.product_id)
+                if not product:
+                    messages.error(request, f"El producto ID {item.product_id} ya no existe.")
+                    return redirect('cart')
+                
+                if product['stock'] < item.quantity:
+                    messages.error(request, f"¡Stock insuficiente para '{product['title']}'! Disponible: {product['stock']}.")
+                    return redirect('cart')
+                
+                items_con_detalles.append({
+                    'product': product, 
+                    'quantity': item.quantity
+                })
+                total_verificado += product['price'] * item.quantity
             
             # Datos del formulario
             nombre = request.POST.get('nombre', '').strip()
@@ -600,12 +623,12 @@ class CheckoutView(View):
             direccion = request.POST.get('direccion', '')
             payment_method = request.POST.get('payment_method', 'cash')
             
-            print(f"DEBUG POST - Datos del formulario:")
-            print(f"  Nombre: {nombre}")
-            print(f"  Email: {email}")
-            print(f"  Delivery type: {delivery_type}")
-            print(f"  Dirección: {direccion}")
-            print(f"  Payment method: {payment_method}")
+            #print(f"DEBUG POST - Datos del formulario:")
+            #print(f"  Nombre: {nombre}")
+            #print(f"  Email: {email}")
+            #print(f"  Delivery type: {delivery_type}")
+            #print(f"  Dirección: {direccion}")
+            #print(f"  Payment method: {payment_method}")
             
             # Validar datos obligatorios
             if not nombre or not email:
@@ -616,9 +639,32 @@ class CheckoutView(View):
                 messages.error(request, "Por favor ingresa tu dirección de envío.")
                 return redirect('checkout')
             
+            # 3. DESCONTAR STOCK (PASO CRUCIAL)
+            #print("DEBUG POST - Descontando stock...")
+            try:
+                for item_detail in items_con_detalles:
+                    product = item_detail['product']
+                    cantidad_a_descontar = item_detail['quantity']
+                    
+                    #print(f"  Descontando {cantidad_a_descontar} unidades de {product['title']}")
+                    #print(f"  Stock anterior: {product['stock']}")
+                    
+                    # Descontar del stock
+                    product['stock'] -= cantidad_a_descontar
+                    
+                    #print(f"  Stock nuevo: {product['stock']}")
+                    
+                    # Guardar cambios en el producto
+                    product_service.update_product(product['id'], product)
+                    
+            except Exception as e:
+                #(f"DEBUG POST - ERROR al descontar stock: {str(e)}")
+                messages.error(request, f"Hubo un error al actualizar el stock: {e}")
+                return redirect('checkout')
+            
             # Obtener información del usuario
             user = user_service.get_user_by_id(user_id)
-            print(f"DEBUG POST - Usuario encontrado: {user.username if user else 'None'}")
+            #print(f"DEBUG POST - Usuario encontrado: {user.username if user else 'None'}")
             
             # Crear user_data
             user_data = {
@@ -631,27 +677,31 @@ class CheckoutView(View):
             }
             
             # Crear orden
-            print("DEBUG POST - Creando orden...")
+            #print("DEBUG POST - Creando orden...")
             order_service = OrderService()
+
+             # Obtener branch_id del primer producto (asumiendo misma sucursal)
+            branch_id = items_con_detalles[0]['product']['branch_id'] if items_con_detalles else None
+            #Pasar los parámetros correctos al create_order
             order = order_service.create_order(
                 user_id=user_id,
-                cart_data=cart.to_dict(),
+                cart_data=cart.to_dict(),  # <-- Usar cart_data en lugar de items_list
                 user_data=user_data
             )
-            print(f"DEBUG POST - Orden creada: #{order['id']}")
+            #print(f"DEBUG POST - Orden creada: #{order['id']}")
             
             # Limpiar carrito
-            print("DEBUG POST - Limpiando carrito...")
+            #print("DEBUG POST - Limpiando carrito...")
             cart_service.remove_cart(user_id)
             
             request.session['last_order_id'] = order['id']
-            print(f"DEBUG POST - Redirigiendo a confirmación, orden: #{order['id']}")
+            #print(f"DEBUG POST - Redirigiendo a confirmación, orden: #{order['id']}")
             
             messages.success(request, f"¡Pago procesado con éxito! Número de orden: #{order['id']}")
             return redirect('order-confirmation')
             
         except Exception as e:
-            print(f"DEBUG POST - ERROR: {str(e)}")
+            #print(f"DEBUG POST - ERROR: {str(e)}")
             import traceback
             traceback.print_exc()
             messages.error(request, f"Error al procesar el pago: {str(e)}")
@@ -777,11 +827,21 @@ class AdminOrdersView(AdminRequiredMixin, View):
         # Ordenar por fecha más reciente primero
         orders.sort(key=lambda x: x['created_at'], reverse=True)
 
-         # Calcular estadísticas
-        status_counts = {}
+         # Calcular estadísticas x estado
+        status_counts = {
+            'total': len(orders),
+            'pending': 0,
+            'confirmed': 0,
+            'preparing': 0,
+            'ready': 0,
+            'completed': 0,
+            'cancelled': 0
+        }
+        
         for order in orders:
-            status = order['status']
-            status_counts[status] = status_counts.get(status, 0) + 1
+            status = order.get('status', 'pending')
+            if status in status_counts:
+                status_counts[status] += 1
         
         context = {
             'orders': orders,

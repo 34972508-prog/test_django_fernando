@@ -42,11 +42,11 @@
                 }
             ],
             "total_amount": 123500.0,
-            "status": "completed",
+            "status": "pending",
             "branch_id": 1,
             "order_type": "pickup",
             "created_at": "2025-11-15T09:05:07.239427",
-            "updated_at": "2025-11-15T09:05:07.239444"
+            "updated_at": "2025-11-16T02:54:14.333383"
         },
         {
             "id": 1002,
@@ -97,11 +97,11 @@
                 }
             ],
             "total_amount": 153000.0,
-            "status": "completed",
+            "status": "cancelled",
             "branch_id": 1,
             "order_type": "pickup",
             "created_at": "2025-11-15T22:17:00.820912",
-            "updated_at": "2025-11-15T22:17:00.820925"
+            "updated_at": "2025-11-16T02:53:26.295910"
         },
         {
             "id": 1003,
@@ -328,7 +328,136 @@
             "order_type": "pickup",
             "created_at": "2025-11-15T23:21:31.459839",
             "updated_at": "2025-11-15T23:23:12.897830"
+        },
+        {
+            "id": 1008,
+            "user_id": 3,
+            "customer_info": {
+                "username": "Alice",
+                "email": "alicewornderfull@gmail.com",
+                "full_name": "Alice",
+                "delivery_type": "pickup",
+                "address": "Retiro en local",
+                "payment_method": "cash"
+            },
+            "items": [
+                {
+                    "product_id": 102,
+                    "product_title": "Cheesecake de Frutos Rojos",
+                    "quantity": 1,
+                    "unit_price": 28500.0,
+                    "total_price": 28500.0
+                },
+                {
+                    "product_id": 103,
+                    "product_title": "Torta Red Velvet",
+                    "quantity": 1,
+                    "unit_price": 32000.0,
+                    "total_price": 32000.0
+                },
+                {
+                    "product_id": 104,
+                    "product_title": "Lemon Pie Desestructurado",
+                    "quantity": 1,
+                    "unit_price": 25000.0,
+                    "total_price": 25000.0
+                }
+            ],
+            "total_amount": 85500.0,
+            "status": "completed",
+            "branch_id": 1,
+            "order_type": "pickup",
+            "created_at": "2025-11-16T02:49:10.151171",
+            "updated_at": "2025-11-16T02:49:10.151186"
+        },
+        {
+            "id": 1009,
+            "user_id": 3,
+            "customer_info": {
+                "username": "Alice",
+                "email": "alice@gmail.com",
+                "full_name": "Alice",
+                "delivery_type": "pickup",
+                "address": "Retiro en local",
+                "payment_method": "cash"
+            },
+            "items": [
+                {
+                    "product_id": 105,
+                    "product_title": "Torta Hojaldre Milhojas",
+                    "quantity": 1,
+                    "unit_price": 38000.0,
+                    "total_price": 38000.0
+                }
+            ],
+            "total_amount": 38000.0,
+            "status": "completed",
+            "branch_id": 1,
+            "order_type": "pickup",
+            "created_at": "2025-11-16T02:49:44.783987",
+            "updated_at": "2025-11-16T02:49:44.784003"
+        },
+        {
+            "id": 1010,
+            "user_id": 3,
+            "customer_info": {
+                "username": "Alice",
+                "email": "alicewornderfull@gmail.com",
+                "full_name": "Alice",
+                "delivery_type": "pickup",
+                "address": "Retiro en local",
+                "payment_method": "cash"
+            },
+            "items": [
+                {
+                    "product_id": 110,
+                    "product_title": "prueba",
+                    "quantity": 5,
+                    "unit_price": 35555.0,
+                    "total_price": 177775.0
+                }
+            ],
+            "total_amount": 177775.0,
+            "status": "confirmed",
+            "branch_id": 1,
+            "order_type": "pickup",
+            "created_at": "2025-11-16T02:50:23.115351",
+            "updated_at": "2025-11-16T03:12:24.524141"
+        },
+        {
+            "id": 1011,
+            "user_id": 4,
+            "customer_info": {
+                "username": "Augusto",
+                "email": "ayelen220595@gmail.com",
+                "full_name": "Agus",
+                "delivery_type": "pickup",
+                "address": "Retiro en local",
+                "payment_method": "cash"
+            },
+            "items": [
+                {
+                    "product_id": 102,
+                    "product_title": "Cheesecake de Frutos Rojos",
+                    "quantity": 1,
+                    "unit_price": 28500.0,
+                    "total_price": 28500.0
+                },
+                {
+                    "product_id": 103,
+                    "product_title": "Torta Red Velvet",
+                    "quantity": 1,
+                    "unit_price": 32000.0,
+                    "total_price": 32000.0
+                }
+            ],
+            "total_amount": 60500.0,
+            "status": "completed",
+            "branch_id": 1,
+            "order_type": "pickup",
+            "created_at": "2025-11-16T04:01:18.017691",
+            "updated_at": "2025-11-16T04:01:18.017704"
         }
     ],
-    "next_order_id": 1008
+    "next_order_id": 1012
 }

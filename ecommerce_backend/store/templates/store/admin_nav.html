@@ -48,14 +48,6 @@
             </a>
         </li> 
 
-        {# --- NUEVA OPCIÓN: ORDENES --- #}
-        <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'admin-orders' %}active{% endif %}" 
-               href="{% url 'admin-orders' %}">
-                Ordenes 📦 
-            </a>
-        </li>
-
         {# --- NUEVA OPCIÓN: PEDIDOS --- #}
         <li class="nav-item">
             <a class="nav-link {% if request.resolver_match.url_name == 'admin-orders-view' %}active{% endif %}" 

@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid mt-4">
+<div class="container my-4">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>
@@ -20,48 +20,54 @@
             <div class="card">
                 <div class="card-body">
                     <div class="row text-center">
+                        <!-- Total -->
                         <div class="col-md-2">
                             <div class="border rounded p-2 bg-light">
-                                <h5 class="text-primary mb-0">{{ orders|length }}</h5>
+                                <h5 class="text-primary mb-0">{{ status_counts.total }}</h5>
                                 <small class="text-muted">Total</small>
                             </div>
                         </div>
+                        <!-- Pendientes -->
                         <div class="col-md-2">
                             <div class="border rounded p-2 bg-warning bg-opacity-25">
                                 <h5 class="text-warning mb-0">
-                                    {% with pending=orders|length %}{{ pending }}{% endwith %}
+                                    {{ status_counts.pending }}
                                 </h5>
                                 <small class="text-muted">Pendientes</small>
                             </div>
                         </div>
+                         <!-- Confirmadas -->
                         <div class="col-md-2">
                             <div class="border rounded p-2 bg-info bg-opacity-25">
                                 <h5 class="text-info mb-0">
-                                    {% with confirmed=orders|length %}{{ confirmed }}{% endwith %}
+                                    {{ status_counts.confirmed }}
                                 </h5>
                                 <small class="text-muted">Confirmadas</small>
                             </div>
                         </div>
+                         <!-- En Preparación -->
                         <div class="col-md-2">
                             <div class="border rounded p-2 bg-primary bg-opacity-25">
                                 <h5 class="text-primary mb-0">
-                                    {% with preparing=orders|length %}{{ preparing }}{% endwith %}
+                                   {{ status_counts.preparing }}
                                 </h5>
                                 <small class="text-muted">En Preparación</small>
                             </div>
                         </div>
+                        <!-- Completadas -->
                         <div class="col-md-2">
                             <div class="border rounded p-2 bg-success bg-opacity-25">
                                 <h5 class="text-success mb-0">
-                                    {% with completed=orders|length %}{{ completed }}{% endwith %}
+                                    {{ status_counts.completed }}
                                 </h5>
                                 <small class="text-muted">Completadas</small>
                             </div>
                         </div>
+                        <!-- Canceladas -->
                         <div class="col-md-2">
                             <div class="border rounded p-2 bg-danger bg-opacity-25">
                                 <h5 class="text-danger mb-0">
-                                    {% with cancelled=orders|length %}{{ cancelled }}{% endwith %}
+                                    {{ status_counts.cancelled }}
                                 </h5>
                                 <small class="text-muted">Canceladas</small>
                             </div>

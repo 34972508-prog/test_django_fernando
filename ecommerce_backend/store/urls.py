@@ -32,6 +32,8 @@ urlpatterns = [
     # --- NUEVA RUTA DE ADMIN CARTS ---
     path('admin/carts/', views.AdminCartsView.as_view(), name='admin-carts-view'),
     path('admin/orders/', views.AdminOrdersView.as_view(), name='admin-orders-view'), 
+     # URLs de administración para órdenes
+    path('admin/orders/<int:order_id>/', views.AdminOrderDetailView.as_view(), name='admin-order-detail'),
 
     # Administración de Categorías (HTML)
     path('categories/list/', views.AdminCategoryView.as_view(), name='admin-category-view'),
@@ -65,9 +67,7 @@ urlpatterns = [
     path('orders/', views.OrderHistoryView.as_view(), name='order-history'),
     path('orders/<int:order_id>/', views.OrderDetailView.as_view(), name='order-detail'),
 
-     # URLs de administración para órdenes
-    path('admin/orders/', views.AdminOrdersView.as_view(), name='admin-orders'),
-    path('admin/orders/<int:order_id>/', views.AdminOrderDetailView.as_view(), name='admin-order-detail'),
+    
 ]
 
 

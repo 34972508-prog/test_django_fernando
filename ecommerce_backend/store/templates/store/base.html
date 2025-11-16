@@ -37,31 +37,15 @@
                         <a class="nav-link active" href="{% url 'home' %}">Home</a>
                     </li>
 
-                    {% if user_role == 'admin' %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'admin-product-view' %}">Admin Productos</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'admin-category-view' %}">Admin Categorías</a>
-                        </li>
 
-                    {% elif user_role == 'client' %}
+                    {% if user_role == 'client' or not user_role %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'product-list-html' %}">Productos</a>
                         </li>
                     
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'product-list-html' %}">Productos</a>
-                        </li>
+                    
                     {% endif %}
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="">Eventos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="">Medidas</a>
-                    </li>
+
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -89,7 +73,7 @@
                     <span class="d-none d-sm-inline">Mi Carrito</span>
                     <span class="visually-hidden">Mi Carrito</span>
                 </a>
-                <a href="{% url 'order-history'%}" class="btn btn-outline-warning position-relative me-3 d-flex align-items-center">
+                <a href="{% url 'order-history'%}" class="btn btn-outline-info position-relative me-3 d-flex align-items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-clipboard-search"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h4.5m7.5 -10v-4a2 2 0 0 0 -2 -2h-2" /><path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2" /><path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M20.2 20.2l1.8 1.8" /></svg>
                     <span class="d-none d-sm-inline">Mis Pedidos</span>
                     <span class="visually-hidden">Mis Pedidos</span>
