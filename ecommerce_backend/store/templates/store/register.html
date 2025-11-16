@@ -1,8 +1,8 @@
-{% extends 'store/base.html' %} 
+{% extends 'store/base.html' %} <!--Extension de template base-->
 
-{% block title %}Registrarse{% endblock %}
+{% block title %}Registrarse{% endblock %}<!--Titulo-->
 
-{% block content %}
+{% block content %} <!--Contenido Principal-->
 <div class="container my-5" style="max-width: 600px;">
     <h2 class="mb-4 text-center text-success fw-bold">Crear una Cuenta</h2>
 
@@ -16,9 +16,9 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endif %}
-
-    <form method="post" class="p-4">
-        {% csrf_token %}
+    <!--Formulario Principal-->
+    <form method="post" class="p-4"> <!--envio de datos al servidor-->
+        {% csrf_token %} <!-- proteccion de seguridad CSRF -->
         <!-- Nombre de Usuario -->
         <div class="mb-3">
             <label for="id_username" class="form-label fw-semibold">Nombre de Usuario</label>
@@ -30,10 +30,14 @@
                         <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
                     </svg>
                 </span>
-                <input type="text" name="username" class="form-control border-start-0" id="id_username" placeholder="Elige tu nombre de usuario" value="{{ username }}" required>
+                <input type="text" name="username" class="form-control border-start-0" id="id_username" 
+                       placeholder="Elige tu nombre de usuario" 
+                       value="{% if username and username != 'None' %}{{ username }}{% endif %}" 
+                       required>
             </div>
         </div>
-        <!-- Correo Electrónico (Nuevo Campo) -->
+
+        <!-- Correo Electrónico -->
         <div class="mb-3">
             <label for="id_email" class="form-label fw-semibold">Correo Electrónico</label>
             <div class="input-group">
@@ -44,12 +48,16 @@
                         <path d="M3 7l9 6l9 -6" />
                     </svg>
                 </span>
-                <input type="email" name="email" class="form-control border-start-0" id="id_email" placeholder="ejemplo@correo.com" value="{{ email }}" required>
+                <input type="email" name="email" class="form-control border-start-0" id="id_email" 
+                       placeholder="ejemplo@correo.com" 
+                       value="{% if email and email != 'None' %}{{ email }}{% endif %}" 
+                       required>
             </div>
         </div>     
-        <!-- Domicilio (Nuevo Campo) -->
+
+        <!-- Domicilio -->
         <div class="mb-3">
-            <label for="id_address" class="form-label fw-semibold">Domicilio (Opcional)</label>
+            <label for="id_address" class="form-label fw-semibold">Domicilio</label>
             <div class="input-group">
                 <span class="input-group-text bg-white border-end-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
@@ -58,10 +66,13 @@
                         <path d="M12.72 21.828c-3.134 -0.375 -5.72 -1.728 -7.675 -3.683a9.006 9.006 0 0 1 0 -12.28a9.006 9.006 0 0 1 12.274 0c2.203 2.204 3.12 6.551 0.447 10.158" />
                     </svg>
                 </span>
-                <input type="text" name="address" class="form-control border-start-0" id="id_address" placeholder="Calle, número, ciudad" value="{{ address }}">
+                <input type="text" name="address" class="form-control border-start-0" id="id_address" 
+                       placeholder="Calle, número, ciudad" 
+                       value="{% if address and address != 'None' %}{{ address }}{% endif %}">
             </div>
         </div>
-        <!-- Contraseña -->
+
+        <!-- Contraseña con ojito -->
         <div class="mb-3">
             <label for="id_password" class="form-label fw-semibold">Contraseña</label>
             <div class="input-group">
@@ -73,14 +84,24 @@
                         <path d="M10 11v-2a2 2 0 1 1 4 0v2" />
                     </svg>
                 </span>
-                <input type="password" name="password" class="form-control border-start-0" id="id_password" required>
+                <input type="password" name="password" class="form-control border-start-0" 
+                       id="id_password" placeholder="Mínimo 6 caracteres" minlength="6" required>
+                <button type="button" class="input-group-text bg-white border-start-0 toggle-password" 
+                        data-target="id_password">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                    </svg>
+                </button>
             </div>
         </div>
-        <!-- Confirmar Contraseña -->
+
+        <!-- Confirmar Contraseña con ojito -->
         <div class="mb-4">
             <label for="id_password2" class="form-label fw-semibold">Confirmar Contraseña</label>
             <div class="input-group">
-                 <span class="input-group-text bg-white border-end-0">
+                <span class="input-group-text bg-white border-end-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                         <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" />
@@ -88,7 +109,16 @@
                         <path d="M10 11v-2a2 2 0 1 1 4 0v2" />
                     </svg>
                 </span>
-                <input type="password" name="password2" class="form-control border-start-0" id="id_password2" required>
+                <input type="password" name="password2" class="form-control border-start-0" 
+                       id="id_password2" placeholder="Repite tu contraseña" minlength="6" required>
+                <button type="button" class="input-group-text bg-white border-start-0 toggle-password" 
+                        data-target="id_password2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                    </svg>
+                </button>
             </div>
         </div>
 
@@ -104,4 +134,44 @@
         </p>
     </form>
 </div>
+
+<!-- JavaScript para el ojito de contraseña -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Función para mostrar/ocultar contraseña
+    function togglePasswordVisibility(targetId) {
+        const passwordInput = document.getElementById(targetId);
+        const toggleButton = document.querySelector(`[data-target="${targetId}"]`);
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M10.585 10.587a2 2 0 0 0 2.829 2.828" />
+                    <path d="M16.681 16.673a8.717 8.717 0 0 1 -4.681 1.327c-3.6 0 -6.6 -2 -9 -6c1.272 -2.12 2.712 -3.678 4.32 -4.674m2.86 -1.146a9.055 9.055 0 0 1 1.82 -.18c3.6 0 6.6 2 9 6c-.666 1.11 -1.379 2.067 -2.138 2.87" />
+                    <path d="M3 3l18 18" />
+                </svg>
+            `;
+        } else {
+            passwordInput.type = 'password';
+            toggleButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                    <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                </svg>
+            `;
+        }
+    }
+
+    // Agregar event listeners a todos los botones de ojito
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            togglePasswordVisibility(targetId);
+        });
+    });
+});
+</script>
 {% endblock %}

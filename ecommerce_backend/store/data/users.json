@@ -38,5 +38,13 @@
         "role": "client",
         "email": "nic@gmail.com",
         "address": "None"
+    },
+    {
+        "id": 6,
+        "username": "Eugenia",
+        "password": "1234",
+        "role": "client",
+        "email": "eyiisasmendi@gmail.com",
+        "address": "belgrano"
     }
 ]

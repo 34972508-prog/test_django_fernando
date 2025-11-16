@@ -912,7 +912,7 @@ class LoginView(View):
             error_message = "Usuario o contraseña incorrectos. Por favor, intenta de nuevo."
             return render(request, 'store/login.html', {'error_message': error_message})
             
-
+# --- VALIDACION  ---
 class RegisterView(View):
     
     def get(self, request):
@@ -939,7 +939,11 @@ class RegisterView(View):
             'address': address
         }
         
-        
+        # VALIDACIÓN: Contraseña mínima 6 caracteres
+        if len(pass1) < 6:
+            context_error['error_message'] = "La contraseña debe tener al menos 6 caracteres."
+            return render(request, 'store/register.html', context_error)
+       
         if not username or not pass1 or not pass2 or not email:
             context_error['error_message'] = "Los campos de Usuario, Contraseña y Correo son obligatorios."
             # Pasamos el contexto de error de vuelta al template
