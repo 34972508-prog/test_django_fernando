@@ -312,7 +312,7 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         
-        // 1. Código del modal (existente) - SE MANTIENE
+        // Código del modal
         var showModalStr = "{{ show_branch_modal|lower }}";
         var showModal = showModalStr === 'true';
         var modalElement = document.getElementById('branchSelectorModal');
@@ -325,15 +325,14 @@
             modal.show();
         }
 
-        // 2. Inicializar el mapa SOLO para visualización
+        // Inicializar el mapa solo para visualización
         loadLeafletAndInitializeMap();
         
-        // Tu código existente del modal aquí (se mantiene igual)...
         var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
         var errorElement = document.getElementById('branchError');
         var footer = modalElement ? modalElement.querySelector('.modal-footer') : null;
         
-        // Función para mostrar el spinner de carga (se mantiene)
+        // Función para mostrar el spinner de carga 
         function showLoading(show) {
             if (footer) {
                 if (show) {
@@ -354,7 +353,7 @@
             }
         }
 
-        // Conectar el evento CLICK a todas las tarjetas de sucursal (MODAL) - SE MANTIENE
+        // Conectar el evento CLICK a todas las tarjetas de sucursal (MODAL) 
         document.querySelectorAll('.branch-card').forEach(card => { 
             card.addEventListener('click', function() {
                 
@@ -510,7 +509,7 @@
                 map.fitBounds(bounds, { padding: [20, 20] });
             }
 
-            // 🔥 FUNCIONALIDAD SIMPLIFICADA: Solo mostrar en mapa al hacer clic en lista
+            // Mostrar en el mapa al hacer clic en lista
             const branchItems = document.querySelectorAll('.branch-item');
             branchItems.forEach(item => {
                 item.addEventListener('click', function() {
@@ -530,8 +529,7 @@
                         }
                     }, 800);
                     
-                    //console.log('Mostrando sucursal en mapa:', id);
-                    // NO llamamos a selectBranchFromMap - solo es visual
+                  
                 });
             });
 
@@ -544,7 +542,7 @@
 {% endblock extra_js %}
 {% block extra_styles %}
 <style>
-    /* 1. Contenedor Principal (Define el área del "Hero") */
+    /* Contenedor Principal (Define el área del "Hero") */
     .hero-section {
         position: relative;
         min-height: 650px; 
@@ -556,7 +554,7 @@
         background-color: #333;
     }
 
-    /* 2. Carrusel como Fondo */
+    /* Carrusel como Fondo */
     .hero-carousel {
         position: absolute;
         top: 0;
@@ -566,14 +564,14 @@
         z-index: 1; 
     }
 
-    /* 3. Imagen fija dentro del carrusel */
+    /* Imagen fija dentro del carrusel */
     .hero-img-fixed {
         object-fit: cover;
         height: 100%;
         filter: brightness(0.85);
     }
 
-    /* 4. Superposición Oscura (Refuerza el contraste) */
+    /* Superposición Oscura en Carousel (Refuerza el contraste) */
     .dark-overlay {
         position: absolute;
         top: 0;
@@ -584,7 +582,7 @@
         z-index: 2;
     }
 
-    /* 5. Contenido de Bienvenida (Posicionado encima) */
+    /* Contenido de Bienvenida (Posicionado encima) */
     .hero-content {
         position: relative;
         z-index: 10; /* Debe estar por encima del carrusel y el overlay */
@@ -592,7 +590,7 @@
         color: white; 
     }
     
-    /* 6. Mejorar legibilidad del texto */
+    /* Mejorar legibilidad del texto */
     .text-shadow-lg {
         text-shadow: 2px 2px 6px rgba(0, 0, 0, 1);
     }

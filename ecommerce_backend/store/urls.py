@@ -29,7 +29,7 @@ urlpatterns = [
     path('admin/users/', views.AdminUserView.as_view(), name='admin-user-view'), 
     path('admin/user/delete/<int:pk>/', views.DeleteUserHTMLView.as_view(), name='admin-user-delete'),
 
-    # --- NUEVA RUTA DE ADMIN CARTS ---
+    # Vistas de Carritos y Órdenes para Admin
     path('admin/carts/', views.AdminCartsView.as_view(), name='admin-carts-view'),
     path('admin/orders/', views.AdminOrdersView.as_view(), name='admin-orders-view'), 
      # URLs de administración para órdenes
@@ -41,7 +41,7 @@ urlpatterns = [
     path('category/edit/<int:pk>/', views.CategoryFormView.as_view(), name='category-edit'),
     path('category/delete/<int:pk>/', views.DeleteCategoryView.as_view(), name='category-delete-html'),
    
-    # --- NUEVA RUTA DE SUCURSALES ---
+    # Vistas de sucursales
     path('admin/branches/', views.AdminBranchView.as_view(), name='admin-branch-view'),
     path('admin/products/filter/set/', views.SetAdminBranchFilterView.as_view(), name='admin-set-branch-filter'),
     path('admin/products/filter/clear/', views.ClearAdminBranchFilterView.as_view(), name='admin-clear-branch-filter'),

@@ -36,7 +36,7 @@ import json
 user_service = UserService()
 product_service = ProductService()
 branch_service = BranchService() 
-cart_service = CartService() # <-- Instancia del servicio de carrito
+cart_service = CartService() #  Instancia del servicio de carrito (Checkout y Órdenes)
 
 class ProductListCreateAPIView(APIView):
     """
@@ -102,7 +102,7 @@ class AdminProductView(AdminRequiredMixin,View):
     def get(self, request):
         service = ProductService()
         
-        # 🔑 CLAVE: Chequear la sesión en busca del filtro temporal del admin
+        # Verificar si hay un filtro de sucursal activo en la sesión del administrador
         branch_id_filter = request.session.get('admin_product_filter_branch_id')
         filter_message = "(Mostrando todos)"
         branch_name = None # Vble para el nombre de la sucursal filtrada
@@ -110,8 +110,7 @@ class AdminProductView(AdminRequiredMixin,View):
         all_products = service.get_all_products()
 
         if branch_id_filter:
-            # 1. Obtener la sucursal completa para el nombre (Necesitas la lógica de branch_service)
-            # --- ASUMIENDO QUE branch_service EXISTE Y FUNCIONA ---
+           # Obtener el nombre de la sucursal para mostrar en el título
             selected_branch = branch_service.get_branch_by_id(branch_id_filter) 
             
             if selected_branch:
@@ -129,7 +128,7 @@ class AdminProductView(AdminRequiredMixin,View):
             
         
         
-        # --- MEJORA: Obtener nombres de categorías ---
+        # Enriquecer productos con el nombre de su categoría
         all_categories = service.get_all_categories()
         # Convertir a un mapa para búsqueda rápida: {1: 'Tortas', 2: 'Postres'}
         category_map = {cat['id']: cat['name'] for cat in all_categories}
@@ -137,7 +136,6 @@ class AdminProductView(AdminRequiredMixin,View):
         # Añadir el nombre de la categoría a cada producto
         for product in all_products:
             product['category_name'] = category_map.get(product['category_id'], 'Sin Categoría')
-        # --- FIN DE LA MEJORA ---
 
         context = {
             'products': all_products,
@@ -164,11 +162,9 @@ class ProductFormView(AdminRequiredMixin, View):
         # Cargar categorías para el dropdown
         context['categories'] = self.service.get_all_categories()
         
-        # --- ¡CORREGIDO! ---
         # Cargar sucursales para el dropdown
         context['branches'] = self.branch_service.get_all_branches()
-        # --- FIN CORREGIDO ---
-
+    
         if pk:
             # --- MODO EDICIÓN ---
             product = self.service.get_product_by_id(pk)
@@ -188,26 +184,22 @@ class ProductFormView(AdminRequiredMixin, View):
     def post(self, request, pk=None):
         data = request.POST.copy()
         
-        # --- Lógica de datos (convertir a tipos correctos) ---
         try:
             data['price'] = float(data.get('price'))
             data['stock'] = int(data.get('stock'))
             data['category_id'] = int(data.get('category_id'))
             
-            # --- ¡CORREGIDO! ---
+            
             # Obtener y validar el ID de la sucursal
             branch_id_str = data.get('branch_id')
             if not branch_id_str:
                 raise ValueError("La sucursal es obligatoria.")
             data['branch_id'] = int(branch_id_str)
-            # --- FIN CORREGIDO ---
 
             weight = data.get('weight')
             data['weight'] = float(weight) if weight else None
             
         except (ValueError, TypeError) as e:
-            messages.error(request, f'Datos inválidos. Verifica precio, stock, peso o IDs. Error: {e}')
-            # Recargar el formulario con los datos anteriores y los dropdowns
             context = {
                 'form_title': 'Crear Nuevo Producto' if not pk else 'Editar Producto',
                 'is_edit': bool(pk),
@@ -223,6 +215,7 @@ class ProductFormView(AdminRequiredMixin, View):
 
         if image_file:
             try:
+                # Guardar imagen nueva en el servidor
                 file_name = f"productos/{uuid4().hex}{os.path.splitext(image_file.name)[1]}"
                 path = default_storage.save(file_name, ContentFile(image_file.read()))
                 data['image_url'] = default_storage.url(path) # Sobrescribe cualquier URL
@@ -250,7 +243,7 @@ class ProductFormView(AdminRequiredMixin, View):
             # Si es creación y no se provee nada
             data['image_url'] = '' 
         
-        # --- Lógica de Creación/Actualización ---
+       
         if pk:
             # --- ACTUALIZAR (EDITAR) ---
             product = self.service.update_product(pk, data)
@@ -293,18 +286,18 @@ class List_productView(View):
         service = ProductService()
         branch_service = BranchService()
 
-        # 🔑 1. OBTENER SUCURSAL SELECCIONADA
-        # El ID de la sucursal se guarda en la sesión con la clave 'selected_branch_id'
+        # Obtener la sucursal que el cliente eligió previamente
         selected_branch_id = request.session.get('selected_branch_id')
 
         all_products = service.get_all_products() 
 
         if selected_branch_id:
-            # 🔑 2. FILTRAR PRODUCTOS POR SUCURSAL
+            # Filtrar productos por sucursal
             branch_id = int(selected_branch_id)
             productos = [prod for prod in all_products if prod.get('branch_id') == branch_id]
             
             branches = branch_service.get_all_branches()
+            # Buscar el nombre de la sucursal para el título
             branch_name = next((b['name'] for b in branches if b['id'] == branch_id), "Catálogo")
             #branch_name = f" (Sucursal ID: {branch_id})"  # ME da el Id de la sucursal seleccionada
         else:
@@ -317,8 +310,8 @@ class List_productView(View):
             'productos': productos,
             'titulo': f'Catálogo de Productos - Sucursal {branch_name}',
             # Flag para JS: muestra el modal si la sucursal no está seleccionada
-            'show_branch_modal': selected_branch_id is None,
-            'user_role': request.session.get('user_role') # ¡Asegúrate de pasarla!
+            'show_branch_modal': selected_branch_id is None, # Activa el modal si es necesario
+            'user_role': request.session.get('user_role')
         }
         return render(request, 'store/list_product.html', context)
 
@@ -333,16 +326,13 @@ class ProductDetailHTMLView(View):
         product = service.get_product_by_id(pk)
 
         selected_branch_id = request.session.get('selected_branch_id')
-        
-        # 🔑 NUEVA LÓGICA: Verificar si el usuario es administrador
         is_admin = request.session.get('user_role') == 'admin'
 
         if not product:
             messages.error(request, "Producto no encontrado")
             return redirect('product-list-html')
 
-        # VERIFICAR LA SUCURSAL DEL PRODUCTO
-        # SOLO aplicar esta validación si NO es un administrador
+        # Si es cliente, verificar que el producto pertenezca a su sucursal seleccionada
         if not is_admin and selected_branch_id and product.get('branch_id') != int(selected_branch_id):
             messages.warning(request, "El producto no está disponible en la sucursal seleccionada.")
             return redirect('product-list-html')
@@ -353,7 +343,7 @@ class ProductDetailHTMLView(View):
             'producto': product,
             'titulo': product.get('title', 'Detalle del producto')
         }
-        # 🔑 CLAVE: Determinar qué template renderizar
+        # Si la petición es AJAX (modal), renderiza solo el fragmento
         if request.GET.get('modal') == 'true':
             return render(request, 'store/product_detail_modal_fragment.html', context)
         else:
@@ -452,16 +442,15 @@ class CartView(View):
         """
         Muestra el carrito del usuario logueado.
         """
-        # 1. Verificar si el usuario está logueado
         user_id = request.session.get('user_id')
         if not user_id:
             messages.error(request, "Debes iniciar sesión para ver tu carrito.")
             return redirect('login')
         
-        # 2. Obtener el carrito usando el CartService
+        # Recuperar el carrito del usuario
         cart = cart_service.get_cart(user_id)
         
-        # 3. Obtener detalles de productos
+        # Calcular totales y obtener detalles de productos
         cart_items = []
         total = 0
         for item in cart.items.values():
@@ -485,7 +474,6 @@ class CartView(View):
         """
         Agrega o elimina productos del carrito del usuario logueado.
         """
-        # 1. Verificar si el usuario está logueado
         user_id = request.session.get('user_id')
         is_ajax = 'HTTP_X_REQUESTED_WITH' in request.META and request.META['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'
 
@@ -521,11 +509,9 @@ class CartView(View):
                 # Responde JSON (esto arregla el error de "conexión")
                 return JsonResponse({'success': True})
             else:
-                # Responde JSON con el error de stock
                 return JsonResponse({'success': False, 'error': 'No hay suficiente stock'})
 
         elif action == 'remove':
-            # Esta acción es un Form POST normal (desde cart.html)
             cart.remove_item(product_id)
             cart_service.save_cart(cart)
             messages.success(request, "Producto eliminado del carrito")
@@ -544,19 +530,18 @@ class CheckoutView(View):
     """
     
     def get(self, request):
-        # 1. Verificar si el usuario está logueado
         user_id = request.session.get('user_id')
         if not user_id:
             messages.error(request, "Debes iniciar sesión para finalizar la compra.")
             return redirect('login')
             
-        # 2. Obtener carrito del servicio
+        # Obtener carrito del servicio
         cart = cart_service.get_cart(user_id)
         if not cart.items:
             messages.warning(request, "Tu carrito está vacío")
             return redirect('cart')
             
-        # 3. Obtener detalles de productos
+        #Detalles de productos
         cart_items = []
         total = 0
         for item in cart.items.values():
@@ -569,8 +554,6 @@ class CheckoutView(View):
                     'total': item_total
                 })
                 total += item_total
-        
-        #print(f"DEBUG GET - User ID: {user_id}, Cart items: {len(cart.items)}, Total: {total}")
                 
         context = {
             'cart_items': cart_items,
@@ -578,11 +561,7 @@ class CheckoutView(View):
         }
         return render(request, 'store/checkout.html', context)
 
-
-    # --- MÉTODO POST DE CHECKOUT ACTUALIZADO ---
     def post(self, request):
-        #print("DEBUG POST - Iniciando procesamiento de checkout")
-        
         user_id = request.session.get('user_id')
         if not user_id:
             messages.error(request, "Tu sesión ha expirado.")
@@ -595,8 +574,7 @@ class CheckoutView(View):
                 return redirect('cart')
 
             
-            # 1. VERIFICAR STOCK ANTES DE PROCESAR
-            #print("DEBUG POST - Verificando stock...")
+            # 1. Validar Datos del Formulario
             items_con_detalles = []
             total_verificado = 0
             
@@ -623,13 +601,6 @@ class CheckoutView(View):
             direccion = request.POST.get('direccion', '')
             payment_method = request.POST.get('payment_method', 'cash')
             
-            #print(f"DEBUG POST - Datos del formulario:")
-            #print(f"  Nombre: {nombre}")
-            #print(f"  Email: {email}")
-            #print(f"  Delivery type: {delivery_type}")
-            #print(f"  Dirección: {direccion}")
-            #print(f"  Payment method: {payment_method}")
-            
             # Validar datos obligatorios
             if not nombre or not email:
                 messages.error(request, "Por favor completa tu nombre y email.")
@@ -639,32 +610,23 @@ class CheckoutView(View):
                 messages.error(request, "Por favor ingresa tu dirección de envío.")
                 return redirect('checkout')
             
-            # 3. DESCONTAR STOCK (PASO CRUCIAL)
-            #print("DEBUG POST - Descontando stock...")
             try:
                 for item_detail in items_con_detalles:
                     product = item_detail['product']
                     cantidad_a_descontar = item_detail['quantity']
                     
-                    #print(f"  Descontando {cantidad_a_descontar} unidades de {product['title']}")
-                    #print(f"  Stock anterior: {product['stock']}")
-                    
                     # Descontar del stock
                     product['stock'] -= cantidad_a_descontar
-                    
-                    #print(f"  Stock nuevo: {product['stock']}")
                     
                     # Guardar cambios en el producto
                     product_service.update_product(product['id'], product)
                     
             except Exception as e:
-                #(f"DEBUG POST - ERROR al descontar stock: {str(e)}")
                 messages.error(request, f"Hubo un error al actualizar el stock: {e}")
                 return redirect('checkout')
             
             # Obtener información del usuario
             user = user_service.get_user_by_id(user_id)
-            #print(f"DEBUG POST - Usuario encontrado: {user.username if user else 'None'}")
             
             # Crear user_data
             user_data = {
@@ -677,31 +639,26 @@ class CheckoutView(View):
             }
             
             # Crear orden
-            #print("DEBUG POST - Creando orden...")
             order_service = OrderService()
 
-             # Obtener branch_id del primer producto (asumiendo misma sucursal)
+             # Obtener branch_id del primer producto
             branch_id = items_con_detalles[0]['product']['branch_id'] if items_con_detalles else None
             #Pasar los parámetros correctos al create_order
             order = order_service.create_order(
                 user_id=user_id,
-                cart_data=cart.to_dict(),  # <-- Usar cart_data en lugar de items_list
+                cart_data=cart.to_dict(),
                 user_data=user_data
             )
-            #print(f"DEBUG POST - Orden creada: #{order['id']}")
             
             # Limpiar carrito
-            #print("DEBUG POST - Limpiando carrito...")
             cart_service.remove_cart(user_id)
             
             request.session['last_order_id'] = order['id']
-            #print(f"DEBUG POST - Redirigiendo a confirmación, orden: #{order['id']}")
             
             messages.success(request, f"¡Pago procesado con éxito! Número de orden: #{order['id']}")
             return redirect('order-confirmation')
             
         except Exception as e:
-            #print(f"DEBUG POST - ERROR: {str(e)}")
             import traceback
             traceback.print_exc()
             messages.error(request, f"Error al procesar el pago: {str(e)}")
@@ -747,9 +704,7 @@ class OrderDetailView(View):
             'order': order
         }
         return render(request, 'store/order_detail.html', context)
-# store/views.py
-# ... (importaciones y vistas existentes) ...
-
+    
 # --- NUEVA VISTA PARA ADMIN CARTS ---
 
 class AdminCartsView(AdminRequiredMixin, View):
@@ -758,20 +713,16 @@ class AdminCartsView(AdminRequiredMixin, View):
     almacenados en carts.json.
     """
     def get(self, request):
-        # 1. Cargar todos los carritos
-        # Esto devuelve un dict: {"user_id_1": {...}, "user_id_2": {...}}
+        # Cargar todos los carritos, devuelve un dict: {"user_id_1": {...}, "user_id_2": {...}}
         all_carts_data = cart_service.get_all_carts()
         
         processed_carts = []
         
-        # 2. Enriquecer los datos de cada carrito
-        # Cargar usuarios una sola vez para eficiencia
         all_users = user_service._load_users()
         user_map = {str(u.user_id): u.username for u in all_users}
 
         for user_id_str, cart_data in all_carts_data.items():
             
-            # Omitir carritos vacíos
             if not cart_data.get('items'):
                 continue
 
@@ -781,7 +732,6 @@ class AdminCartsView(AdminRequiredMixin, View):
             processed_items = []
             cart_total = 0
             
-            # 3. Enriquecer los productos de cada carrito
             for item_id_str, item_data in cart_data.get('items', {}).items():
                 product_id = item_data.get('product_id')
                 quantity = item_data.get('quantity', 0)
@@ -877,7 +827,7 @@ class AdminOrderDetailView(AdminRequiredMixin, View):
             messages.error(request, "Error al actualizar la orden.")
         
         return redirect('admin-order-detail', order_id=order_id)
-# --- VISTAS DE AUTENTICACIÓN (Simuladas con JSON) ---
+# --- VISTAS DE AUTENTICACIÓN ---
 
 class LoginView(View):
     
@@ -890,7 +840,7 @@ class LoginView(View):
         service = UserService()
         username = request.POST.get('username')
         password = request.POST.get('password')
-        
+        # Forzar recarga para reconocer usuarios nuevos
         user = service.get_user_by_username(username)
         
         if user and user.password == password:
@@ -899,7 +849,6 @@ class LoginView(View):
             request.session['username'] = user.username
             request.session['user_role'] = user.role
             
-            #messages.success(request, f"¡Bienvenido, {user.username}!")
             
             if user.role == 'admin':
                 return redirect('admin-product-view')
@@ -932,7 +881,7 @@ class RegisterView(View):
         pass2 = request.POST.get('password2')
         email = request.POST.get('email')
         address = request.POST.get('address')
-        # Datos para repoblar el formulario en caso de error
+        
         context_error = {
             'username': username,
             'email': email,
@@ -959,9 +908,7 @@ class RegisterView(View):
             request.session['user_id'] = new_user['id']
             request.session['username'] = new_user['username']
             request.session['user_role'] = new_user['role']
-           
-            
-            #messages.success(request, "¡Registro exitoso! Has iniciado sesión.")
+        
             # Redirigir a 'home' para que el modal de sucursal aparezca
             return redirect('home') 
         else:
@@ -988,18 +935,17 @@ class AdminUserView(AdminRequiredMixin, View):
     def get(self, request):
         user_service = UserService()
 
-        # 🔑 CLAVE 1: Forzar la recarga de los datos desde user.json
-        user_service._load_users() # Suponiendo que tienes un método 'load_data'
+        user_service._load_users() 
         
-        all_users = user_service._users # Accede directamente a la lista cargada
+        all_users = user_service._users # Obtener todos los usuarios
 
-        # 2. 🔑 CLAVE: Obtener el ID del usuario logueado desde la sesión
+        # Obtener el ID del usuario logueado desde la sesión
         logged_in_user_id = request.session.get('user_id')
         
         context = {
             'users': all_users, 
             'titulo': 'Administración de Usuarios',
-            # 3. 🔑 CLAVE: Pasar el ID del admin al template
+            # Pasar el ID del admin al template
             'current_user_id': logged_in_user_id
         }
         return render(request, 'store/admin_users.html', context)
@@ -1027,7 +973,7 @@ def profile_view(request):
     if not logged_in_username:
         messages.warning(request, "Debes iniciar sesión para ver tu perfil.")
         return redirect('login') 
-    # Forzar la recarga de usuarios para ver archivo JSON actualizado
+    # Forzar la carga de usuarios para ver archivo JSON actualizado
     service = UserService()
     service._load_users()
 
@@ -1062,9 +1008,7 @@ class AdminBranchView(AdminRequiredMixin, View):
         
         context = {
             'branches': branches,
-            # --- 🛑 ¡CORRECCIÓN! 🛑 ---
-            # Quitamos json.dumps. La etiqueta |json_script se encarga de esto.
-            'branches_json': branches
+            'branches_json': branches # Se convierte a JSON en el template
         }
         return render(request, self.template_name, context)
 
@@ -1087,24 +1031,23 @@ class HomeView(View):
     def get(self, request):
         try: 
         
-            # 1. Obtener la sucursal de la sesión
+            # Obtener la sucursal de la sesión
             selected_branch_id = request.session.get('selected_branch_id')
             
-            # 2. Obtener TODAS las sucursales para el modal
+            # Obtener TODAS las sucursales para el modal
             branches = branch_service.get_all_branches()
 
-            # 3. Convertir branches a JSON para el template
+            # Convertir branches a JSON para el template
             branches_json = json.dumps(branches) if branches else '[]'
 
             context = {
                 'branches': branches,
-                'branches_json': branches_json,  # ¡ESTA LÍNEA FALTABA!
+                'branches_json': branches_json,  
                 # Esta bandera controla si el JavaScript debe abrir el modal
                 'show_branch_modal': selected_branch_id is None, 
                 'titulo': 'Inicio'
             }
             
-            # Asumiendo que index.html está en 'store/index.html'
             return render(request, 'store/index.html', context)
                     
         except Exception as e:
@@ -1133,9 +1076,8 @@ class SetAdminBranchFilterView(AdminRequiredMixin, View):
 
     """Guarda temporalmente el ID de la sucursal en la sesión del admin y devuelve JSON."""
     
-    # ⚠️ CAMBIAMOS a método POST, es más seguro y estándar para acciones
     def post(self, request):
-        # 1. Obtener el ID de la sucursal del cuerpo de la solicitud POST
+        # Obtener el ID de la sucursal del cuerpo de la solicitud POST
         branch_id_str = request.POST.get('branch_id')
             
         if not branch_id_str or not branch_id_str.isdigit():
@@ -1143,14 +1085,12 @@ class SetAdminBranchFilterView(AdminRequiredMixin, View):
                 
         branch_id = int(branch_id_str)
             
-        # 2. Guardar el filtro en la sesión
+        # Guardamos el filtro en la sesión
         request.session['admin_product_filter_branch_id'] = branch_id
             
         # 3. Respuesta JSON de éxito
         return JsonResponse({'success': True, 'branch_id': branch_id})
         
-# La vista ClearAdminBranchFilterView puede permanecer como GET si lo deseas, pero POST es preferible.
-# Si la dejas como GET, la llamarías con un <a> normal, pero ya no tendrías el problema del redirect.
 
 class ClearAdminBranchFilterView(AdminRequiredMixin, View):
     """Limpia el filtro de sucursal de la sesión del admin."""
