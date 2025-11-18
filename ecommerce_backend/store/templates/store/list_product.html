@@ -30,7 +30,7 @@
                        {% with pid=producto.id %}
                             {% if username %}
 
-                            <a href="{% url 'cart' %}" class="btn btn-primary">Comprar</a>
+                            <a href="{% url 'checkout' %}" class="btn btn-primary">Comprar</a>
                            
                             <button type="button" class="btn btn-outline-success" onclick="agregarYMostrarModal('{{ pid }}')">
                                 Agregar al carrito

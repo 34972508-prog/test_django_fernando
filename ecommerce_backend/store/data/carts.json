@@ -9,6 +9,10 @@
             "105": {
                 "product_id": 105,
                 "quantity": 1
+            },
+            "102": {
+                "product_id": 102,
+                "quantity": 2
             }
         }
     }

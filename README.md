@@ -8,10 +8,10 @@
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/tu-usuario/quiero-algo-dulce.git
+git clone https://github.com/34972508-prog/QuieroalgoDulce2025.git
 
 # 2. Navegar al directorio del proyecto
-cd quiero-algo-dulce
+cd QuieroalgoDulce2025
 
 # 3. Crear entorno virtual (recomendado)
 python -m venv venv
@@ -21,10 +21,16 @@ source venv/bin/activate  # Linux/Mac
 # 4. Instalar dependencias
 pip install -r requirements.txt
 
-# 5. Configurar archivos JSON (crear estructura inicial)
-python manage.py init_data
+# 5. Ir a la carpeta ecommerce_backend
+cd ecommerce_backend
 
-# 6. Ejecutar el servidor de desarrollo
+# 6. Migrar base unica ves en todo el proyecto
+python manage.py migrate
+
+# 7. Ir a la carpeta ecommerce_backend
+cd ecommerce_backend
+
+# 8. Ejecutar el servidor de desarrollo
 python manage.py runserver
 
 
@@ -40,20 +46,20 @@ Hecho con ❤️ y mucho ☕ para Seminario de Lenguaje 1
 
 Acceso al Sistema
 
-Una vez ejecutado, acceder a: http://localhost:8000
+Una vez ejecutado, acceder a: http://127.0.0.1:8000
 
 🔐 Usuarios de Prueba
 
 👤 Cliente Demo
 
-· Usuario: cliente_demo
-· Contraseña: clave123
+· Usuario: Alice
+· Contraseña: alice123
 · Acceso: Todas las funcionalidades de compra
 
 👑 Administrador Demo
 
-· Usuario: admin_demo
-· Contraseña: admin123
+· Usuario: admin
+· Contraseña: adminpassword123
 · Acceso: Panel administrativo completo
 
 📊 Modelos Principales
